@@ -1,0 +1,4 @@
+src/pages/VerifyCertificate.tsx(229,42): error TS2304: Cannot find name 'Briefcase'.
+src/pages/VerifyCertificate.tsx(238,42): error TS2304: Cannot find name 'FileCode2'.
+src/pages/VerifyCertificate.tsx(247,42): error TS2304: Cannot find name 'CalendarRange'.
+src/pages/VerifyCertificate.tsx(272,137): error TS2339: Property 'verificationURL' does not exist on type 'VerificationResult'.
