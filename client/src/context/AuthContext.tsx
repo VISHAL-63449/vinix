@@ -56,18 +56,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     password,
                 });
                 if (sbError) {
-                    if (sbError.status === 400 || sbError.message?.includes('credentials')) {
-                        throw sbError;
-                    }
-                    console.warn('Supabase connection warning:', sbError);
+                    console.warn('Supabase authentication warning:', sbError.status, sbError.message);
                 } else if (data?.user) {
                     sbUser = data.user;
                 }
             } catch (err: any) {
-                if (err.status === 400 || err.message?.includes('credentials')) {
-                    throw err;
-                }
-                console.warn('Supabase offline or unreachable. Proceeding with Local/Mock authentication.');
+                console.warn('Supabase offline or unreachable. Proceeding to check Local repository.', err.message);
             }
 
             // 2. Authenticate with Local Server
@@ -78,9 +72,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setToken(receivedToken);
                 setUser(receivedUser);
             } catch (localErr: any) {
-                // If local login fails with 401 (or invalid credentials / email) but Supabase auth succeeded,
-                // we automatically register the user in local database!
-                if (sbUser && (localErr.response?.status === 401 || localErr.response?.data?.message?.includes('Invalid email') || localErr.response?.data?.message?.includes('password'))) {
+                // If local login fails but we did authenticate with Supabase, auto-create local record
+                if (sbUser) {
                     try {
                         const name = sbUser.user_metadata?.name || email.split('@')[0];
                         const role = sbUser.user_metadata?.role || 'STUDENT';
