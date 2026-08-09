@@ -49,8 +49,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(true);
         try {
             // 1. Authenticate with Supabase Auth (with network fallback)
+            let sbUser: any = null;
             try {
-                const { error: sbError } = await supabase.auth.signInWithPassword({
+                const { data, error: sbError } = await supabase.auth.signInWithPassword({
                     email,
                     password,
                 });
@@ -59,6 +60,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                         throw sbError;
                     }
                     console.warn('Supabase connection warning:', sbError);
+                } else if (data?.user) {
+                    sbUser = data.user;
                 }
             } catch (err: any) {
                 if (err.status === 400 || err.message?.includes('credentials')) {
@@ -68,11 +71,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
 
             // 2. Authenticate with Local Server
-            const res = await api.post('/auth/login', { email, password });
-            const { token: receivedToken, user: receivedUser } = res.data;
-            localStorage.setItem('vionix_token', receivedToken);
-            setToken(receivedToken);
-            setUser(receivedUser);
+            try {
+                const res = await api.post('/auth/login', { email, password });
+                const { token: receivedToken, user: receivedUser } = res.data;
+                localStorage.setItem('vionix_token', receivedToken);
+                setToken(receivedToken);
+                setUser(receivedUser);
+            } catch (localErr: any) {
+                // If local login fails with 401 (or invalid credentials / email) but Supabase auth succeeded,
+                // we automatically register the user in local database!
+                if (sbUser && (localErr.response?.status === 401 || localErr.response?.data?.message?.includes('Invalid email') || localErr.response?.data?.message?.includes('password'))) {
+                    try {
+                        const name = sbUser.user_metadata?.name || email.split('@')[0];
+                        const role = sbUser.user_metadata?.role || 'STUDENT';
+
+                        const registerRes = await api.post('/auth/register', { name, email, password, role });
+                        const { token: receivedToken, user: receivedUser } = registerRes.data;
+                        localStorage.setItem('vionix_token', receivedToken);
+                        setToken(receivedToken);
+                        setUser(receivedUser);
+                    } catch (syncErr: any) {
+                        throw new Error(syncErr.response?.data?.message || syncErr.message || 'Authentication synchronization failed.');
+                    }
+                } else {
+                    throw localErr;
+                }
+            }
         } catch (error: any) {
             setLoading(false);
             throw new Error(error.response?.data?.message || error.message || 'Login failed.');
@@ -83,6 +107,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(true);
         try {
             // 1. Register user on Supabase Auth (with network fallback)
+            let isAlreadyRegistered = false;
             try {
                 const { error: sbError } = await supabase.auth.signUp({
                     email,
@@ -93,15 +118,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 });
                 if (sbError) {
                     if (sbError.status === 400 || sbError.status === 422 || sbError.message?.includes('already')) {
-                        throw sbError;
+                        isAlreadyRegistered = true;
+                    } else {
+                        console.warn('Supabase registration warning:', sbError);
                     }
-                    console.warn('Supabase registration warning:', sbError);
                 }
             } catch (err: any) {
                 if (err.status === 400 || err.status === 422 || err.message?.includes('already')) {
-                    throw err;
+                    isAlreadyRegistered = true;
+                } else {
+                    console.warn('Supabase offline or unreachable. Registering user on Local/Mock database only.');
                 }
-                console.warn('Supabase offline or unreachable. Registering user on Local/Mock database only.');
+            }
+
+            if (isAlreadyRegistered) {
+                // Check if they can log in to that account on Supabase (validating password)
+                try {
+                    const { error: signInError } = await supabase.auth.signInWithPassword({
+                        email,
+                        password,
+                    });
+                    if (signInError) {
+                        const msg = signInError.message?.toLowerCase() || '';
+                        if (msg.includes('confirm') || msg.includes('verification')) {
+                            // Password is correct, but email is not confirmed yet. Allow recovery of local DB sync.
+                        } else {
+                            throw new Error('This email is already registered. If you are the owner, please use the correct password.');
+                        }
+                    }
+                } catch (signInErr: any) {
+                    const msg = signInErr.message?.toLowerCase() || '';
+                    if (!msg.includes('confirm') && !msg.includes('verification')) {
+                        throw new Error(signInErr.message || 'This email is already registered. If you are the owner, please use the correct password.');
+                    }
+                }
             }
 
             // 2. Save user on the Database through Local Server
