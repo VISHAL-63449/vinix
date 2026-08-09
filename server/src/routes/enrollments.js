@@ -29,7 +29,28 @@ router.get('/my', authenticateToken, async (req, res) => {
             include: { course: true },
             orderBy: { joinedAt: 'desc' }
         });
-        res.json(enrollments);
+
+        // Auto-recalculate progress to ensure DB and frontend states are in sync
+        const updatedEnrollments = [];
+        for (const enroll of enrollments) {
+            try {
+                const updated = await calculateAndUpdateProgress(req.user.id, enroll.courseId);
+                if (updated) {
+                    const fullUpdated = await prisma.enrollment.findUnique({
+                        where: { id: updated.id },
+                        include: { course: true }
+                    });
+                    updatedEnrollments.push(fullUpdated || enroll);
+                } else {
+                    updatedEnrollments.push(enroll);
+                }
+            } catch (err) {
+                console.error(`Failed to auto-recompute progress for enrollment ${enroll.id}:`, err);
+                updatedEnrollments.push(enroll);
+            }
+        }
+
+        res.json(updatedEnrollments);
     } catch (error) {
         console.error('Fetch my enrollments error:', error);
         res.status(500).json({ message: 'Failed to retrieve enrollments.' });
