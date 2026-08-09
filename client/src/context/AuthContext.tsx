@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import api from '../utils/api';
+import { supabase } from '../utils/supabase';
 
 interface User {
     id: string;
@@ -47,6 +48,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const login = async (email: string, password: string) => {
         setLoading(true);
         try {
+            // 1. Authenticate with Supabase Auth
+            const { error: sbError } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+            if (sbError) throw sbError;
+
+            // 2. Authenticate with Local Server
             const res = await api.post('/auth/login', { email, password });
             const { token: receivedToken, user: receivedUser } = res.data;
             localStorage.setItem('vionix_token', receivedToken);
@@ -54,13 +63,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(receivedUser);
         } catch (error: any) {
             setLoading(false);
-            throw new Error(error.response?.data?.message || 'Login failed.');
+            throw new Error(error.response?.data?.message || error.message || 'Login failed.');
         }
     };
 
     const register = async (name: string, email: string, password: string, role = 'STUDENT') => {
         setLoading(true);
         try {
+            // 1. Register user on Supabase Auth
+            const { error: sbError } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: { name, role }
+                }
+            });
+            if (sbError) throw sbError;
+
+            // 2. Save user on the Database through Local Server
             const res = await api.post('/auth/register', { name, email, password, role });
             const { token: receivedToken, user: receivedUser } = res.data;
             localStorage.setItem('vionix_token', receivedToken);
@@ -68,16 +88,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(receivedUser);
         } catch (error: any) {
             setLoading(false);
-            throw new Error(error.response?.data?.message || 'Registration failed.');
+            throw new Error(error.response?.data?.message || error.message || 'Registration failed.');
         }
     };
 
-    const logout = () => {
+    const logout = async () => {
+        try {
+            await supabase.auth.signOut();
+        } catch (err) {
+            console.error('Failed to sign out from Supabase Auth:', err);
+        }
         localStorage.removeItem('vionix_token');
         setToken(null);
         setUser(null);
         setLoading(false);
     };
+
 
     const updateProfile = async (name: string, skills: string[]) => {
         try {
