@@ -125,7 +125,7 @@ export const Dashboard: React.FC = () => {
 
     const activeInternship = enrollments.find(e => e.course.type === 'INTERNSHIP');
     const displayEnrollment = selectedEnrollment || activeInternship;
-    const progress = displayEnrollment ? displayEnrollment.progress : 0;
+    const hasLinkedIn = !!(linkedInSubmitted || displayEnrollment?.linkedinUrl);
 
     // Dynamically calculate progress metrics for tasks indicator
     const totalAssignments = displayEnrollment?.course?.assignments?.length || 0;
@@ -136,8 +136,18 @@ export const Dashboard: React.FC = () => {
         )
     );
     const submittedProjectsCount = submittedProjects.length;
-    const completedTasksCount = (linkedInSubmitted ? 1 : 0) + submittedProjectsCount;
+    const completedTasksCount = (hasLinkedIn ? 1 : 0) + submittedProjectsCount;
     const totalTasksCount = (displayEnrollment?.course?.assignments ? 1 + totalAssignments : 1);
+
+    const progress = (() => {
+        if (!displayEnrollment) return 0;
+        const totalAssignmentsCount = displayEnrollment.course?.assignments?.length || 0;
+        if (totalAssignmentsCount === 0) {
+            return Math.max(displayEnrollment.progress, hasLinkedIn ? 100 : 0);
+        }
+        const computed = (hasLinkedIn ? 20 : 0) + Math.round((submittedProjectsCount / totalAssignmentsCount) * 80);
+        return Math.max(displayEnrollment.progress, computed);
+    })();
 
     const loadData = async () => {
         try {
@@ -240,15 +250,27 @@ export const Dashboard: React.FC = () => {
         }
     };
 
-    const handleLinkedInSubmit = (e: React.FormEvent) => {
+    const handleLinkedInSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!linkedInUrlInput.trim()) {
             alert('Please enter a valid URL.');
             return;
         }
-        setLinkedInSubmitted(true);
-        setIsLinkedInModalOpen(false);
-        alert('LinkedIn URL submitted successfully! Offer post requirements verified.');
+        if (!displayEnrollment) return;
+
+        try {
+            await api.put('/enrollments/linkedin', {
+                courseId: displayEnrollment.courseId,
+                linkedinUrl: linkedInUrlInput
+            });
+            setLinkedInSubmitted(true);
+            setIsLinkedInModalOpen(false);
+            alert('LinkedIn URL submitted successfully! Offer post requirements verified.');
+            loadData();
+        } catch (err) {
+            console.error('LinkedIn URL submission error:', err);
+            alert('Failed to submit LinkedIn URL.');
+        }
     };
 
     const handleEnrollDirect = async (courseId: string) => {
