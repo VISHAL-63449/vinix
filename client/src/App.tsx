@@ -94,7 +94,7 @@ function App() {
   }, [darkMode]);
 
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <ScrollToTop />
       <AuthProvider>
         <AppContent darkMode={darkMode} setDarkMode={setDarkMode} />
