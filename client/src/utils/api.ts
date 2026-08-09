@@ -21,6 +21,28 @@ realHttp.interceptors.request.use(
 
 // Define Mock Data Initializer
 const initMockDB = () => {
+    // Repair/ensure admin credentials exist even if mock database was initialized previously
+    const existingUsersStr = localStorage.getItem('vionix_mock_users');
+    if (existingUsersStr) {
+        try {
+            const users = JSON.parse(existingUsersStr);
+            const hasVishal = users.some((u: any) => u.email.toLowerCase() === 'vishal@vinix.com');
+            const hasVishai = users.some((u: any) => u.email.toLowerCase() === 'vishai@vinix.com');
+            let updated = false;
+            if (!hasVishal) {
+                users.push({ id: 'mock-user-admin-2', name: 'Vishal R', email: 'vishal@vinix.com', password: 'vis@2007', role: 'ADMIN', skills: [] });
+                updated = true;
+            }
+            if (!hasVishai) {
+                users.push({ id: 'mock-user-admin-3', name: 'Vishal R', email: 'vishai@vinix.com', password: 'vis@2007', role: 'ADMIN', skills: [] });
+                updated = true;
+            }
+            if (updated) {
+                localStorage.setItem('vionix_mock_users', JSON.stringify(users));
+            }
+        } catch (e) { }
+    }
+
     if (localStorage.getItem('vionix_mock_initialized') === 'true') {
         return;
     }
