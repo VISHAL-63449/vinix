@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
+import homeImage from '../assets/home_image.png';
 import {
     ArrowRight, Code2, Users, Award, Globe, Play,
     Star, Sparkles, Send, CheckCircle, MessageSquare
@@ -347,7 +348,7 @@ export const Home: React.FC = () => {
                         {/* ── RIGHT Side Image ── */}
                         <div className="flex-1 flex justify-center items-center z-10 w-full min-w-[320px] max-w-[550px] lg:max-w-none">
                             <img
-                                src="/home_image.png"
+                                src={homeImage}
                                 alt="Vinix Logo and Stats"
                                 className="w-full h-auto object-contain select-none filter drop-shadow-xl hover:scale-[1.02] transition-transform duration-500"
                             />
