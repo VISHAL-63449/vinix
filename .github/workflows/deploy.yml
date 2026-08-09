@@ -17,11 +17,15 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install and Build 🔧
+        env:
+          VITE_SUPABASE_URL: "https://lmwqcglpzgehchxlnbte.supabase.co"
+          VITE_SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxtd3FjZ2xwemdlaGNoeGxuYnRlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODYyMzQxNTEsImV4cCI6MjEwMTgxMDE1MX0.PuFB4pyxIYyOJibtnx9KTqEfsWNORtii1Vdsb3PbEjw"
         run: |
           cd client
           npm ci
           npm run build
           cp dist/index.html dist/404.html
+
 
 
       - name: Deploy 🚀
