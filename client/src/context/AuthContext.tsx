@@ -47,6 +47,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const login = async (email: string, password: string) => {
         setLoading(true);
+        console.log("[AuthContext] Initiating login for:", email);
         try {
             // 1. Authenticate with Supabase Auth (with network fallback)
             let sbUser: any = null;
@@ -56,30 +57,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     password,
                 });
                 if (sbError) {
-                    console.warn('Supabase authentication warning:', sbError.status, sbError.message);
+                    console.warn('[AuthContext] Supabase login error status:', sbError.status, sbError.message);
                 } else if (data?.user) {
                     sbUser = data.user;
+                    console.log('[AuthContext] Supabase login success:', sbUser.id);
                 }
             } catch (err: any) {
-                console.warn('Supabase offline or unreachable. Proceeding to check Local repository.', err.message);
+                console.warn('[AuthContext] Supabase offline/error, proceeding with local auth:', err.message);
             }
 
             // 2. Authenticate with Local Server
             try {
+                console.log("[AuthContext] Authenticating with local server...");
                 const res = await api.post('/auth/login', { email, password });
                 const { token: receivedToken, user: receivedUser } = res.data;
+                console.log("[AuthContext] Local server authentication success for role:", receivedUser.role);
                 localStorage.setItem('vionix_token', receivedToken);
                 setToken(receivedToken);
                 setUser(receivedUser);
             } catch (localErr: any) {
+                console.warn("[AuthContext] Local login failed:", localErr.response?.data?.message || localErr.message);
                 // If local login fails but we did authenticate with Supabase, auto-create local record
                 if (sbUser) {
                     try {
+                        console.log("[AuthContext] Syncing Supabase user to local DB...");
                         const name = sbUser.user_metadata?.name || email.split('@')[0];
                         const role = sbUser.user_metadata?.role || 'STUDENT';
 
                         const registerRes = await api.post('/auth/register', { name, email, password, role });
                         const { token: receivedToken, user: receivedUser } = registerRes.data;
+                        console.log("[AuthContext] Sync completed, logged in local user:", receivedUser.id);
                         localStorage.setItem('vionix_token', receivedToken);
                         setToken(receivedToken);
                         setUser(receivedUser);
@@ -92,6 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         } catch (error: any) {
             setLoading(false);
+            console.error("[AuthContext] Login failed with error:", error);
             throw new Error(error.response?.data?.message || error.message || 'Login failed.');
         }
     };
