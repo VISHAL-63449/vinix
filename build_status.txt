@@ -1,0 +1,20 @@
+[
+  {
+    "name": "pages build and deployment",
+    "status": "completed",
+    "conclusion": "success",
+    "commit": "Deploying to gh-pages from @ vishal9932-maker/vinix@dad7b3837eb200fc34efab1dee994858cf7dfab4 🚀"
+  },
+  {
+    "name": "Deploy to GitHub Pages",
+    "status": "completed",
+    "conclusion": "success",
+    "commit": "Trigger clear rebuild and deployment on GitHub Pages"
+  },
+  {
+    "name": "Deploy to GitHub Pages",
+    "status": "completed",
+    "conclusion": "success",
+    "commit": "Fix blank screen issue by setting fallback Supabase credentials at build and runtime"
+  }
+]

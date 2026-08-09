@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { LucideIcon } from 'lucide-react';
 import {
     ArrowRight, Code2, Users, Award, Globe, Play,
-    ShieldCheck, Star, Sparkles, Send, CheckCircle, MessageSquare, BookOpen
+    Star, Sparkles, Send, CheckCircle, MessageSquare
 } from 'lucide-react';
 
 /* ─── Floating Tech Icons ─── */
@@ -68,23 +68,7 @@ const AWSLogo = () => (
     </div>
 );
 
-/* ─── Floating badge ─── */
-const FBadge = ({
-    children,
-    style,
-}: {
-    children: React.ReactNode;
-    style?: React.CSSProperties;
-}) => (
-    <div
-        style={style}
-        className="absolute z-20 flex items-center gap-2 bg-white dark:bg-slate-900
-                   border border-slate-100 dark:border-slate-800 rounded-2xl shadow-lg
-                   px-4 py-2.5 text-xs font-bold text-slate-700 dark:text-slate-200 whitespace-nowrap select-none animate-float"
-    >
-        {children}
-    </div>
-);
+
 
 /* ─── Feature Item ─── */
 const FeatureItem = ({
@@ -226,12 +210,7 @@ export const Home: React.FC = () => {
         }, 4000);
     };
 
-    /* Layout dimensions for Right Canvas image */
-    const W = 550;
-    const H = 450;
-    const CX = 105;
-    const CY = 48;
-    const CR = 340;
+
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300 relative overflow-hidden">
@@ -365,107 +344,13 @@ export const Home: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* ── RIGHT Side Student Canvas layout ── */}
-                        <div className="flex-shrink-0 flex flex-col items-center z-10">
-
-                            <div
-                                className="relative"
-                                style={{ width: W, height: H, maxWidth: '100%' }}
-                            >
-                                {/* Circle background Glow and borders */}
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        left: CX - 20,
-                                        top: CY - 20,
-                                        width: CR + 40,
-                                        height: CR + 40,
-                                        borderRadius: '50%',
-                                        background: 'radial-gradient(circle, rgba(59,130,246,0.18) 0%, transparent 72%)',
-                                        pointerEvents: 'none',
-                                    }}
-                                />
-
-                                {/* Main Rounded Student Image */}
-                                <div
-                                    style={{
-                                        position: 'absolute',
-                                        left: CX,
-                                        top: CY,
-                                        width: CR,
-                                        height: CR,
-                                        borderRadius: '50%',
-                                        overflow: 'hidden',
-                                        border: '6px solid white',
-                                        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)',
-                                        background: 'linear-gradient(135deg,#eff6ff,#dbeafe)',
-                                    }}
-                                >
-                                    <img
-                                        src="/home_image.png"
-                                        alt="Vinix Intern Students"
-                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                                        onError={(e) => {
-                                            // Fallback if image load error
-                                            (e.target as HTMLImageElement).src = '/logo.png';
-                                        }}
-                                    />
-                                    {/* Minimal logo overlay */}
-                                    <div className="absolute inset-0 bg-transparent flex flex-col items-center justify-center pointer-events-none">
-                                        <span className="text-[120px] font-black text-slate-900/5 select-none font-serif">V</span>
-                                    </div>
-                                </div>
-
-                                {/* ── FLOATING BADGES (placed exactly matching screenshot layout) ── */}
-
-                                {/* Middle Left */}
-                                <FBadge style={{ top: CY + CR / 2 - 25, left: 10 }}>
-                                    <Code2 size={13} className="text-blue-500 flex-shrink-0" />
-                                    <span>Real-world Projects</span>
-                                </FBadge>
-
-                                {/* Upper Right */}
-                                <FBadge style={{ top: CY + 10, right: 35 }}>
-                                    <Award size={14} className="text-amber-500 flex-shrink-0" />
-                                    <span>Industry Certificate</span>
-                                </FBadge>
-
-                                {/* Middle Right */}
-                                <FBadge style={{ top: CY + CR / 2 - 35, right: -10 }}>
-                                    <ShieldCheck size={14} className="text-emerald-500 flex-shrink-0" />
-                                    <span>Offer Letter</span>
-                                </FBadge>
-
-                                {/* Bottom Right (Lower Far Right) */}
-                                <FBadge style={{ top: CY + CR - 75, right: -25 }}>
-                                    <Users size={14} className="text-indigo-500 flex-shrink-0" />
-                                    <span>Task-based</span>
-                                </FBadge>
-                            </div>
-
-                            {/* Floating Stats Block matching screenshot */}
-                            <div className="mt-1 bg-white dark:bg-slate-900 border border-slate-100
-                                            dark:border-slate-800/80 rounded-2xl shadow-xl px-5 py-4 z-20 hover:scale-[1.01] transition"
-                                style={{ width: Math.min(W, 460) }}>
-                                <div className="grid grid-cols-4 divide-x divide-slate-100 dark:divide-slate-800">
-                                    {[
-                                        { icon: <Users size={14} className="text-blue-500" />, val: 'Growing Every Day', sub: 'Students Enrolled' },
-                                        { icon: <Globe size={14} className="text-emerald-500" />, val: '10+', sub: 'Internship Domains' },
-                                        { icon: <Code2 size={14} className="text-purple-500" />, val: '120+', sub: 'Projects Available' },
-                                        { icon: <Star size={14} className="text-amber-400 fill-amber-400 animate-pulse" />, val: '4.9/5', sub: 'Average Rating' },
-                                    ].map((s, idx) => (
-                                        <div key={idx} className="flex flex-col items-center gap-1.5 px-2 text-center">
-                                            <div className="p-1 px-1.5 rounded-full bg-slate-50 dark:bg-slate-800/60 flex items-center justify-center">
-                                                {s.icon}
-                                            </div>
-                                            <span className="text-[10px] font-black text-slate-800
-                                                             dark:text-white leading-tight block">{s.val}</span>
-                                            <span className="text-[8.5px] text-slate-400 font-bold
-                                                             leading-tight block uppercase tracking-wider">{s.sub}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
+                        {/* ── RIGHT Side Image ── */}
+                        <div className="flex-1 flex justify-center items-center z-10 w-full min-w-[320px] max-w-[550px] lg:max-w-none">
+                            <img
+                                src="/home_image.png"
+                                alt="Vinix Logo and Stats"
+                                className="w-full h-auto object-contain select-none filter drop-shadow-xl hover:scale-[1.02] transition-transform duration-500"
+                            />
                         </div>
 
                     </div>
