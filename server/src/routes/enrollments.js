@@ -5,6 +5,7 @@ import fs from 'fs';
 import { prisma } from '../config.js';
 import { authenticateToken } from '../middleware/auth.js';
 import { generateOfferLetterPDFFile } from '../utils/pdfGenerator.js';
+import { calculateAndUpdateProgress } from '../utils/progressHelper.js';
 
 const router = express.Router();
 
@@ -190,6 +191,40 @@ router.put('/progress', authenticateToken, async (req, res) => {
     } catch (error) {
         console.error('Progress update error:', error);
         res.status(500).json({ message: 'Failed to update progress.' });
+    }
+});
+
+// Submit LinkedIn URL and recalculate progress
+router.put('/linkedin', authenticateToken, async (req, res) => {
+    try {
+        const { courseId, linkedinUrl } = req.body;
+        if (!courseId || !linkedinUrl) {
+            return res.status(400).json({ message: 'Course ID and LinkedIn URL are required.' });
+        }
+
+        // Update LinkedIn URL in the enrollment record
+        await prisma.enrollment.update({
+            where: {
+                userId_courseId: {
+                    userId: req.user.id,
+                    courseId
+                }
+            },
+            data: {
+                linkedinUrl
+            }
+        });
+
+        // Recalculate and update the overall progress
+        const updated = await calculateAndUpdateProgress(req.user.id, courseId);
+        if (!updated) {
+            return res.status(404).json({ message: 'Enrollment not found.' });
+        }
+
+        res.json(updated);
+    } catch (error) {
+        console.error('LinkedIn submission error:', error);
+        res.status(500).json({ message: 'Failed to save LinkedIn URL and update progress.' });
     }
 });
 

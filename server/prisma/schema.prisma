@@ -44,15 +44,16 @@ model Course {
 }
 
 model Enrollment {
-  id        String   @id @default(uuid())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  courseId  String
-  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  progress  Int      @default(0) // 0 to 100
-  status    String   @default("ENROLLED") // ENROLLED, COMPLETED
-  joinedAt  DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  courseId    String
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress    Int      @default(0) // 0 to 100
+  status      String   @default("ENROLLED") // ENROLLED, COMPLETED
+  linkedinUrl String?  // Stores LinkedIn verification link if submitted
+  joinedAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@unique([userId, courseId])
 }

@@ -37,6 +37,7 @@ interface Enrollment {
     progress: number;
     status: string;
     course: Course;
+    linkedinUrl?: string;
 }
 
 interface Project {
@@ -121,6 +122,22 @@ export const Dashboard: React.FC = () => {
     // Document Preview states
     const [selectedOfferLetterPreview, setSelectedOfferLetterPreview] = useState<OfferLetter | null>(null);
     const [selectedCertPreview, setSelectedCertPreview] = useState<Certificate | null>(null);
+
+    const activeInternship = enrollments.find(e => e.course.type === 'INTERNSHIP');
+    const displayEnrollment = selectedEnrollment || activeInternship;
+    const progress = displayEnrollment ? displayEnrollment.progress : 0;
+
+    // Dynamically calculate progress metrics for tasks indicator
+    const totalAssignments = displayEnrollment?.course?.assignments?.length || 0;
+    const submittedProjects = projects.filter(p =>
+        displayEnrollment?.course?.assignments?.some((as: any) =>
+            p.title.toLowerCase().includes(as.title.toLowerCase()) ||
+            as.title.toLowerCase().includes(p.title.toLowerCase())
+        )
+    );
+    const submittedProjectsCount = submittedProjects.length;
+    const completedTasksCount = (linkedInSubmitted ? 1 : 0) + submittedProjectsCount;
+    const totalTasksCount = (displayEnrollment?.course?.assignments ? 1 + totalAssignments : 1);
 
     const loadData = async () => {
         try {
@@ -258,9 +275,7 @@ export const Dashboard: React.FC = () => {
         }
     };
 
-    const activeInternship = enrollments.find(e => e.course.type === 'INTERNSHIP');
-    const displayEnrollment = selectedEnrollment || activeInternship;
-    const progress = displayEnrollment ? displayEnrollment.progress : 0;
+
 
     // Circle SVG specifications matching Image 3 Circular indicator
     const radius = 30;
@@ -324,35 +339,41 @@ export const Dashboard: React.FC = () => {
 
                         {/* Top Student Banner Card */}
                         {displayEnrollment ? (
-                            <div className="relative p-6 md:p-8 bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-3xl overflow-hidden shadow-lg border border-slate-800/80 flex flex-col sm:flex-row justify-between items-center sm:items-start gap-6">
-                                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-blue-500/20 blur-3xl"></div>
+                            <div className="relative p-6 md:p-8 bg-gradient-to-br from-indigo-950 via-slate-900 to-blue-950 text-white rounded-3xl overflow-hidden shadow-xl border border-slate-800/60 flex flex-col lg:flex-row justify-between items-center sm:items-start lg:items-center gap-6">
+                                {/* Ambient Glow Background Blobs */}
+                                <div className="absolute -top-12 -right-12 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none"></div>
+                                <div className="absolute -bottom-12 -left-12 w-80 h-80 rounded-full bg-indigo-500/10 blur-3xl pointer-events-none"></div>
 
                                 <div className="space-y-4 text-center sm:text-left z-10">
-                                    <span className="text-[10px] uppercase font-bold tracking-widest bg-blue-500/30 text-blue-200 px-2 py-0.5 rounded">
+                                    <span className="inline-block text-[10px] uppercase font-black tracking-widest bg-blue-550/20 text-blue-300 border border-blue-400/20 px-2.5 py-1 rounded-md">
                                         Welcome Intern
                                     </span>
-                                    <h2 className="text-3xl font-extrabold tracking-tight uppercase">{user?.name || 'VISHAL R'}</h2>
-                                    <span className="inline-block px-3 py-1 bg-white/10 backdrop-blur rounded-full text-xs font-bold tracking-wider text-blue-100 uppercase">
-                                        {displayEnrollment.course.title.toUpperCase()}
+                                    <h2 className="text-3xl font-extrabold tracking-tight uppercase text-transparent bg-clip-text bg-gradient-to-r from-white via-slate-100 to-blue-200">
+                                        {user?.name || 'VISHAL R'}
+                                    </h2>
+                                    <span className="inline-block px-3 py-1 bg-white/5 border border-white/10 backdrop-blur rounded-full text-xs font-bold tracking-wider text-blue-200 uppercase">
+                                        🎓 {displayEnrollment.course.title.toUpperCase()}
                                     </span>
                                 </div>
 
-                                {/* Progress radial circle indicator */}
-                                <div className="flex items-center gap-6 py-2 z-10 self-center">
-                                    <div className="flex flex-col items-center gap-1.5">
-                                        <div className="relative w-18 h-18 flex items-center justify-center">
+                                {/* Progress radial circle indicator and buttons */}
+                                <div className="flex flex-col sm:flex-row items-center gap-6 py-2 z-10 self-center lg:self-auto">
+
+                                    {/* Radial Progress Ring */}
+                                    <div className="flex flex-col items-center gap-2">
+                                        <div className="relative w-20 h-20 flex items-center justify-center">
                                             {/* Circular SVG track */}
-                                            <svg className="w-16 h-16 transform -rotate-90">
+                                            <svg className="w-20 h-20 transform -rotate-90">
                                                 <circle
-                                                    cx="32" cy="32" r={radius}
-                                                    className="text-white/10"
+                                                    cx="40" cy="40" r={radius}
+                                                    className="text-white/5"
                                                     strokeWidth={strokeWidth}
                                                     stroke="currentColor"
                                                     fill="transparent"
                                                 />
                                                 <circle
-                                                    cx="32" cy="32" r={radius}
-                                                    className="text-blue-400"
+                                                    cx="40" cy="40" r={radius}
+                                                    className="text-blue-400 drop-shadow-[0_0_8px_rgba(59,130,246,0.6)] transition-all duration-700 ease-out"
                                                     strokeWidth={strokeWidth}
                                                     strokeDasharray={circumference}
                                                     strokeDashoffset={strokeDashoffset}
@@ -361,19 +382,24 @@ export const Dashboard: React.FC = () => {
                                                     fill="transparent"
                                                 />
                                             </svg>
-                                            <span className="absolute text-xs font-bold">{progress}%</span>
+                                            <div className="absolute flex flex-col items-center justify-center text-center">
+                                                <span className="text-xs font-black text-white">{progress}%</span>
+                                            </div>
                                         </div>
-                                        <span className="text-[10px] text-slate-300 font-bold uppercase tracking-wider">Internship Progress</span>
+                                        <span className="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest leading-none">Internship Progress</span>
+                                        <span className="text-[9px] text-blue-300 font-semibold bg-blue-500/10 border border-blue-400/20 px-2 py-0.5 rounded-full">
+                                            {completedTasksCount} of {totalTasksCount} tasks
+                                        </span>
                                     </div>
 
                                     {/* Action buttons on bottom/right */}
-                                    <div className="flex flex-col gap-2">
+                                    <div className="flex flex-col gap-2 w-full sm:w-auto">
                                         {activeOfferLetter && (
                                             <a
                                                 href={`http://localhost:5000/uploads/offer-letters/${activeOfferLetter.offerLetterId}.pdf`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex items-center space-x-1.5 px-4 py-2 text-xs font-bold text-blue-200 border border-blue-400/50 hover:bg-blue-800/40 rounded-xl transition whitespace-nowrap bg-indigo-950/20"
+                                                className="flex items-center justify-center space-x-1.5 px-4 py-2.5 text-xs font-bold text-blue-200 border border-blue-400/30 hover:border-blue-400/60 hover:bg-blue-900/20 rounded-xl transition duration-150 whitespace-nowrap bg-indigo-950/20 shadow-sm"
                                             >
                                                 <FileDown size={13} />
                                                 <span>Download Offer Letter</span>
@@ -383,7 +409,7 @@ export const Dashboard: React.FC = () => {
                                             href="https://chat.whatsapp.com/mock-vionix"
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center space-x-1.5 px-4 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition shadow whitespace-nowrap"
+                                            className="flex items-center justify-center space-x-1.5 px-4 py-2.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition duration-150 shadow-md shadow-blue-500/20 hover:shadow-blue-500/30 hover:-translate-y-0.5 ease-out whitespace-nowrap"
                                         >
                                             <MessageSquare size={13} />
                                             <span>Join WhatsApp Group</span>
@@ -393,22 +419,84 @@ export const Dashboard: React.FC = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="p-8 bg-white dark:bg-slate-900 border text-center rounded-3xl space-y-4">
-                                <h3 className="font-extrabold text-lg">Launch an Internship Track</h3>
+                            <div className="p-8 bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 text-center rounded-3xl shadow-sm space-y-4">
+                                <h3 className="font-extrabold text-lg text-slate-850 dark:text-slate-100">Launch an Internship Track</h3>
                                 <p className="text-xs text-slate-400">You are not registered in any active learning / internship domains.</p>
                                 <button onClick={() => navigate('/internship')} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-bold text-xs transition">Apply Internship</button>
                             </div>
                         )}
 
+                        {/* Dynamic Stats Grid Card Row */}
+                        {displayEnrollment && (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                                {/* Card 1: Active Domain */}
+                                <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 p-5 rounded-2xl flex items-center space-x-4 shadow-sm hover:shadow-md transition duration-200">
+                                    <div className="p-3 bg-blue-50 text-blue-600 rounded-xl dark:bg-blue-955/20 dark:text-blue-400">
+                                        <GraduationCap size={20} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block leading-none mb-1">Internship Domain</span>
+                                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block truncate">{displayEnrollment.course.title}</span>
+                                        <span className="text-[8px] font-semibold text-emerald-500 bg-emerald-500/10 px-1.5 py-0.5 rounded mt-1 inline-block">Active Track</span>
+                                    </div>
+                                </div>
+
+                                {/* Card 2: Tasks Status */}
+                                <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 p-5 rounded-2xl flex items-center space-x-4 shadow-sm hover:shadow-md transition duration-200">
+                                    <div className="p-3 bg-indigo-50 text-indigo-650 rounded-xl dark:bg-indigo-955/20 dark:text-indigo-400">
+                                        <CheckCircle2 size={20} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block leading-none mb-1">Milestones Status</span>
+                                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">{completedTasksCount} / {totalTasksCount} Completed</span>
+                                        <span className="text-[8px] font-semibold text-indigo-500 bg-indigo-505/10 px-1.5 py-0.5 rounded mt-1 inline-block">
+                                            {totalTasksCount - completedTasksCount} Action Pending
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Card 3: Mentorship */}
+                                <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 p-5 rounded-2xl flex items-center space-x-4 shadow-sm hover:shadow-md transition duration-200">
+                                    <div className="p-3 bg-rose-50 text-rose-600 rounded-xl dark:bg-rose-955/20 dark:text-rose-455">
+                                        <User size={20} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block leading-none mb-1">Assigned Mentor</span>
+                                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">{activeOfferLetter?.mentorName || 'Vishal R'}</span>
+                                        <span className="text-[8px] font-semibold text-rose-500 bg-rose-500/10 px-1.5 py-0.5 rounded mt-1 inline-block">
+                                            Online Support
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Card 4: Evaluation Status */}
+                                <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 p-5 rounded-2xl flex items-center space-x-4 shadow-sm hover:shadow-md transition duration-200">
+                                    <div className="p-3 bg-amber-50 text-amber-500 rounded-xl dark:bg-amber-955/20 dark:text-amber-500">
+                                        <Award size={20} />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <span className="text-[9px] text-slate-400 font-extrabold uppercase tracking-wider block leading-none mb-1">Evaluation Grade</span>
+                                        <span className="text-xs font-bold text-slate-800 dark:text-slate-200 block">
+                                            {progress === 100 ? 'A+ Outstanding' : progress >= 50 ? 'B+ Good Job' : 'Needs Submission'}
+                                        </span>
+                                        <span className="text-[8px] font-semibold text-amber-600 bg-amber-500/10 px-1.5 py-0.5 rounded mt-1 inline-block">Real-time Grade</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Notification alert ribbon */}
-                        <div className="w-full bg-blue-650 text-white py-3 px-6 rounded-2xl flex items-center justify-between text-xs font-bold shadow-sm">
-                            <span>📣 Enjoying Vinix? Share with your friends!</span>
+                        <div className="w-full bg-blue-600/10 border border-blue-500/20 text-blue-750 dark:text-blue-300 py-3.5 px-6 rounded-2xl flex items-center justify-between text-xs font-extrabold shadow-sm bg-gradient-to-r dark:from-slate-900 dark:via-blue-955 dark:to-slate-900">
+                            <span className="flex items-center gap-1.5">
+                                <span>📣</span>
+                                <span>Enjoying Vinix? Share dynamic referral with developer friends!</span>
+                            </span>
                             <button
                                 onClick={() => {
                                     navigator.clipboard.writeText(window.location.origin);
                                     alert('Link copied! Share it with your developer friends.');
                                 }}
-                                className="flex items-center space-x-1 hover:underline text-blue-100"
+                                className="flex items-center space-x-1 hover:underline text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 border dark:border-slate-850 shadow px-3 py-1 rounded-lg"
                             >
                                 <span>Copy Link</span>
                                 <ExternalLink size={11} />
@@ -416,36 +504,43 @@ export const Dashboard: React.FC = () => {
                         </div>
 
                         {/* QUEST LOG GRID LAYOUT */}
-                        <div className="space-y-4">
+                        <div className="space-y-4 pt-2">
 
-                            <div className="flex items-center space-x-1 text-slate-900 dark:text-white font-extrabold text-lg">
-                                <BookOpen size={18} className="text-blue-600" />
+                            <div className="flex items-center space-x-2 text-slate-900 dark:text-white font-extrabold text-lg">
+                                <BookOpen size={20} className="text-blue-600" />
                                 <span>Quest Log</span>
+                                <span className="bg-slate-100 dark:bg-slate-800 border dark:border-slate-700/80 text-[10px] font-black text-slate-505 px-2 py-0.5 rounded-full select-none">
+                                    Checklist
+                                </span>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 items-stretch">
 
                                 {/* Card 0: LinkedIn Mandatory checklist */}
-                                <div className="p-5 rounded-2xl bg-white border border-slate-205 dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between space-y-4">
+                                <div className="p-5 rounded-2xl bg-white border border-slate-205 dark:bg-slate-900 dark:border-slate-850 flex flex-col justify-between space-y-4 hover:shadow-lg hover:border-blue-500/30 transition-all duration-300 transform hover:-translate-y-0.5">
                                     <div className="space-y-3">
                                         <div className="flex justify-between items-center">
-                                            <div className="p-2 bg-blue-50 text-blue-650 rounded-xl dark:bg-blue-950/40">
+                                            <div className="p-2.5 bg-blue-50 text-blue-650 rounded-xl dark:bg-blue-950/40">
                                                 <Linkedin size={18} />
                                             </div>
                                             <div className="flex flex-col items-end gap-1 select-none">
-                                                <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide bg-blue-50 text-blue-700 rounded-full dark:bg-blue-900/30">AVAILABLE</span>
-                                                <span className="px-2 py-0.5 text-[9px] font-bold text-red-650 bg-red-50 rounded-full dark:bg-red-950/20">Immediate Action</span>
+                                                <span className={`px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wide rounded-full ${linkedInSubmitted ? 'bg-green-500/10 text-green-500' : 'bg-blue-50 text-blue-700 dark:bg-blue-900/30'}`}>
+                                                    {linkedInSubmitted ? '✓ SUBMITTED' : 'AVAILABLE'}
+                                                </span>
+                                                {!linkedInSubmitted && (
+                                                    <span className="px-2 py-0.5 text-[8px] font-bold text-red-650 bg-red-50 rounded-full dark:bg-red-950/20">Immediate Action</span>
+                                                )}
                                             </div>
                                         </div>
 
-                                        <p className="text-[10px] text-slate-400">Due Date: Immediate Submission</p>
+                                        <p className="text-[10px] text-slate-400 font-bold">Due Date: Immediate Submission</p>
 
-                                        <h4 className="text-xs font-extrabold text-slate-900 dark:text-white">
-                                            📢 Mandatory: Offer Letter & LinkedIn Post
+                                        <h4 className="text-xs font-extrabold text-slate-900 dark:text-white flex items-center gap-1">
+                                            <span>📢 Mandatory Checklist: Offer & Social Post</span>
                                         </h4>
 
-                                        <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
-                                            Download your offer letter, post it on LinkedIn tagging Vinix, and share the post URL here.
+                                        <p className="text-[11px] text-slate-550 dark:text-slate-400 leading-relaxed font-semibold">
+                                            Download offer letter, verify with a professional LinkedIn post tagging @Vinix, and submit post URL.
                                         </p>
                                     </div>
 
@@ -456,7 +551,7 @@ export const Dashboard: React.FC = () => {
                                                     href={`http://localhost:5000/uploads/offer-letters/${activeOfferLetter.offerLetterId}.pdf`}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
-                                                    className="flex-1 flex items-center justify-center space-x-1 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-750 rounded-xl transition duration-150"
+                                                    className="flex-1 flex items-center justify-center space-x-1 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl transition duration-150 shadow-sm"
                                                 >
                                                     <FileDown size={11} />
                                                     <span>1. Download Letter</span>
@@ -477,11 +572,11 @@ export const Dashboard: React.FC = () => {
 
                                         <button
                                             onClick={() => setIsLinkedInModalOpen(true)}
-                                            className={`w-full flex items-center justify-center space-x-1 py-2 text-xs font-bold rounded-xl transition duration-150 ${linkedInSubmitted ? 'bg-slate-100 text-slate-500' : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                            className={`w-full flex items-center justify-center space-x-1 py-2 text-xs font-bold rounded-xl transition duration-150 ${linkedInSubmitted ? 'bg-green-500/10 text-green-750 border border-green-500/20' : 'bg-blue-600 hover:bg-blue-700 text-white shadow-sm'
                                                 }`}
                                         >
                                             <Linkedin size={12} />
-                                            <span>{linkedInSubmitted ? '✓ Submitted' : '2. Submit LinkedIn Post URL'}</span>
+                                            <span>{linkedInSubmitted ? '✓ Verified & submitted' : '2. Submit LinkedIn Post URL'}</span>
                                         </button>
                                     </div>
 
@@ -494,10 +589,12 @@ export const Dashboard: React.FC = () => {
                                     const dueDate = new Date();
                                     dueDate.setDate(dueDate.getDate() + offsetDays);
 
+                                    const isSubmitted = projects.some(p => p.title.toLowerCase().includes(as.title.toLowerCase()) || as.title.toLowerCase().includes(p.title.toLowerCase()));
+
                                     return (
                                         <div
                                             key={as.id || index}
-                                            className="p-5 rounded-2xl bg-white border border-slate-205 dark:bg-slate-900 dark:border-slate-800 flex flex-col justify-between space-y-4"
+                                            className="p-5 rounded-2xl bg-white border border-slate-205 dark:bg-slate-900 dark:border-slate-850 flex flex-col justify-between space-y-4 hover:shadow-lg hover:border-blue-500/30 transition-all duration-300 transform hover:-translate-y-0.5"
                                         >
                                             <div className="space-y-3">
                                                 <div className="flex justify-between items-center">
@@ -505,12 +602,16 @@ export const Dashboard: React.FC = () => {
                                                         {index + 1}
                                                     </div>
                                                     <div className="flex flex-col items-end gap-1 select-none">
-                                                        <span className="px-2 py-0.5 text-[9px] font-extrabold uppercase tracking-wide bg-blue-55 text-blue-700 rounded-full dark:bg-blue-900/30">AVAILABLE</span>
-                                                        <span className="px-2 py-0.5 text-[9px] font-bold text-emerald-600 bg-emerald-50 rounded-full dark:bg-emerald-950/20">{offsetDays} Days Left</span>
+                                                        <span className={`px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wide rounded-full ${isSubmitted ? 'bg-green-500/10 text-green-500' : 'bg-blue-55 text-blue-700 dark:bg-blue-900/30'}`}>
+                                                            {isSubmitted ? 'SUBMITTED' : 'AVAILABLE'}
+                                                        </span>
+                                                        {!isSubmitted && (
+                                                            <span className="px-2 py-0.5 text-[8px] font-bold text-emerald-600 bg-emerald-50 rounded-full dark:bg-emerald-950/20">{offsetDays} Days Left</span>
+                                                        )}
                                                     </div>
                                                 </div>
 
-                                                <p className="text-[10px] text-slate-400">Due Date: {dueDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                                <p className="text-[10px] text-slate-400 font-bold">Due Date: {dueDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
 
                                                 <h4 className="text-xs font-extrabold text-slate-950 dark:text-white">
                                                     {as.title}
@@ -518,13 +619,13 @@ export const Dashboard: React.FC = () => {
 
                                                 {/* Key Features mock bullet list for high-fidelity aesthetics matching screenshot */}
                                                 <div className="space-y-1">
-                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wide block">Tasks Scope:</span>
-                                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                                                    <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block leading-none mb-1">Tasks Scope:</span>
+                                                    <p className="text-[11px] text-slate-550 dark:text-slate-400 leading-relaxed font-semibold">
                                                         {as.desc}
                                                     </p>
 
                                                     {/* Key Features Mock */}
-                                                    <ul className="text-[10px] text-slate-450 space-y-0.5 pt-1.5 list-disc pl-3 leading-normal">
+                                                    <ul className="text-[10px] text-slate-450 space-y-1 pt-1.5 list-disc pl-3 leading-normal">
                                                         <li>Complete modular structure and validations</li>
                                                         <li>Submit deployment code repository</li>
                                                     </ul>
@@ -532,8 +633,8 @@ export const Dashboard: React.FC = () => {
                                             </div>
 
                                             <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
-                                                {projects.some(p => p.title.toLowerCase().includes(as.title.toLowerCase())) ? (
-                                                    <span className="w-full flex items-center justify-center space-x-1 py-2 text-xs font-bold text-green-700 bg-green-50 rounded-xl select-none">
+                                                {isSubmitted ? (
+                                                    <span className="w-full flex items-center justify-center space-x-1 py-2 text-xs font-bold text-green-700 bg-green-50 border border-green-150 rounded-xl select-none">
                                                         <span>✓ Submitted & Logged</span>
                                                     </span>
                                                 ) : (
@@ -542,7 +643,7 @@ export const Dashboard: React.FC = () => {
                                                             setProjectTitle(as.title);
                                                             setIsSubmitModalOpen(true);
                                                         }}
-                                                        className="w-full flex items-center justify-center py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition duration-150"
+                                                        className="w-full flex items-center justify-center py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition duration-150 shadow-sm"
                                                     >
                                                         Submit Work
                                                     </button>

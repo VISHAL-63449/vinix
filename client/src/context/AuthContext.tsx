@@ -48,12 +48,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const login = async (email: string, password: string) => {
         setLoading(true);
         try {
-            // 1. Authenticate with Supabase Auth
-            const { error: sbError } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-            if (sbError) throw sbError;
+            // 1. Authenticate with Supabase Auth (with network fallback)
+            try {
+                const { error: sbError } = await supabase.auth.signInWithPassword({
+                    email,
+                    password,
+                });
+                if (sbError) {
+                    if (sbError.status === 400 || sbError.message?.includes('credentials')) {
+                        throw sbError;
+                    }
+                    console.warn('Supabase connection warning:', sbError);
+                }
+            } catch (err: any) {
+                if (err.status === 400 || err.message?.includes('credentials')) {
+                    throw err;
+                }
+                console.warn('Supabase offline or unreachable. Proceeding with Local/Mock authentication.');
+            }
 
             // 2. Authenticate with Local Server
             const res = await api.post('/auth/login', { email, password });
@@ -70,15 +82,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const register = async (name: string, email: string, password: string, role = 'STUDENT') => {
         setLoading(true);
         try {
-            // 1. Register user on Supabase Auth
-            const { error: sbError } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: { name, role }
+            // 1. Register user on Supabase Auth (with network fallback)
+            try {
+                const { error: sbError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: { name, role }
+                    }
+                });
+                if (sbError) {
+                    if (sbError.status === 400 || sbError.status === 422 || sbError.message?.includes('already')) {
+                        throw sbError;
+                    }
+                    console.warn('Supabase registration warning:', sbError);
                 }
-            });
-            if (sbError) throw sbError;
+            } catch (err: any) {
+                if (err.status === 400 || err.status === 422 || err.message?.includes('already')) {
+                    throw err;
+                }
+                console.warn('Supabase offline or unreachable. Registering user on Local/Mock database only.');
+            }
 
             // 2. Save user on the Database through Local Server
             const res = await api.post('/auth/register', { name, email, password, role });

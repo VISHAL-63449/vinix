@@ -419,7 +419,8 @@ export const generateOfferLetterPDFFile = async (filePath, letterData) => {
         try {
             const doc = new PDFDocument({
                 size: 'A4',
-                margins: { top: 40, bottom: 40, left: 45, right: 45 }
+                margins: { top: 40, bottom: 40, left: 45, right: 45 },
+                autoPageBreak: false
             });
 
             // Ensure parent directory exists
@@ -737,11 +738,16 @@ export const generateOfferLetterPDFFile = async (filePath, letterData) => {
 
             // Draw MSME logo on the left of footer
             try {
-                doc.image(path.resolve('public/msme.jpeg'), 45, footerTextY - 3, { height: 16 });
+                const msmeLogoPath = path.resolve('public/msme-logo.png');
+                doc.image(msmeLogoPath, 45, footerTextY - 6, { width: 28, height: 28 });
+                doc.fillColor('#0f172a')
+                    .font('Helvetica-Bold')
+                    .fontSize(8)
+                    .text('Govt. of India MSME Registered', 80, footerTextY - 2);
                 doc.fillColor('#4b5563')
                     .font('Helvetica')
-                    .fontSize(7)
-                    .text('Reg No: UDYAM-TN-02-0086782', 105, footerTextY, { width: 180 });
+                    .fontSize(6.5)
+                    .text('UDYAM-TN-02-0086782', 80, footerTextY + 9, { width: 180 });
             } catch (err) {
                 doc.fillColor('#4b5563')
                     .font('Helvetica-Bold')

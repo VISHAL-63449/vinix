@@ -1,6 +1,7 @@
 import express from 'express';
 import { prisma } from '../config.js';
 import { authenticateToken } from '../middleware/auth.js';
+import { calculateAndUpdateProgress } from '../utils/progressHelper.js';
 
 const router = express.Router();
 
@@ -44,6 +45,23 @@ router.post('/submit', authenticateToken, async (req, res) => {
                 status: 'PENDING'
             }
         });
+
+        // Find which enrollment this project belongs to, and update its progress
+        const studentEnrollments = await prisma.enrollment.findMany({
+            where: { userId: req.user.id },
+            include: { course: true }
+        });
+
+        for (const enroll of studentEnrollments) {
+            const assignments = enroll.course.assignments || [];
+            const isMatch = assignments.some(as =>
+                as.title.toLowerCase().includes(title.toLowerCase()) ||
+                title.toLowerCase().includes(as.title.toLowerCase())
+            );
+            if (isMatch) {
+                await calculateAndUpdateProgress(req.user.id, enroll.courseId);
+            }
+        }
 
         res.status(201).json(project);
     } catch (error) {
