@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
 import { supabase } from '../utils/supabase';
 import {
-    CheckCircle2, Sparkles, MapPin, ChevronRight, Upload, HelpCircle, Award
+    CheckCircle2, Sparkles, MapPin, ChevronRight
 } from 'lucide-react';
 
 
@@ -88,17 +88,17 @@ export const Internship: React.FC = () => {
         const fetchCourses = async () => {
             try {
                 const res = await api.get('/courses');
-                const internships = res.data.filter((c: any) => c.type === 'INTERNSHIP');
+                const internships = res.data.filter((c: { type: string }) => c.type === 'INTERNSHIP');
                 setCourses(internships);
 
                 // Read from query param if present
                 const params = new URLSearchParams(window.location.search);
                 const queryCourseId = params.get('courseId');
 
-                if (queryCourseId && internships.some((c: any) => c.id === queryCourseId)) {
+                if (queryCourseId && internships.some((c: { id: string }) => c.id === queryCourseId)) {
                     setSelectedDomainId(queryCourseId);
                 } else if (internships.length > 0) {
-                    setSelectedDomainId(internships[0].id);
+                    setSelectedDomainId((internships[0] as Record<string, unknown>).id as string);
                 }
             } catch (err) {
                 console.error('Failed to load courses:', err);
@@ -229,6 +229,12 @@ export const Internship: React.FC = () => {
                 throw new Error("Unable to retrieve authenticated session from Supabase. Please sign up or log in again.");
             }
 
+            // Validate the user ID is a real Supabase UUID (not a mock/local ID)
+            const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+            if (!uuidPattern.test(sbUserId)) {
+                throw new Error("Your session is using a local-only account. Please log out and sign up again using your email to get full cross-device access.");
+            }
+
             console.log(`[handleApply] Authenticated Supabase User ID: ${sbUserId}, Email: ${sbUserEmail}`);
 
             // 3. Prevent duplicate applications by checking if mapping already exists in database
@@ -290,22 +296,30 @@ export const Internship: React.FC = () => {
                 throw new Error(`Database registration failed: ${insertError.message}`);
             }
 
-            console.log("[handleApply] Supabase insertion completed. Generating PDF assets via local Express API...");
+            console.log("[handleApply] Supabase insertion completed. Attempting local API sync for PDF generation...");
 
-            // 5. Trigger local backend API call to synchronize local Enrollment, Project Tasks, and generate PDF
-            await api.post('/enrollments/enroll', {
-                courseId: selectedDomainId,
-                duration: selectedDuration,
-                phone,
-                college
-            });
-
-            console.log("[handleApply] Local API synchronization succeeded.");
-            alert('Successfully applied! Your offer letter has been generated and launched in your dashboard.');
+            // 5. Attempt local backend sync (non-blocking: will fail gracefully on mobile/deployed)
+            try {
+                await api.post('/enrollments/enroll', {
+                    courseId: selectedDomainId,
+                    duration: selectedDuration,
+                    phone,
+                    college
+                });
+                console.log("[handleApply] Local API synchronization succeeded. Offer letter PDF generated.");
+                alert('Successfully applied! Your internship offer letter has been generated. Check your dashboard!');
+            } catch (localApiErr) {
+                // Local server unreachable (mobile/deployed) — Supabase is already saved, this is non-fatal
+                console.warn("[handleApply] Local API unreachable (likely mobile/deployed). Supabase record saved successfully.", localApiErr);
+                alert('Successfully applied for the Vinix Virtual Internship! Your application has been recorded. The offer letter PDF will be available when you log in from the desktop portal.');
+            }
             navigate('/dashboard');
-        } catch (error: any) {
+        } catch (error) {
             console.error("[handleApply] Fatal error in application submission flow:", error);
-            alert(error.response?.data?.message || error.message || 'Failed to register internship.');
+            const errObj = error as Record<string, unknown>;
+            const responseObj = errObj.response as Record<string, unknown> | undefined;
+            const dataObj = responseObj?.data as Record<string, unknown> | undefined;
+            alert((dataObj?.message as string) || (errObj.message as string) || 'Failed to register internship.');
         } finally {
             setLoading(false);
         }
