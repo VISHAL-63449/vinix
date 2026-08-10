@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import { supabase } from '../utils/supabase';
+
 import {
     LayoutDashboard, BookOpen, Layers, FileCode, Award, MailOpen, User,
     BrainCircuit, Send, CheckCircle2, XCircle, Clock, ExternalLink,
@@ -91,6 +93,8 @@ export const Dashboard: React.FC = () => {
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [offerLetters, setOfferLetters] = useState<OfferLetter[]>([]);
     const [allCourses, setAllCourses] = useState<Course[]>([]);
+    const [applications, setApplications] = useState<any[]>([]);
+
     const [loading, setLoading] = useState(true);
 
     // Profile fields editing
@@ -152,6 +156,9 @@ export const Dashboard: React.FC = () => {
     const loadData = async () => {
         try {
             setLoading(true);
+            console.log("[Dashboard] Fetching user session from Supabase Auth...");
+            const { data: { user: sbUser }, error: userError } = await supabase.auth.getUser();
+
             const [enrollRes, projRes, certRes, offerRes, coursesRes] = await Promise.all([
                 api.get('/enrollments/my'),
                 api.get('/projects'),
@@ -160,16 +167,71 @@ export const Dashboard: React.FC = () => {
                 api.get('/courses')
             ]);
 
-            setEnrollments(enrollRes.data);
+            let finalEnrollments = enrollRes.data;
+
+            if (userError) {
+                console.warn("[Dashboard] Error fetching Supabase user session:", userError);
+            } else if (sbUser) {
+                console.log("[Dashboard] Supabase active user UUID:", sbUser.id);
+                // Load applications from Supabase using user.id
+                const { data: appsData, error: appsError } = await supabase
+                    .from("internship_applications")
+                    .select("*")
+                    .eq("user_id", sbUser.id);
+
+                if (appsError) {
+                    console.error("[Dashboard] Error querying internship_applications from Supabase:", appsError);
+                } else if (appsData && appsData.length > 0) {
+                    console.log("[Dashboard] Successfully loaded Supabase internship applications:", appsData);
+                    setApplications(appsData);
+
+                    // Cross-device synchronization loop:
+                    // If a student applied for an internship domain on one device (saved to Supabase),
+                    // but the local SQLite/Postgres DB does not show it enrolled for this user of this device/account yet,
+                    // we automatically enroll them in the local DB.
+                    const localCourseIds = new Set(enrollRes.data.map((e: Enrollment) => e.courseId));
+                    let localDiffFound = false;
+
+                    for (const app of appsData) {
+                        if (!localCourseIds.has(app.internship_id)) {
+                            console.log(`[Dashboard] Sync mismatch detected: Supabase application exists for domain ${app.internship_id} but local enrollment is missing. Enrolling locally...`);
+                            try {
+                                await api.post('/enrollments/enroll', {
+                                    courseId: app.internship_id,
+                                    duration: '3 Months',
+                                    phone: app.phone || '',
+                                    college: app.college || ''
+                                });
+                                localDiffFound = true;
+                            } catch (syncErr) {
+                                console.error(`[Dashboard] Failed to sync-enroll missing locally course ${app.internship_id}:`, syncErr);
+                            }
+                        }
+                    }
+
+                    if (localDiffFound) {
+                        console.log("[Dashboard] Local sync-enrollments finished. Refreshing local enrollments...");
+                        const refreshEnrollRes = await api.get('/enrollments/my');
+                        finalEnrollments = refreshEnrollRes.data;
+                    }
+                } else {
+                    console.log("[Dashboard] No internship applications found in Supabase for user:", sbUser.id);
+                    setApplications([]);
+                }
+            } else {
+                console.log("[Dashboard] No active Supabase user session.");
+            }
+
+            setEnrollments(finalEnrollments);
             setProjects(projRes.data);
             setCertificates(certRes.data);
             setOfferLetters(offerRes.data);
             setAllCourses(coursesRes.data);
 
-            if (enrollRes.data.length > 0 && !selectedEnrollment) {
+            if (finalEnrollments.length > 0 && !selectedEnrollment) {
                 // Prioritize setting selected enrollment to active internship if available
-                const internshipEnroll = enrollRes.data.find((e: Enrollment) => e.course.type === 'INTERNSHIP');
-                const defaultEnroll = internshipEnroll || enrollRes.data[0];
+                const internshipEnroll = finalEnrollments.find((e: Enrollment) => e.course.type === 'INTERNSHIP');
+                const defaultEnroll = internshipEnroll || finalEnrollments[0];
                 setSelectedEnrollment(defaultEnroll);
                 if (defaultEnroll.course.lessons && defaultEnroll.course.lessons.length > 0) {
                     setCurrentVideoUrl(defaultEnroll.course.lessons[0].videoUrl);
@@ -182,6 +244,7 @@ export const Dashboard: React.FC = () => {
             setLoading(false);
         }
     };
+
 
     const handleAcceptOffer = async (id: string) => {
         try {

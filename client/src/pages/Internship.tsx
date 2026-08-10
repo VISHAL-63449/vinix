@@ -2,9 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../utils/api';
+import { supabase } from '../utils/supabase';
 import {
     CheckCircle2, Sparkles, MapPin, ChevronRight, Upload, HelpCircle, Award
 } from 'lucide-react';
+
 
 const stateDistrictsMap: Record<string, string[]> = {
     'Punjab': ['Amritsar', 'Barnala', 'Bathinda', 'Faridkot', 'Fatehgarh Sahib', 'Fazilka', 'Ferozepur', 'Gurdaspur', 'Hoshiarpur', 'Jalandhar', 'Kapurthala', 'Ludhiana', 'Mansa', 'Moga', 'Muktsar', 'Pathankot', 'Patiala', 'Rupnagar', 'SAS Nagar (Mohali)', 'Sangrur', 'SBS Nagar', 'Sri Muktsar Sahib', 'Tarn Taran'],
@@ -191,6 +193,7 @@ export const Internship: React.FC = () => {
         }
 
         setLoading(true);
+        console.log("[handleApply] Starting internship application process for domain:", selectedDomainId);
         try {
             // 1. If user is guest/not logged in, register account first
             if (!user) {
@@ -199,24 +202,115 @@ export const Internship: React.FC = () => {
                     setLoading(false);
                     return;
                 }
+                console.log("[handleApply] User is not logged in. Registering guest account first...");
                 await register(fullName, email, password, 'STUDENT');
             }
 
-            // 2. API call to enroll in internship
+            // 2. Fetch authenticated Supabase user ID and details
+            console.log("[handleApply] Fetching authenticated Supabase user...");
+            const sessionRes = await supabase.auth.getUser();
+            const sbUser = sessionRes.data?.user;
+
+            let sbUserId = '';
+            let sbUserEmail = '';
+            let sbUsername = '';
+
+            if (sbUser) {
+                sbUserId = sbUser.id;
+                sbUserEmail = sbUser.email || '';
+                sbUsername = sbUser.user_metadata?.name || fullName || sbUserEmail.split('@')[0];
+            } else if (user) {
+                sbUserId = user.id;
+                sbUserEmail = user.email;
+                sbUsername = user.name || fullName || sbUserEmail.split('@')[0];
+            }
+
+            if (!sbUserId) {
+                throw new Error("Unable to retrieve authenticated session from Supabase. Please sign up or log in again.");
+            }
+
+            console.log(`[handleApply] Authenticated Supabase User ID: ${sbUserId}, Email: ${sbUserEmail}`);
+
+            // 3. Prevent duplicate applications by checking if mapping already exists in database
+            console.log("[handleApply] Checking for existing application record in database...");
+            const { data: existingApps, error: checkError } = await supabase
+                .from('internship_applications')
+                .select('*')
+                .eq('user_id', sbUserId)
+                .eq('internship_id', selectedDomainId);
+
+            if (checkError) {
+                console.warn("[handleApply] Supabase check query error (proceeding with caution):", checkError);
+            } else if (existingApps && existingApps.length > 0) {
+                console.log("[handleApply] Existing application found. Redirecting to dashboard.");
+                alert('You have already applied and enrolled in this internship domain. Check your dashboard!');
+                navigate('/dashboard');
+                setLoading(false);
+                return;
+            }
+
+            // 4. Save application data to Supabase database (with constraint checks)
+            const durationMonths = selectedDuration.includes('1') ? 1 : selectedDuration.includes('2') ? 2 : selectedDuration.includes('6') ? 6 : 3;
+            const startDate = new Date();
+            const endDate = new Date(startDate.getTime() + durationMonths * 30 * 24 * 60 * 60 * 1000);
+
+            const appData = {
+                user_id: sbUserId,
+                internship_id: selectedDomainId,
+                status: 'active',
+                student_name: sbUsername,
+                email: sbUserEmail,
+                phone: phone || '',
+                college: college || '',
+                domain: selectedDomain?.category || 'Virtual Internship',
+                internship_name: selectedDomain?.title || 'Developer Internship',
+                start_date: startDate.toISOString(),
+                end_date: endDate.toISOString(),
+                certificate_status: 'pending',
+                offer_letter_status: 'pending',
+                progress: 0,
+                mentor_id: null
+            };
+
+            console.log("[handleApply] Inserting application to public.internship_applications:", appData);
+            const { error: insertError } = await supabase
+                .from('internship_applications')
+                .insert([appData]);
+
+            if (insertError) {
+                // If it fails due to UNIQUE constraint, capture gracefully
+                if (insertError.code === '23505' || insertError.message?.includes('unique') || insertError.message?.includes('duplicate')) {
+                    console.log("[handleApply] Unique constraint triggered. Record already exists.");
+                    alert('You have already registered for this virtual internship.');
+                    navigate('/dashboard');
+                    setLoading(false);
+                    return;
+                }
+                console.error("[handleApply] Database application insertion failed:", insertError);
+                throw new Error(`Database registration failed: ${insertError.message}`);
+            }
+
+            console.log("[handleApply] Supabase insertion completed. Generating PDF assets via local Express API...");
+
+            // 5. Trigger local backend API call to synchronize local Enrollment, Project Tasks, and generate PDF
             await api.post('/enrollments/enroll', {
                 courseId: selectedDomainId,
                 duration: selectedDuration,
                 phone,
                 college
             });
+
+            console.log("[handleApply] Local API synchronization succeeded.");
             alert('Successfully applied! Your offer letter has been generated and launched in your dashboard.');
             navigate('/dashboard');
         } catch (error: any) {
+            console.error("[handleApply] Fatal error in application submission flow:", error);
             alert(error.response?.data?.message || error.message || 'Failed to register internship.');
         } finally {
             setLoading(false);
         }
     };
+
 
     const handlePromoApply = (e: React.MouseEvent) => {
         e.preventDefault();

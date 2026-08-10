@@ -104,3 +104,66 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+
+-- ====================================================================
+-- INTERNSHIP APPLICATIONS TABLE & RLS POLICIES
+-- ====================================================================
+
+CREATE TABLE IF NOT EXISTS public.internship_applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    internship_id TEXT NOT NULL,
+    status TEXT DEFAULT 'active',
+    applied_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    
+    student_name TEXT NOT NULL,
+    email TEXT NOT NULL,
+    phone TEXT,
+    college TEXT,
+    domain TEXT,
+    internship_name TEXT,
+    start_date TIMESTAMPTZ,
+    end_date TIMESTAMPTZ,
+    certificate_status TEXT DEFAULT 'pending',
+    offer_letter_status TEXT DEFAULT 'pending',
+    progress INTEGER DEFAULT 0,
+    mentor_id UUID,
+    
+    CONSTRAINT unique_user_internship UNIQUE (user_id, internship_id)
+);
+
+-- Enable RLS
+ALTER TABLE public.internship_applications ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if any
+DROP POLICY IF EXISTS "Users can view own applications" ON public.internship_applications;
+DROP POLICY IF EXISTS "Users can insert own applications" ON public.internship_applications;
+DROP POLICY IF EXISTS "Users can update own applications" ON public.internship_applications;
+DROP POLICY IF EXISTS "Admins can manage all applications" ON public.internship_applications;
+
+-- Policy 1: Users can view their own applications
+CREATE POLICY "Users can view own applications" ON public.internship_applications
+    FOR SELECT TO authenticated
+    USING (auth.uid() = user_id);
+
+-- Policy 2: Users can insert their own applications
+CREATE POLICY "Users can insert own applications" ON public.internship_applications
+    FOR INSERT TO authenticated
+    WITH CHECK (auth.uid() = user_id);
+
+-- Policy 3: Users can update their own applications
+CREATE POLICY "Users can update own applications" ON public.internship_applications
+    FOR UPDATE TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+-- Policy 4: Admins can do everything
+CREATE POLICY "Admins can manage all applications" ON public.internship_applications
+    FOR ALL TO authenticated
+    USING (public.has_role(auth.uid(), 'ADMIN'));
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.internship_applications TO authenticated, anon;
+GRANT ALL ON public.internship_applications TO service_role;
+

@@ -103,3 +103,28 @@ model OfferLetter {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 }
+
+model InternshipApplication {
+  id                  String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId              String    @map("user_id") @db.Uuid
+  internshipId        String    @map("internship_id")
+  status              String?   @default("active")
+  appliedAt           DateTime? @default(now()) @map("applied_at") @db.Timestamptz
+  updatedAt           DateTime? @default(now()) @map("updated_at") @db.Timestamptz
+  studentName         String    @map("student_name")
+  email               String
+  phone               String?
+  college             String?
+  domain              String?
+  internshipName      String?   @map("internship_name")
+  startDate           DateTime? @map("start_date") @db.Timestamptz
+  endDate             DateTime? @map("end_date") @db.Timestamptz
+  certificateStatus   String?   @default("pending") @map("certificate_status")
+  offerLetterStatus   String?   @default("pending") @map("offer_letter_status")
+  progress            Int?      @default(0)
+  mentorId            String?   @map("mentor_id") @db.Uuid
+
+  @@unique([userId, internshipId])
+  @@map("internship_applications")
+}
+
