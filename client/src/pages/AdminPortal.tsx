@@ -2,19 +2,25 @@ import React, { useState, useEffect } from 'react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import {
-    LayoutDashboard, UserCheck, CheckSquare, Search, ShieldCheck,
+    LayoutDashboard, CheckSquare, Search, ShieldCheck,
     User, FolderOpen, Award, FileSpreadsheet, Plus, Trash2, Edit3,
-    Check, X, Megaphone, Mail, Sparkles, PlusCircle, Ticket,
-    Download, ArrowRight, Bell, Moon, Sun, ChevronDown, ListTodo, ShieldAlert,
+    X, Megaphone, Mail, Sparkles, PlusCircle, Ticket,
+    Download, ArrowRight, Bell, Moon, ChevronDown, ListTodo,
     Users, ExternalLink, Eye
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
-interface Student {
+
+interface AdminEnrollment {
     id: string;
-    name: string;
-    email: string;
-    skills: string[];
+    joinedAt: string;
+    status: string;
+    user?: {
+        name: string;
+        email: string;
+    };
+    course?: {
+        title: string;
+    };
 }
 
 interface Course {
@@ -25,8 +31,8 @@ interface Course {
     duration: string;
     type: string;
     skills: string[];
-    lessons?: any[];
-    assignments?: any[];
+    lessons?: unknown[];
+    assignments?: unknown[];
 }
 
 interface Submission {
@@ -37,9 +43,12 @@ interface Submission {
     status: string;
     feedback?: string;
     submittedAt: string;
+    studentId?: string;
     student: {
+        id?: string;
         name: string;
         email: string;
+        skills?: string[];
     };
     course?: {
         title: string;
@@ -62,12 +71,10 @@ export const AdminPortal: React.FC = () => {
     const [openActionsId, setOpenActionsId] = useState<string | null>(null);
 
     // API Payload States
-    const [students, setStudents] = useState<Student[]>([]);
     const [courses, setCourses] = useState<Course[]>([]);
     const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [certificates, setCertificates] = useState<Certificate[]>([]);
-    const [enrollments, setEnrollments] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [enrollments, setEnrollments] = useState<AdminEnrollment[]>([]);
 
     // Form inputs
     const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
@@ -84,7 +91,6 @@ export const AdminPortal: React.FC = () => {
 
     const refreshData = async () => {
         try {
-            setLoading(true);
             const [coursesRes, submitRes, certsRes, enrollRes] = await Promise.all([
                 api.get('/courses'),
                 api.get('/projects'),
@@ -98,45 +104,14 @@ export const AdminPortal: React.FC = () => {
             setSubmissions(submitRes.data);
             setCertificates(certsRes.data);
             setEnrollments(enrollRes.data);
-
-            const uniqueStudentsMap: { [key: string]: Student } = {};
-            submitRes.data.forEach((s: any) => {
-                if (s.student && s.student.email) {
-                    uniqueStudentsMap[s.student.email] = {
-                        id: s.studentId || s.student.id || s.student.email,
-                        name: s.student.name || 'Anonymous candidate',
-                        email: s.student.email,
-                        skills: s.student.skills || []
-                    };
-                }
-            });
-            setStudents(Object.values(uniqueStudentsMap));
         } catch (err) {
             console.error('Failed to load admin payload:', err);
-        } finally {
-            setLoading(false);
         }
     };
 
     useEffect(() => {
         refreshData();
     }, []);
-
-    const handleReviewProject = async (id: string, status: 'APPROVED' | 'REJECTED') => {
-        const feedback = feedbackText[id] || '';
-        if (!feedback.trim()) {
-            alert('Please write evaluation feedback for the student project.');
-            return;
-        }
-        try {
-            await api.put(`/projects/review/${id}`, { status, feedback });
-            alert(`Project status updated to ${status}.`);
-            setFeedbackText({ ...feedbackText, [id]: '' });
-            refreshData();
-        } catch (err) {
-            alert('Failed to evaluate project.');
-        }
-    };
 
     const handleCourseSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -172,7 +147,7 @@ export const AdminPortal: React.FC = () => {
             setSkillsCsv('');
             refreshData();
             setActiveSubTab('manage-courses');
-        } catch (err) {
+        } catch {
             alert('Failed to submit course configuration.');
         }
     };
@@ -194,7 +169,7 @@ export const AdminPortal: React.FC = () => {
             await api.delete(`/courses/${id}`);
             alert('Course deleted.');
             refreshData();
-        } catch (err) {
+        } catch {
             alert('Failed to delete course.');
         }
     };

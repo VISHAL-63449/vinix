@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Mail, MapPin, Clock, Send, Sparkles, CheckCircle, ArrowRight, MessageSquare, Shield } from 'lucide-react';
+import { Mail, MapPin, Clock, Send, Sparkles, CheckCircle, MessageSquare, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export const Contact: React.FC = () => {

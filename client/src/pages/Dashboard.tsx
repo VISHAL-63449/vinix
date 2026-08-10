@@ -6,9 +6,9 @@ import { supabase } from '../utils/supabase';
 
 import {
     LayoutDashboard, BookOpen, Layers, FileCode, Award, MailOpen, User,
-    BrainCircuit, Send, CheckCircle2, XCircle, Clock, ExternalLink,
-    FileDown, Play, BookOpenCheck, Settings, CheckCheck, Save, HelpCircle,
-    MessageSquare, Share2, Eye, Printer, GraduationCap
+    CheckCircle2, XCircle, ExternalLink,
+    FileDown, Play, CheckCheck,
+    MessageSquare, Eye, Printer, GraduationCap
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -93,21 +93,17 @@ export const Dashboard: React.FC = () => {
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [offerLetters, setOfferLetters] = useState<OfferLetter[]>([]);
     const [allCourses, setAllCourses] = useState<Course[]>([]);
-    const [applications, setApplications] = useState<any[]>([]);
 
     const [loading, setLoading] = useState(true);
 
     // Profile fields editing
     const [nameField, setNameField] = useState(user?.name || '');
     const [skillsField, setSkillsField] = useState(user?.skills.join(', ') || '');
-    const [profileSaving, setProfileSaving] = useState(false);
 
     // Active study parameters
     const [selectedEnrollment, setSelectedEnrollment] = useState<Enrollment | null>(null);
     const [currentVideoUrl, setCurrentVideoUrl] = useState('');
     const [activeVideoTitle, setActiveVideoTitle] = useState('');
-    const [quizScore, setQuizScore] = useState<number | null>(null);
-    const [answers, setAnswers] = useState<{ [key: number]: string }>({});
 
     // Submit project forms state
     const [projectTitle, setProjectTitle] = useState('');
@@ -134,7 +130,7 @@ export const Dashboard: React.FC = () => {
     // Dynamically calculate progress metrics for tasks indicator
     const totalAssignments = displayEnrollment?.course?.assignments?.length || 0;
     const submittedProjects = projects.filter(p =>
-        displayEnrollment?.course?.assignments?.some((as: any) =>
+        displayEnrollment?.course?.assignments?.some((as: { title: string }) =>
             p.title.toLowerCase().includes(as.title.toLowerCase()) ||
             as.title.toLowerCase().includes(p.title.toLowerCase())
         )
@@ -183,7 +179,6 @@ export const Dashboard: React.FC = () => {
                     console.error("[Dashboard] Error querying internship_applications from Supabase:", appsError);
                 } else if (appsData && appsData.length > 0) {
                     console.log("[Dashboard] Successfully loaded Supabase internship applications:", appsData);
-                    setApplications(appsData);
 
                     // Cross-device synchronization loop:
                     // If a student applied for an internship domain on one device (saved to Supabase),
@@ -216,7 +211,6 @@ export const Dashboard: React.FC = () => {
                     }
                 } else {
                     console.log("[Dashboard] No internship applications found in Supabase for user:", sbUser.id);
-                    setApplications([]);
                 }
             } else {
                 console.log("[Dashboard] No active Supabase user session.");
@@ -271,19 +265,17 @@ export const Dashboard: React.FC = () => {
 
     useEffect(() => {
         loadData();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
     const handleProfileUpdate = async (e: React.FormEvent) => {
         e.preventDefault();
-        setProfileSaving(true);
         try {
             const skillsArray = skillsField.split(',').map(s => s.trim()).filter(s => s.length > 0);
             await updateProfile(nameField, skillsArray);
             alert('Profile updated successfully!');
-        } catch (err) {
+        } catch {
             alert('Failed to update profile.');
-        } finally {
-            setProfileSaving(false);
         }
     };
 
@@ -306,7 +298,7 @@ export const Dashboard: React.FC = () => {
             setProjectGit('');
             setIsSubmitModalOpen(false);
             loadData();
-        } catch (err) {
+        } catch {
             alert('Failed to submit project.');
         } finally {
             setProjectLoading(false);
@@ -342,7 +334,7 @@ export const Dashboard: React.FC = () => {
             alert('Internship track launched! Load page domains configuration.');
             loadData();
             setActiveTab('overview');
-        } catch (err) {
+        } catch {
             alert('Enrollment failed.');
         }
     };
@@ -768,8 +760,6 @@ export const Dashboard: React.FC = () => {
                                             key={en.id}
                                             onClick={() => {
                                                 setSelectedEnrollment(en);
-                                                setQuizScore(null);
-                                                setAnswers({});
                                                 if (en.course.lessons && en.course.lessons.length > 0) {
                                                     setCurrentVideoUrl(en.course.lessons[0].videoUrl);
                                                     setActiveVideoTitle(en.course.lessons[0].title);
