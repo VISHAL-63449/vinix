@@ -25,6 +25,15 @@ lerna-debug.log*
 .DS_Store
 Thumbs.db
 
+# Dev lint/error output artifacts
+client/lint_output.txt
+client/lint_output.json
+client/clean_errors.txt
+client/errors.txt
+client/errors_utf8.txt
+client/build_errors.txt
+client/print_errors.js
+
 # User uploads/generated assets
 server/uploads/
 server/public/uploads/
