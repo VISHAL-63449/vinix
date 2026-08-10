@@ -93,6 +93,8 @@ export const Dashboard: React.FC = () => {
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [offerLetters, setOfferLetters] = useState<OfferLetter[]>([]);
     const [allCourses, setAllCourses] = useState<Course[]>([]);
+    // Raw Supabase applications (used as fallback on mobile/deployed where localhost is unreachable)
+    const [supabaseApps, setSupabaseApps] = useState<Record<string, unknown>[]>([]);
 
     const [loading, setLoading] = useState(true);
 
@@ -124,7 +126,36 @@ export const Dashboard: React.FC = () => {
     const [selectedCertPreview, setSelectedCertPreview] = useState<Certificate | null>(null);
 
     const activeInternship = enrollments.find(e => e.course.type === 'INTERNSHIP');
-    const displayEnrollment = selectedEnrollment || activeInternship;
+
+    // Fallback synthetic enrollment built directly from Supabase data
+    // This is used when the local backend (localhost:5000) is unreachable (mobile/deployed)
+    const syntheticEnrollment: Enrollment | null = (() => {
+        if (enrollments.length > 0 || supabaseApps.length === 0) return null;
+        const app = supabaseApps[0] as Record<string, unknown>;
+        const matchedCourse = allCourses.find((c: Course) => c.id === (app.internship_id as string));
+        const courseTitle = (app.internship_name as string) || (matchedCourse?.title) || 'Virtual Internship';
+        const fakeCourse: Course = matchedCourse || {
+            id: (app.internship_id as string) || 'unknown',
+            title: courseTitle,
+            category: (app.domain as string) || 'Virtual Internship',
+            description: 'Vinix Virtual Internship Program',
+            duration: '3 Months',
+            type: 'INTERNSHIP',
+            skills: [],
+            lessons: [],
+            assignments: [],
+            quizzes: []
+        };
+        return {
+            id: (app.id as string) || 'supabase-app',
+            courseId: (app.internship_id as string) || '',
+            progress: (app.progress as number) || 0,
+            status: (app.status as string) || 'active',
+            course: fakeCourse,
+        };
+    })();
+
+    const displayEnrollment = selectedEnrollment || activeInternship || syntheticEnrollment;
     const hasLinkedIn = !!(linkedInSubmitted || displayEnrollment?.linkedinUrl);
 
     // Dynamically calculate progress metrics for tasks indicator
@@ -179,6 +210,8 @@ export const Dashboard: React.FC = () => {
                     console.error("[Dashboard] Error querying internship_applications from Supabase:", appsError);
                 } else if (appsData && appsData.length > 0) {
                     console.log("[Dashboard] Successfully loaded Supabase internship applications:", appsData);
+                    // Always store raw Supabase apps as fallback display data
+                    setSupabaseApps(appsData as Record<string, unknown>[]);
 
                     // Cross-device synchronization loop:
                     // If a student applied for an internship domain on one device (saved to Supabase),
@@ -199,7 +232,7 @@ export const Dashboard: React.FC = () => {
                                 });
                                 localDiffFound = true;
                             } catch (syncErr) {
-                                console.error(`[Dashboard] Failed to sync-enroll missing locally course ${app.internship_id}:`, syncErr);
+                                console.warn(`[Dashboard] Local API unreachable (likely mobile/deployed). Supabase app data used as display fallback for domain ${app.internship_id}.`, syncErr);
                             }
                         }
                     }
@@ -211,6 +244,7 @@ export const Dashboard: React.FC = () => {
                     }
                 } else {
                     console.log("[Dashboard] No internship applications found in Supabase for user:", sbUser.id);
+                    setSupabaseApps([]);
                 }
             } else {
                 console.log("[Dashboard] No active Supabase user session.");
