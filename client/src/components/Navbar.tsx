@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Sun, Moon, Share2, LogIn, LogOut, Menu, X, Award, LayoutDashboard, GraduationCap, Home, Briefcase, Info, MessageSquare, Mail, ShieldCheck } from 'lucide-react';
+import { Sun, Moon, Share2, LogIn, LogOut, Menu, X, LayoutDashboard, GraduationCap, Home, Briefcase, Info, MessageSquare, Mail, ShieldCheck } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 interface NavbarProps {

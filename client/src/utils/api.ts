@@ -26,8 +26,8 @@ const initMockDB = () => {
     if (existingUsersStr) {
         try {
             const users = JSON.parse(existingUsersStr);
-            const hasVishal = users.some((u: any) => u.email.toLowerCase() === 'vishal@vinix.com');
-            const hasVishai = users.some((u: any) => u.email.toLowerCase() === 'vishai@vinix.com');
+            const hasVishal = users.some((u: { email: string }) => u.email.toLowerCase() === 'vishal@vinix.com');
+            const hasVishai = users.some((u: { email: string }) => u.email.toLowerCase() === 'vishai@vinix.com');
             let updated = false;
             if (!hasVishal) {
                 users.push({ id: 'mock-user-admin-2', name: 'Vishal R', email: 'vishal@vinix.com', password: 'vis@2007', role: 'ADMIN', skills: [] });
@@ -40,7 +40,9 @@ const initMockDB = () => {
             if (updated) {
                 localStorage.setItem('vionix_mock_users', JSON.stringify(users));
             }
-        } catch (e) { }
+        } catch (e) {
+            console.debug('Failed to parse mock users:', e);
+        }
     }
 
     if (localStorage.getItem('vionix_mock_initialized') === 'true') {
@@ -55,9 +57,28 @@ const initMockDB = () => {
     ];
     localStorage.setItem('vionix_mock_users', JSON.stringify(defaultUsers));
 
+    const REAL_COURSE_UUIDS: { [key: string]: string } = {
+        'mock-course-py': 'f5c82880-0b87-4927-b401-14b7199bb7a7',
+        'mock-course-java': 'd43656b9-af1b-4643-8fb4-14e4d8d5a480',
+        'mock-course-react': '34377e6b-2108-4866-ab8d-c3232f1484c9',
+        'mock-course-ml': '06b27150-dd09-42d4-8f59-a28311fab263',
+        'mock-course-fs': '95d1c0e2-d14b-4c24-bda9-5b7fdb5b92d9',
+        'mock-course-py_intern': '59760c89-c3c5-4b94-9302-2a6527f53ee7',
+        'mock-course-jv': '86a8d353-846b-4b9d-9287-283f9e5f6577',
+        'mock-course-me': 'f2984958-b57c-445a-bb7f-bc838ebadd1f',
+        'mock-course-ma': '14a448de-6a84-4f20-b762-7f39cc7d4d51',
+        'mock-course-ai': 'fbbf3fe6-a698-4886-bc5d-9f48cc14f725',
+        'mock-course-ds': 'e785a0a0-017d-4acc-b9c8-3d52776c4fb0',
+        'mock-course-ux': '5f586279-16d1-4d7e-8dba-b70bce4e2734',
+        'mock-course-cs': '6ee274d7-b3a6-475c-8c8b-127c35448963',
+        'mock-course-wd': 'ba74cea8-305b-4eeb-a3f1-b0ed1a6de32e',
+        'mock-course-fe': '664885f8-66b7-4563-af6f-4b15054044f7',
+        'mock-course-be': 'e553b2b9-04ec-4deb-a908-178013c46dda'
+    };
+
     const baseCourses = [
         {
-            id: 'mock-course-py',
+            id: REAL_COURSE_UUIDS['mock-course-py'],
             title: 'Python Programming Masterclass',
             category: 'Programming',
             description: 'Learn Python from scratch, including OOP, data structures, and scripting.',
@@ -74,7 +95,7 @@ const initMockDB = () => {
             quizzes: [{ question: 'What is the syntax for a list in Python?', options: ['[]', '{}', '()', '<>'], answer: '[]' }]
         },
         {
-            id: 'mock-course-java',
+            id: REAL_COURSE_UUIDS['mock-course-java'],
             title: 'Java Development Foundations',
             category: 'Programming',
             description: 'Master Java basics, object-oriented concepts, and multithreading.',
@@ -86,7 +107,7 @@ const initMockDB = () => {
             quizzes: []
         },
         {
-            id: 'mock-course-react',
+            id: REAL_COURSE_UUIDS['mock-course-react'],
             title: 'React.js Core Concepts',
             category: 'Web Development',
             description: 'Deep dive into JSX, State, Props, Hooks, and API integrations in React.',
@@ -102,7 +123,7 @@ const initMockDB = () => {
             quizzes: [{ question: 'Which hook is used for side-effects in React?', options: ['useState', 'useRef', 'useEffect', 'useMemo'], answer: 'useEffect' }]
         },
         {
-            id: 'mock-course-ml',
+            id: REAL_COURSE_UUIDS['mock-course-ml'],
             title: 'Introduction to Machine Learning',
             category: 'AI & Data',
             description: 'Learn Regression, Classification, Clustering, and build models using Scikit-Learn.',
@@ -148,7 +169,7 @@ const initMockDB = () => {
         ['DM', 'Digital Marketing', 'Marketing', 'SEO,SEM,Social Media,Content Strategy', 'Marketing Analytics Dashboard,SEO Tracker,Social Media Campaign Manager,Email Campaign System'],
         ['GD', 'Graphic Design', 'Design', 'Photoshop,Illustrator,Branding,Typography', 'Brand Identity,Social Media Design System,Marketing Campaign Design,Corporate Branding'],
         ['PM', 'Project Management', 'Management', 'Agile,Scrum,Trello,Jira', 'Project Tracking System,Team Collaboration Platform,Task Management Dashboard,Resource Management System'],
-        ['DB', 'Database Management', 'Programming', 'SQL,NoSQL,Database Tuning,Scaling', 'Inventory Database System,Hospital Database,Student Database,Employee Database'],
+        ['PM', 'Database Management', 'Programming', 'SQL,NoSQL,Database Tuning,Scaling', 'Inventory Database System,Hospital Database,Student Database,Employee Database'],
         ['SQL', 'SQL Development', 'Programming', 'SQL,Queries,Stored Procedures,Views', 'Sales Reporting System,Banking Database,Customer Analytics Database,Business Intelligence Database'],
         ['UI', 'UI Design', 'Design', 'Figma,UI Design,Designing', 'Banking App Interface,E-Commerce Interface,Dashboard Design,Healthcare App Interface'],
         ['UXD', 'UX Design', 'Design', 'Figma,UX Research,Information Architecture', 'E-Commerce UX,Banking UX,Healthcare UX,Learning Platform UX']
@@ -158,9 +179,11 @@ const initMockDB = () => {
         const [code, name, category, skillsCsv, projectsCsv] = row;
         const skills = skillsCsv.split(',');
         const projects = projectsCsv.split(',');
+        const baseId = `mock-course-${code.toLowerCase()}`;
+        const realId = REAL_COURSE_UUIDS[baseId] || REAL_COURSE_UUIDS[baseId + '_intern'] || baseId;
 
         return {
-            id: `mock-course-${code.toLowerCase()}`,
+            id: realId,
             title: `${name} Internship`,
             category: category,
             description: `Task-based virtual internship where you build clean ${name} applications and projects.`,
@@ -258,21 +281,21 @@ const calculateAndUpdateMockProgress = (userId: string, courseId: string) => {
     const courses = JSON.parse(localStorage.getItem('vionix_mock_courses') || '[]');
     const projects = JSON.parse(localStorage.getItem('vionix_mock_projects') || '[]');
 
-    const enrollment = enrollments.find((e: any) => e.userId === userId && e.courseId === courseId);
+    const enrollment = enrollments.find((e: { userId: string; courseId: string }) => e.userId === userId && e.courseId === courseId);
     if (!enrollment) return;
 
-    const course = courses.find((c: any) => c.id === courseId);
+    const course = courses.find((c: { id: string; title: string; assignments?: { title: string }[] }) => c.id === courseId);
     if (!course) return;
 
     const assignments = course.assignments || [];
     const totalAssignments = assignments.length;
     let submittedCount = 0;
 
-    const studentProjects = projects.filter((p: any) => p.studentId === userId);
+    const studentProjects = projects.filter((p: { studentId: string; title: string }) => p.studentId === userId);
 
     if (totalAssignments > 0) {
-        assignments.forEach((as: any) => {
-            const hasProj = studentProjects.some((p: any) =>
+        assignments.forEach((as: { title: string }) => {
+            const hasProj = studentProjects.some((p: { title: string }) =>
                 p.title.toLowerCase().includes(as.title.toLowerCase()) ||
                 as.title.toLowerCase().includes(p.title.toLowerCase())
             );
@@ -301,7 +324,7 @@ const calculateAndUpdateMockProgress = (userId: string, courseId: string) => {
         const cleanName = courseName.toLowerCase().includes('python') ? 'PY' : 'WEB';
         const certificateNumber = `VINIX-${cleanName}-2026-${String(10000 + certificates.length + 1).substring(1)}`;
 
-        if (!certificates.some((c: any) => c.studentId === userId && c.courseName === courseName)) {
+        if (!certificates.some((c: { studentId: string; courseName: string }) => c.studentId === userId && c.courseName === courseName)) {
             certificates.push({
                 id: `mock-cert-${Date.now()}`,
                 studentId: userId,
@@ -318,11 +341,12 @@ const calculateAndUpdateMockProgress = (userId: string, courseId: string) => {
 };
 
 // Fulfill request locally simulating Express server endpoints
-const handleMockRequest = async (config: any): Promise<any> => {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const handleMockRequest = async (config: { url?: string; method?: string; data?: unknown; headers?: Record<string, unknown> }): Promise<any> => {
     initMockDB();
 
     const getStore = (key: string) => JSON.parse(localStorage.getItem(key) || '[]');
-    const setStore = (key: string, val: any) => localStorage.setItem(key, JSON.stringify(val));
+    const setStore = (key: string, val: unknown) => localStorage.setItem(key, JSON.stringify(val));
 
     let path = config.url || '';
     if (path.startsWith('http://localhost:5000/api')) {
@@ -344,7 +368,9 @@ const handleMockRequest = async (config: any): Promise<any> => {
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 currentUserId = payload.id;
-            } catch (e) { }
+            } catch (e) {
+                console.debug('Failed to parse JWT payload:', e);
+            }
         }
     }
     if (!currentUserId) {
@@ -361,16 +387,18 @@ const handleMockRequest = async (config: any): Promise<any> => {
     const projects = getStore('vionix_mock_projects');
     const certificates = getStore('vionix_mock_certificates');
 
-    const currentUser = users.find((u: any) => u.id === currentUserId);
+    const currentUser = users.find((u: { id: string }) => u.id === currentUserId);
 
-    let parsedData: any = {};
+    let parsedData: Record<string, unknown> = {};
     if (config.data) {
         try {
             parsedData = typeof config.data === 'string' ? JSON.parse(config.data) : config.data;
-        } catch (e) { }
+        } catch (e) {
+            console.debug('Failed to parse config data:', e);
+        }
     }
 
-    const returnJSON = (data: any, status = 200) => {
+    const returnJSON = (data: unknown, status = 200) => {
         return Promise.resolve({
             data,
             status,
@@ -395,23 +423,27 @@ const handleMockRequest = async (config: any): Promise<any> => {
     // Routing endpoints simulation
     // 1. Authentication routes
     if (path === '/auth/login' && method === 'post') {
-        const { email, password } = parsedData;
-        const user = users.find((u: any) => u.email.toLowerCase() === (email || '').toLowerCase());
-        if (!user || user.password !== password) {
+        const email = parsedData.email as string;
+        const password = parsedData.password as string;
+        const user = users.find((u: { email: string }) => u.email.toLowerCase() === (email || '').toLowerCase());
+        if (!user || (user as Record<string, unknown>).password !== password) {
             return returnError('Invalid email or password.', 401);
         }
         return returnJSON({
-            token: `mock_token_${user.id}`,
-            user: { id: user.id, name: user.name, email: user.email, role: user.role, skills: user.skills || [] }
+            token: `mock_token_${(user as Record<string, unknown>).id}`,
+            user: { id: (user as Record<string, unknown>).id, name: (user as Record<string, unknown>).name, email: (user as Record<string, unknown>).email, role: (user as Record<string, unknown>).role, skills: (user as Record<string, unknown>).skills || [] }
         });
     }
 
     if (path === '/auth/register' && method === 'post') {
-        const { name, email, password, role } = parsedData;
+        const name = parsedData.name as string;
+        const email = parsedData.email as string;
+        const password = parsedData.password as string;
+        const role = parsedData.role as string;
         if (!name || !email || !password) {
             return returnError('Name, email and password are required.', 400);
         }
-        if (users.some((u: any) => u.email.toLowerCase() === email.toLowerCase())) {
+        if (users.some((u: { email: string }) => u.email.toLowerCase() === email.toLowerCase())) {
             return returnError('User with this email already exists.', 400);
         }
         const newUser = {
@@ -471,7 +503,7 @@ const handleMockRequest = async (config: any): Promise<any> => {
 
     if (path.startsWith('/courses/') && method === 'put') {
         const id = path.replace('/courses/', '');
-        const index = courses.findIndex((c: any) => c.id === id);
+        const index = courses.findIndex((c: { id: string }) => c.id === id);
         if (index === -1) return returnError('Course not found.', 404);
         courses[index] = { ...courses[index], ...parsedData };
         setStore('vionix_mock_courses', courses);
@@ -480,7 +512,7 @@ const handleMockRequest = async (config: any): Promise<any> => {
 
     if (path.startsWith('/courses/') && method === 'delete') {
         const id = path.replace('/courses/', '');
-        const filtered = courses.filter((c: any) => c.id !== id);
+        const filtered = courses.filter((c: { id: string }) => c.id !== id);
         setStore('vionix_mock_courses', filtered);
         return returnJSON({ message: 'Course deleted.' });
     }
@@ -489,22 +521,22 @@ const handleMockRequest = async (config: any): Promise<any> => {
     if (path === '/enrollments/my' && method === 'get') {
         if (!currentUser) return returnError('Not authenticated.', 401);
         const myEnrollments = enrollments
-            .filter((e: any) => e.userId === currentUserId)
-            .map((e: any) => {
-                const c = courses.find((course: any) => course.id === e.courseId);
+            .filter((e: { userId: string }) => e.userId === currentUserId)
+            .map((e: { courseId: string }) => {
+                const c = courses.find((course: { id: string }) => course.id === e.courseId);
                 return { ...e, course: c };
             });
         return returnJSON(myEnrollments);
     }
 
     if (path === '/enrollments/admin/all' && method === 'get') {
-        const allEnroll = enrollments.map((e: any) => {
-            const u = users.find((user: any) => user.id === e.userId);
-            const c = courses.find((course: any) => course.id === e.courseId);
+        const allEnroll = enrollments.map((e: { userId: string; courseId: string }) => {
+            const u = users.find((user: { id: string }) => user.id === e.userId);
+            const c = courses.find((course: { id: string }) => course.id === e.courseId);
             return {
                 ...e,
-                user: u ? { name: u.name, email: u.email } : null,
-                course: c ? { title: c.title } : null
+                user: u ? { name: (u as Record<string, unknown>).name, email: (u as Record<string, unknown>).email } : null,
+                course: c ? { title: (c as Record<string, unknown>).title } : null
             };
         });
         return returnJSON(allEnroll);
@@ -512,11 +544,14 @@ const handleMockRequest = async (config: any): Promise<any> => {
 
     if (path === '/enrollments/enroll' && method === 'post') {
         if (!currentUser) return returnError('Not authenticated.', 401);
-        const { courseId, duration, phone, college } = parsedData;
-        const course = courses.find((c: any) => c.id === courseId);
+        const courseId = parsedData.courseId as string;
+        const duration = parsedData.duration as string;
+        const phone = parsedData.phone as string;
+        const college = parsedData.college as string;
+        const course = courses.find((c: { id: string }) => c.id === courseId);
         if (!course) return returnError('Course/Internship not found.', 404);
 
-        let enrollment = enrollments.find((e: any) => e.userId === currentUserId && e.courseId === courseId);
+        let enrollment = enrollments.find((e: { userId: string; courseId: string }) => e.userId === currentUserId && e.courseId === courseId);
         if (!enrollment) {
             enrollment = {
                 id: `mock-enroll-${Date.now()}`,
@@ -540,6 +575,8 @@ const handleMockRequest = async (config: any): Promise<any> => {
                     internshipId: course.id,
                     studentName: currentUser.name,
                     studentEmail: currentUser.email,
+                    studentPhone: phone || 'N/A',
+                    studentCollege: college || 'N/A',
                     internshipTitle: course.title,
                     internshipDomain: course.category.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
                     startDate: new Date().toISOString(),
@@ -561,21 +598,22 @@ const handleMockRequest = async (config: any): Promise<any> => {
 
     if (path === '/enrollments/progress' && method === 'put') {
         if (!currentUser) return returnError('Not authenticated.', 401);
-        const { courseId, progress } = parsedData;
-        const enrollment = enrollments.find((e: any) => e.userId === currentUserId && e.courseId === courseId);
+        const courseId = parsedData.courseId as string;
+        const progress = parsedData.progress as number;
+        const enrollment = enrollments.find((e: { userId: string; courseId: string }) => e.userId === currentUserId && e.courseId === courseId);
         if (!enrollment) return returnError('Enrollment not found.', 404);
 
-        enrollment.progress = progress;
+        (enrollment as Record<string, unknown>).progress = progress;
         if (progress === 100) {
-            enrollment.status = 'COMPLETED';
+            (enrollment as Record<string, unknown>).status = 'COMPLETED';
 
             // Generate mock certificate
-            const course = courses.find((c: any) => c.id === courseId);
+            const course = courses.find((c: { id: string; title: string }) => c.id === courseId);
             const courseName = course ? course.title : 'Virtual Internship';
             const cleanName = courseName.toLowerCase().includes('python') ? 'PY' : 'WEB';
             const certificateNumber = `VINIX-${cleanName}-2026-${String(10000 + certificates.length + 1).substring(1)}`;
 
-            if (!certificates.some((c: any) => c.studentId === currentUserId && c.courseName === courseName)) {
+            if (!certificates.some((c: { studentId: string; courseName: string }) => c.studentId === currentUserId && c.courseName === courseName)) {
                 certificates.push({
                     id: `mock-cert-${Date.now()}`,
                     studentId: currentUserId,
@@ -593,11 +631,12 @@ const handleMockRequest = async (config: any): Promise<any> => {
 
     if (path === '/enrollments/linkedin' && method === 'put') {
         if (!currentUser) return returnError('Not authenticated.', 401);
-        const { courseId, linkedinUrl } = parsedData;
-        const enrollment = enrollments.find((e: any) => e.userId === currentUserId && e.courseId === courseId);
+        const courseId = parsedData.courseId as string;
+        const linkedinUrl = parsedData.linkedinUrl as string;
+        const enrollment = enrollments.find((e: { userId: string; courseId: string }) => e.userId === currentUserId && e.courseId === courseId);
         if (!enrollment) return returnError('Enrollment not found.', 404);
 
-        enrollment.linkedinUrl = linkedinUrl;
+        (enrollment as Record<string, unknown>).linkedinUrl = linkedinUrl;
         setStore('vionix_mock_enrollments', enrollments);
 
         // Calculate and update progress
@@ -605,8 +644,8 @@ const handleMockRequest = async (config: any): Promise<any> => {
 
         // Fetch updated enrollment
         const updatedEnrollments = getStore('vionix_mock_enrollments');
-        const updated = updatedEnrollments.find((e: any) => e.userId === currentUserId && e.courseId === courseId);
-        const c = courses.find((course: any) => course.id === courseId);
+        const updated = updatedEnrollments.find((e: { userId: string; courseId: string }) => e.userId === currentUserId && e.courseId === courseId);
+        const c = courses.find((course: { id: string }) => course.id === courseId);
         return returnJSON({ ...updated, course: c });
     }
 
@@ -614,23 +653,25 @@ const handleMockRequest = async (config: any): Promise<any> => {
     if (path === '/projects' && method === 'get') {
         if (!currentUser) return returnError('Not authenticated.', 401);
         if (currentUser.role === 'ADMIN') {
-            const mappedProjects = projects.map((p: any) => {
-                const u = users.find((user: any) => user.id === p.studentId);
+            const mappedProjects = projects.map((p: { studentId: string }) => {
+                const u = users.find((user: { id: string }) => user.id === p.studentId);
                 return {
                     ...p,
-                    student: u ? { name: u.name, email: u.email } : null
+                    student: u ? { name: (u as Record<string, unknown>).name, email: (u as Record<string, unknown>).email } : null
                 };
             });
             return returnJSON(mappedProjects);
         } else {
-            const myProjects = projects.filter((p: any) => p.studentId === currentUserId);
+            const myProjects = projects.filter((p: { studentId: string }) => p.studentId === currentUserId);
             return returnJSON(myProjects);
         }
     }
 
     if (path === '/projects/submit' && method === 'post') {
         if (!currentUser) return returnError('Not authenticated.', 401);
-        const { title, description, githubLink } = parsedData;
+        const title = parsedData.title as string;
+        const description = parsedData.description as string;
+        const githubLink = parsedData.githubLink as string;
         const newProj = {
             id: `mock-proj-${Date.now()}`,
             studentId: currentUserId,
@@ -644,11 +685,11 @@ const handleMockRequest = async (config: any): Promise<any> => {
         setStore('vionix_mock_projects', projects);
 
         // Find matching enrollments to update progress
-        const myEnrollments = enrollments.filter((e: any) => e.userId === currentUserId);
+        const myEnrollments = enrollments.filter((e: { userId: string; courseId: string; }) => e.userId === currentUserId);
         for (const enroll of myEnrollments) {
-            const course = courses.find((c: any) => c.id === enroll.courseId);
+            const course = courses.find((c: { id: string; assignments?: { title: string }[] }) => c.id === enroll.courseId);
             const assignments = course ? (course.assignments || []) : [];
-            const isMatch = assignments.some((as: any) =>
+            const isMatch = assignments.some((as: { title: string }) =>
                 as.title.toLowerCase().includes(title.toLowerCase()) ||
                 title.toLowerCase().includes(as.title.toLowerCase())
             );
@@ -664,12 +705,12 @@ const handleMockRequest = async (config: any): Promise<any> => {
     if (path.startsWith('/projects/review/') && method === 'put') {
         if (!currentUser || currentUser.role !== 'ADMIN') return returnError('Admin role required.', 403);
         const id = path.replace('/projects/review/', '');
-        const proj = projects.find((p: any) => p.id === id);
+        const proj = projects.find((p: { id: string }) => p.id === id);
         if (!proj) return returnError('Project submission not found.', 404);
 
         const { status, feedback } = parsedData;
-        proj.status = status;
-        proj.feedback = feedback;
+        (proj as Record<string, unknown>).status = status;
+        (proj as Record<string, unknown>).feedback = feedback;
         setStore('vionix_mock_projects', projects);
         return returnJSON(proj);
     }
@@ -677,17 +718,17 @@ const handleMockRequest = async (config: any): Promise<any> => {
     // 5. Certificates routes
     if (path === '/certificates/my' && method === 'get') {
         if (!currentUser) return returnError('Not authenticated.', 401);
-        const myCertificates = certificates.filter((c: any) => c.studentId === currentUserId);
+        const myCertificates = certificates.filter((c: { studentId: string }) => c.studentId === currentUserId);
         return returnJSON(myCertificates);
     }
 
     if (path === '/certificates' && method === 'get') {
         if (!currentUser || currentUser.role !== 'ADMIN') return returnError('Admin role required.', 403);
-        const mappedCerts = certificates.map((c: any) => {
-            const u = users.find((user: any) => user.id === c.studentId);
+        const mappedCerts = certificates.map((c: { studentId: string }) => {
+            const u = users.find((user: { id: string }) => user.id === c.studentId);
             return {
                 ...c,
-                student: u ? { name: u.name } : null
+                student: u ? { name: (u as Record<string, unknown>).name } : null
             };
         });
         return returnJSON(mappedCerts);
@@ -695,16 +736,17 @@ const handleMockRequest = async (config: any): Promise<any> => {
 
     if (path.startsWith('/certificates/verify/') && method === 'get') {
         const certNo = path.replace('/certificates/verify/', '');
-        const cert = certificates.find((c: any) => c.certificateNumber === certNo);
+        const cert = certificates.find((c: { certificateNumber: string }) => c.certificateNumber === certNo);
         if (!cert) return returnError('Certificate number not found.', 404);
 
-        const u = users.find((user: any) => user.id === cert.studentId);
+        const certObj = cert as Record<string, unknown>;
+        const u = users.find((user: { id: string }) => user.id === certObj.studentId);
         return returnJSON({
             verified: true,
-            certificateNumber: cert.certificateNumber,
-            studentName: u ? u.name : 'Unknown Graduate',
-            courseName: cert.courseName,
-            issueDate: cert.issueDate,
+            certificateNumber: certObj.certificateNumber,
+            studentName: u ? (u as Record<string, unknown>).name : 'Unknown Graduate',
+            courseName: certObj.courseName,
+            issueDate: certObj.issueDate,
             organization: 'Vinix Technologies',
             status: 'VERIFIED'
         });
@@ -713,23 +755,23 @@ const handleMockRequest = async (config: any): Promise<any> => {
     // 6. Offer Letters routes
     if (path === '/offer-letters' && method === 'get') {
         if (!currentUser) return returnError('Not authenticated.', 401);
-        const myLetters = offerLetters.filter((o: any) => o.studentId === currentUserId);
+        const myLetters = offerLetters.filter((o: { studentId: string }) => o.studentId === currentUserId);
         return returnJSON(myLetters);
     }
 
     if (path.startsWith('/offer-letters/verify/') && method === 'get') {
         const verifyToken = path.replace('/offer-letters/verify/', '');
-        const letter = offerLetters.find((o: any) => o.verificationToken === verifyToken || o.offerLetterId === verifyToken);
+        const letter = offerLetters.find((o: { verificationToken?: string; offerLetterId?: string }) => o.verificationToken === verifyToken || o.offerLetterId === verifyToken);
         if (!letter) return returnError('Invalid offer letter verification token.', 404);
 
         return returnJSON({
             verified: true,
-            offerLetterId: letter.offerLetterId,
-            studentName: letter.studentName,
-            internshipTitle: letter.internshipTitle,
-            duration: letter.duration,
-            issueDate: letter.issueDate,
-            status: letter.status,
+            offerLetterId: (letter as Record<string, unknown>).offerLetterId,
+            studentName: (letter as Record<string, unknown>).studentName,
+            internshipTitle: (letter as Record<string, unknown>).internshipTitle,
+            duration: (letter as Record<string, unknown>).duration,
+            issueDate: (letter as Record<string, unknown>).issueDate,
+            status: (letter as Record<string, unknown>).status,
             verificationResult: '✓ Offer Letter Verified'
         });
     }
@@ -737,9 +779,9 @@ const handleMockRequest = async (config: any): Promise<any> => {
     if (path.startsWith('/offer-letters/') && path.endsWith('/accept') && method === 'post') {
         if (!currentUser) return returnError('Not authenticated.', 401);
         const id = path.replace('/offer-letters/', '').replace('/accept', '');
-        const letter = offerLetters.find((o: any) => o.id === id);
+        const letter = offerLetters.find((o: { id: string }) => o.id === id);
         if (!letter) return returnError('Offer letter not found.', 404);
-        letter.status = 'ACCEPTED';
+        (letter as Record<string, unknown>).status = 'ACCEPTED';
         setStore('vionix_mock_offer_letters', offerLetters);
         return returnJSON(letter);
     }
@@ -747,9 +789,9 @@ const handleMockRequest = async (config: any): Promise<any> => {
     if (path.startsWith('/offer-letters/') && path.endsWith('/decline') && method === 'post') {
         if (!currentUser) return returnError('Not authenticated.', 401);
         const id = path.replace('/offer-letters/', '').replace('/decline', '');
-        const letter = offerLetters.find((o: any) => o.id === id);
+        const letter = offerLetters.find((o: { id: string }) => o.id === id);
         if (!letter) return returnError('Offer letter not found.', 404);
-        letter.status = 'DECLINED';
+        (letter as Record<string, unknown>).status = 'DECLINED';
         setStore('vionix_mock_offer_letters', offerLetters);
         return returnJSON(letter);
     }
@@ -768,9 +810,10 @@ const customAdapter: AxiosAdapter = async (config) => {
         const realConfig = { ...config, adapter: undefined };
         const response = await realHttp.request(realConfig);
         return response;
-    } catch (error: any) {
+    } catch (error) {
+        const err = error as Record<string, unknown>;
         // If it's a network error/refused connection, fall back to mock processing
-        const isNetworkError = error.message === 'Network Error' || error.code === 'ERR_NETWORK' || !error.response;
+        const isNetworkError = err?.message === 'Network Error' || err?.code === 'ERR_NETWORK' || !err?.response;
         if (isNetworkError) {
             console.warn('Backend server connection failed. Redirecting to local Mock database in client mode.');
             return handleMockRequest(config);

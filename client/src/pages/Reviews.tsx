@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Star, MessageSquare, CheckCircle, Send, Sparkles, User, Award, GraduationCap } from 'lucide-react';
+import { Star, MessageSquare, CheckCircle, Send, Sparkles, Award, GraduationCap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface Testimonial {

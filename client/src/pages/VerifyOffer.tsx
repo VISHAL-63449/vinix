@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { Search, ShieldCheck, Calendar, User, Award, ShieldAlert, FileDown, GraduationCap, CheckCircle } from 'lucide-react';
+import { Search, ShieldCheck, Calendar, User, Award, ShieldAlert, CheckCircle } from 'lucide-react';
 
 interface OfferLetterVerificationResult {
     verified: boolean;
@@ -32,8 +32,11 @@ export const VerifyOffer: React.FC = () => {
         try {
             const res = await api.get(`/offer-letters/verify/${tokenToVerify.trim()}`);
             setResult(res.data);
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Offer Letter verification token not found or invalid.');
+        } catch (err) {
+            const errorObj = err as Record<string, unknown>;
+            const responseObj = errorObj.response as Record<string, unknown> | undefined;
+            const dataObj = responseObj?.data as Record<string, unknown> | undefined;
+            setError((dataObj?.message as string) || 'Offer Letter verification token not found or invalid.');
         } finally {
             setLoading(false);
         }

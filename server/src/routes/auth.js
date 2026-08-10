@@ -9,7 +9,7 @@ const router = express.Router();
 // Register
 router.post('/register', async (req, res) => {
     try {
-        const { name, email, password, role } = req.body;
+        const { id, name, email, password, role } = req.body;
 
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'Name, email and password are required.' });
@@ -17,6 +17,33 @@ router.post('/register', async (req, res) => {
 
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
+            // Support trigger integration: if user was created with trigger's mock hash passcode,
+            // overwrite code/meta instead of raising 'User already exists'
+            if (existingUser.password === '$2a$10$MOCKHASHVIONIXSECUREPASSWORDSTRINGDONTUSEINPROD') {
+                const passwordHash = await bcrypt.hash(password, 10);
+                const userRole = role === 'ADMIN' ? 'ADMIN' : 'STUDENT';
+
+                const updatedUser = await prisma.user.update({
+                    where: { email },
+                    data: {
+                        name,
+                        password: passwordHash,
+                        role: userRole,
+                    }
+                });
+
+                const token = jwt.sign({ id: updatedUser.id, name: updatedUser.name, email: updatedUser.email, role: updatedUser.role }, JWT_SECRET, { expiresIn: '7d' });
+                return res.status(200).json({
+                    token,
+                    user: {
+                        id: updatedUser.id,
+                        name: updatedUser.name,
+                        email: updatedUser.email,
+                        role: updatedUser.role,
+                        skills: updatedUser.skills || [],
+                    }
+                });
+            }
             return res.status(400).json({ message: 'User with this email already exists.' });
         }
 
@@ -25,6 +52,7 @@ router.post('/register', async (req, res) => {
 
         const user = await prisma.user.create({
             data: {
+                id: id || undefined, // Use Supabase ID if provided!
                 name,
                 email,
                 password: passwordHash,
@@ -34,6 +62,7 @@ router.post('/register', async (req, res) => {
         });
 
         const token = jwt.sign({ id: user.id, name: user.name, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '7d' });
+
 
         res.status(201).json({
             token,

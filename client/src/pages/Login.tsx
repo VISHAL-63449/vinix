@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GraduationCap, ArrowRight, ShieldCheck } from 'lucide-react';
+import { GraduationCap, ArrowRight } from 'lucide-react';
 import api from '../utils/api';
 
 export const Login: React.FC = () => {
@@ -46,8 +46,9 @@ export const Login: React.FC = () => {
             } else {
                 navigate('/dashboard');
             }
-        } catch (err: any) {
-            setError(err.message || 'Invalid email or password.');
+        } catch (err) {
+            const errorObj = err as { message?: string };
+            setError(errorObj.message || 'Invalid email or password.');
         } finally {
             setLoading(false);
         }

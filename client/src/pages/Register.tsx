@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { GraduationCap, ArrowRight } from 'lucide-react';
+import { GraduationCap } from 'lucide-react';
 import api from '../utils/api';
 
 export const Register: React.FC = () => {
@@ -29,8 +29,9 @@ export const Register: React.FC = () => {
             } else {
                 navigate('/dashboard');
             }
-        } catch (err: any) {
-            setError(err.message || 'Registration failed.');
+        } catch (err) {
+            const errorObj = err as { message?: string };
+            setError(errorObj.message || 'Registration failed.');
         } finally {
             setLoading(false);
         }

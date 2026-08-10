@@ -31,8 +31,11 @@ export const VerifyCertificate: React.FC = () => {
         try {
             const res = await api.get(`/certificates/verify/${idToVerify.trim()}`);
             setResult(res.data);
-        } catch (err: any) {
-            setError(err.response?.data?.message || 'Certificate ID not found. Verify character spelling.');
+        } catch (err) {
+            const errorObj = err as Record<string, unknown>;
+            const responseObj = errorObj.response as Record<string, unknown> | undefined;
+            const dataObj = responseObj?.data as Record<string, unknown> | undefined;
+            setError((dataObj?.message as string) || 'Certificate ID not found. Verify character spelling.');
         } finally {
             setLoading(false);
         }
