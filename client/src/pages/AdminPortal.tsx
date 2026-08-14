@@ -155,6 +155,8 @@ export const AdminPortal: React.FC = () => {
 
     // UI Dark mode status inside components
     const [localDarkMode, setLocalDarkMode] = useState(false);
+    const [deletedMockIds, setDeletedMockIds] = useState<string[]>([]);
+
 
     const refreshData = async () => {
         try {
@@ -252,6 +254,24 @@ export const AdminPortal: React.FC = () => {
         }
     };
 
+    const handleDeleteApplication = async (appId: string, name: string) => {
+        if (!confirm(`Are you sure you want to delete the enrollment record of ${name}?`)) return;
+        if (appId.startsWith('mock-')) {
+            setDeletedMockIds(prev => [...prev, appId]);
+            alert('Mock entry removed successfully.');
+            return;
+        }
+        try {
+            await api.delete(`/enrollments/admin/${appId}`);
+            alert('Student enrollment record deleted successfully.');
+            refreshData();
+        } catch (err) {
+            console.error('Delete application error:', err);
+            alert('Failed to delete user enrollment record.');
+        }
+    };
+
+
     // Helper to get formatted dates
     const getFormattedDate = () => {
         return new Date().toLocaleDateString('en-US', {
@@ -348,13 +368,16 @@ export const AdminPortal: React.FC = () => {
         status: e.status?.toLowerCase() || 'ongoing'
     }));
 
-    const allApplications = [...dbEnrollmentsMapped];
+    const allApplicationsRaw = [...dbEnrollmentsMapped];
     // Add mock entries if their emails aren't already registered
     mockEnrollments.forEach(mock => {
-        if (!allApplications.some(app => app.user.email === mock.user.email)) {
-            allApplications.push(mock);
+        if (!allApplicationsRaw.some(app => app.user.email === mock.user.email)) {
+            allApplicationsRaw.push(mock);
         }
     });
+
+    const allApplications = allApplicationsRaw.filter(app => !deletedMockIds.includes(app.id));
+
 
     // Padded Submissions for Task Submissions
     const mockSubmissions = [
@@ -1324,7 +1347,7 @@ export const AdminPortal: React.FC = () => {
                                                             <a href={`mailto:${app.user.email}`} className="p-2 hover:bg-purple-100/50 dark:hover:bg-purple-950/30 hover:text-purple-600 rounded-lg transition" title="Send Email Notification">
                                                                 <Mail size={15} />
                                                             </a>
-                                                            <button onClick={() => alert(`Deleting application of ${app.user.name} is disabled for records preservation.`)} className="p-2 hover:bg-red-100/50 dark:hover:bg-red-950/30 hover:text-red-650 rounded-lg transition" title="Delete Enrollment Record">
+                                                            <button onClick={() => handleDeleteApplication(app.id, app.user.name)} className="p-2 hover:bg-red-100/50 dark:hover:bg-red-950/30 hover:text-red-650 rounded-lg transition" title="Delete Enrollment Record">
                                                                 <Trash2 size={15} />
                                                             </button>
                                                         </div>

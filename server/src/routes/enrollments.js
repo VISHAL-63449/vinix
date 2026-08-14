@@ -269,4 +269,22 @@ router.get('/admin/all', authenticateToken, async (req, res) => {
     }
 });
 
+// ADMIN Route: Delete Enrollment Record
+router.delete('/admin/:id', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'ADMIN') {
+            return res.status(403).json({ message: 'Access denied. Administrator permissions required.' });
+        }
+        const { id } = req.params;
+        await prisma.enrollment.delete({
+            where: { id }
+        });
+        res.json({ message: 'Enrollment record deleted successfully.' });
+    } catch (error) {
+        console.error('Delete enrollment error:', error);
+        res.status(500).json({ message: 'Failed to delete enrollment record.' });
+    }
+});
+
 export default router;
+

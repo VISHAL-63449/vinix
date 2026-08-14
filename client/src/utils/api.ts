@@ -657,6 +657,13 @@ const handleMockRequest = async (config: { url?: string; method?: string; data?:
         return returnJSON({ ...updated, course: c });
     }
 
+    if (path.startsWith('/enrollments/admin/') && method === 'delete') {
+        const id = path.replace('/enrollments/admin/', '');
+        const filtered = enrollments.filter((e: { id: string }) => e.id !== id);
+        setStore('vionix_mock_enrollments', filtered);
+        return returnJSON({ message: 'Enrollment deleted successfully.' });
+    }
+
     // 4. Projects/Submissions routes
     if (path === '/projects' && method === 'get') {
         if (!currentUser) return returnError('Not authenticated.', 401);
