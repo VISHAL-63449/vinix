@@ -91,6 +91,23 @@ router.put('/review/:id', authenticateToken, async (req, res) => {
             include: { student: true }
         });
 
+        // Update student progress based on status change
+        const studentEnrollments = await prisma.enrollment.findMany({
+            where: { userId: project.studentId },
+            include: { course: true }
+        });
+
+        for (const enroll of studentEnrollments) {
+            const assignments = enroll.course.assignments || [];
+            const isMatch = assignments.some(as =>
+                as.title.toLowerCase().includes(project.title.toLowerCase()) ||
+                project.title.toLowerCase().includes(as.title.toLowerCase())
+            );
+            if (isMatch) {
+                await calculateAndUpdateProgress(project.studentId, enroll.courseId);
+            }
+        }
+
         // Check if approved: issue a Certificate
         if (status === 'APPROVED') {
             const DOMAINS_LIST = [
@@ -160,7 +177,43 @@ router.put('/review/:id', authenticateToken, async (req, res) => {
                 }
             });
 
-            if (!existingCert) {
+            // Check if student has dynamic eligibility
+            const studentEnrollmentsForCert = await prisma.enrollment.findMany({
+                where: { userId: project.studentId },
+                include: { course: true }
+            });
+
+            // Find matching enrollment for the domain
+            const matchingEnroll = studentEnrollmentsForCert.find(e =>
+                e.course.title.toLowerCase().includes(courseName.toLowerCase()) ||
+                courseName.toLowerCase().includes(e.course.title.toLowerCase())
+            );
+
+            let isEligibleForCert = false;
+            let enrollToUpdate = null;
+            if (matchingEnroll) {
+                enrollToUpdate = matchingEnroll;
+                const assignments = matchingEnroll.course.assignments || [];
+                // Retrieve all approved projects for this student
+                const studentApprovedProjects = await prisma.project.findMany({
+                    where: {
+                        studentId: project.studentId,
+                        status: 'APPROVED'
+                    }
+                });
+
+                const allTasksApproved = assignments.every(as =>
+                    studentApprovedProjects.some(p =>
+                        p.title.toLowerCase().includes(as.title.toLowerCase()) ||
+                        as.title.toLowerCase().includes(p.title.toLowerCase())
+                    )
+                );
+
+                const hasLinkedIn = !!matchingEnroll.linkedinUrl;
+                isEligibleForCert = allTasksApproved && hasLinkedIn;
+            }
+
+            if (isEligibleForCert && !existingCert) {
                 await prisma.certificate.create({
                     data: {
                         studentId: project.studentId,
@@ -170,26 +223,10 @@ router.put('/review/:id', authenticateToken, async (req, res) => {
                     }
                 });
 
-                // Update enrollment progress to 100% and status to COMPLETED for this course/internship
-                const course = await prisma.course.findFirst({
-                    where: { title: courseName }
-                });
-
-                if (course) {
-                    await prisma.enrollment.upsert({
-                        where: {
-                            userId_courseId: {
-                                userId: project.studentId,
-                                courseId: course.id
-                            }
-                        },
-                        update: {
-                            progress: 100,
-                            status: 'COMPLETED'
-                        },
-                        create: {
-                            userId: project.studentId,
-                            courseId: course.id,
+                if (enrollToUpdate) {
+                    await prisma.enrollment.update({
+                        where: { id: enrollToUpdate.id },
+                        data: {
                             progress: 100,
                             status: 'COMPLETED'
                         }

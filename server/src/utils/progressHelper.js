@@ -33,11 +33,13 @@ export async function calculateAndUpdateProgress(userId, courseId) {
 
         if (totalAssignments > 0) {
             assignments.forEach(as => {
-                const hasProj = studentProjects.some(p =>
-                    p.title.toLowerCase().includes(as.title.toLowerCase()) ||
-                    as.title.toLowerCase().includes(p.title.toLowerCase())
+                const hasApprovedProj = studentProjects.some(p =>
+                    p.status === 'APPROVED' && (
+                        p.title.toLowerCase().includes(as.title.toLowerCase()) ||
+                        as.title.toLowerCase().includes(p.title.toLowerCase())
+                    )
                 );
-                if (hasProj) submittedCount++;
+                if (hasApprovedProj) submittedCount++;
             });
         }
 

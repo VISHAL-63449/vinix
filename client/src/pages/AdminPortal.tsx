@@ -65,16 +65,58 @@ interface Certificate {
     };
 }
 
+interface OfferLetter {
+    id: string;
+    offerLetterId: string;
+    studentId: string;
+    internshipId?: string;
+    studentName: string;
+    studentEmail: string;
+    internshipTitle: string;
+    internshipDomain: string;
+    startDate: string;
+    endDate: string;
+    duration: string;
+    mentorName: string;
+    issueDate: string;
+    status: string;
+    pdfUrl?: string;
+    verificationToken: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+interface EmailLog {
+    id: string;
+    emailTo: string;
+    studentName: string;
+    documentType: string;
+    status: string;
+    subject: string;
+    referenceId?: string;
+    errorMessage?: string;
+    sentAt: string;
+    createdAt: string;
+}
+
 export const AdminPortal: React.FC = () => {
     const { user, logout } = useAuth();
     const [activeSubTab, setActiveSubTab] = useState('overview');
     const [openActionsId, setOpenActionsId] = useState<string | null>(null);
+
+    // Filter and review states
+    const [submissionFilter, setSubmissionFilter] = useState<'all' | 'PENDING' | 'APPROVED' | 'REJECTED'>('all');
+    const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
+    const [reviewingSubmission, setReviewingSubmission] = useState<any | null>(null);
+    const [feedbackInput, setFeedbackInput] = useState('');
 
     // API Payload States
     const [courses, setCourses] = useState<Course[]>([]);
     const [submissions, setSubmissions] = useState<Submission[]>([]);
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [enrollments, setEnrollments] = useState<AdminEnrollment[]>([]);
+    const [offerLetters, setOfferLetters] = useState<OfferLetter[]>([]);
+    const [emailLogs, setEmailLogs] = useState<EmailLog[]>([]);
 
     // Form inputs
     const [editingCourseId, setEditingCourseId] = useState<string | null>(null);
@@ -86,17 +128,50 @@ export const AdminPortal: React.FC = () => {
     const [skillsCsv, setSkillsCsv] = useState('');
     const [feedbackText, setFeedbackText] = useState<{ [key: string]: string }>({});
 
+    // Marketing mock states
+    const [promoCodes, setPromoCodes] = useState([
+        { code: 'VINIXNEWMEMBER', discount: '20%', status: 'ACTIVE', uses: 24, expiry: '2026-12-31' },
+        { code: 'DIWALI2026', discount: '30%', status: 'ACTIVE', uses: 8, expiry: '2026-11-15' },
+        { code: 'EARLYBIRD', discount: '₹1000 Off', status: 'EXPIRED', uses: 45, expiry: '2026-07-01' }
+    ]);
+    const [newPromoCode, setNewPromoCode] = useState('');
+    const [newPromoDiscount, setNewPromoDiscount] = useState('20%');
+
+    const [promoPopup, setPromoPopup] = useState({
+        isActive: true,
+        headline: 'MSME Verified Internships Admissions Open for Fall 2026',
+        bannerUrl: '',
+        buttonText: 'Apply Now',
+        redirectUrl: '/internships'
+    });
+
+    const [payments, setPayments] = useState([
+        { id: 'INV-2026-001', studentName: 'Aravind S', program: 'Java Development', amount: '₹4,999', date: '2026-08-04', status: 'PAID' },
+        { id: 'INV-2026-002', studentName: 'Priya Sharma', program: 'Full Stack Development', amount: '₹4,999', date: '2026-08-03', status: 'PAID' },
+        { id: 'INV-2026-003', studentName: 'Rohan Gupta', program: 'Python Development', amount: '₹4,999', date: '2026-08-02', status: 'PAID' },
+        { id: 'INV-2026-004', studentName: 'Sneha Patel', program: 'UI/UX Design', amount: '₹4,999', date: '2026-08-01', status: 'PAID' },
+        { id: 'INV-2026-005', studentName: 'Aniket Verma', program: 'Cyber Security', amount: '₹4,999', date: '2026-07-29', status: 'REFUNDED' }
+    ]);
+
     // UI Dark mode status inside components
     const [localDarkMode, setLocalDarkMode] = useState(false);
 
     const refreshData = async () => {
         try {
-            const [coursesRes, submitRes, certsRes, enrollRes] = await Promise.all([
+            const [coursesRes, submitRes, certsRes, enrollRes, offerLettersRes, emailLogsRes] = await Promise.all([
                 api.get('/courses'),
                 api.get('/projects'),
                 api.get('/certificates'),
                 api.get('/enrollments/admin/all').catch(err => {
                     console.warn('Fallback admin enrollments request:', err);
+                    return { data: [] };
+                }),
+                api.get('/admin/offer-letters').catch(err => {
+                    console.warn('Fallback admin offer letters request:', err);
+                    return { data: [] };
+                }),
+                api.get('/admin/email-logs').catch(err => {
+                    console.warn('Fallback admin email logs request:', err);
                     return { data: [] };
                 })
             ]);
@@ -104,10 +179,13 @@ export const AdminPortal: React.FC = () => {
             setSubmissions(submitRes.data);
             setCertificates(certsRes.data);
             setEnrollments(enrollRes.data);
+            setOfferLetters(offerLettersRes.data);
+            setEmailLogs(emailLogsRes.data || []);
         } catch (err) {
             console.error('Failed to load admin payload:', err);
         }
     };
+
 
     useEffect(() => {
         refreshData();
@@ -378,6 +456,14 @@ export const AdminPortal: React.FC = () => {
     const activeInternshipsCount = allApplications.filter(a => a.status === 'ongoing' || a.status === 'enrolled').length;
     const certificatesIssuedCount = certificates.length || 3;
 
+    // Approval workflow calculations
+    const pendingReviewsCount = allSubmissions.filter(s => s.status === 'SUBMITTED' || s.status === 'PENDING' || s.status === 'UNDER_REVIEW').length;
+    const pendingProjectsCount = allSubmissions.filter(s =>
+        (s.title.toLowerCase().includes('project') || s.title.toLowerCase().includes('final')) &&
+        (s.status === 'SUBMITTED' || s.status === 'PENDING' || s.status === 'UNDER_REVIEW')
+    ).length;
+    const rejectedSubmissionsCount = allSubmissions.filter(s => s.status === 'REJECTED' || s.status === 'RESUBMISSION_REQUIRED').length;
+
     return (
         <div className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 flex flex-col md:flex-row text-slate-800 dark:text-slate-100 font-sans transition-colors duration-300">
 
@@ -450,8 +536,11 @@ export const AdminPortal: React.FC = () => {
                             </button>
 
                             <button
-                                onClick={() => setActiveSubTab('overview')}
-                                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white uppercase tracking-wider"
+                                onClick={() => setActiveSubTab('verification-queue')}
+                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[11px] font-bold transition duration-200 uppercase tracking-wider ${activeSubTab === 'verification-queue'
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/10'
+                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
                             >
                                 <div className="flex items-center space-x-3">
                                     <ShieldCheck size={14} />
@@ -460,8 +549,8 @@ export const AdminPortal: React.FC = () => {
                             </button>
 
                             <button
-                                onClick={() => setActiveSubTab('certs-log')}
-                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[11px] font-bold transition duration-200 uppercase tracking-wider ${activeSubTab === 'certs-log'
+                                onClick={() => setActiveSubTab('students')}
+                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[11px] font-bold transition duration-200 uppercase tracking-wider ${activeSubTab === 'students'
                                     ? 'bg-blue-600 text-white shadow-md shadow-blue-600/10'
                                     : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
                                     }`}
@@ -486,8 +575,11 @@ export const AdminPortal: React.FC = () => {
                             </button>
 
                             <button
-                                onClick={() => setActiveSubTab('overview')}
-                                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[11px] font-bold text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white uppercase tracking-wider"
+                                onClick={() => setActiveSubTab('payments')}
+                                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[11px] font-bold transition duration-200 uppercase tracking-wider ${activeSubTab === 'payments'
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/10'
+                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
                             >
                                 <div className="flex items-center space-x-3">
                                     <FileSpreadsheet size={14} />
@@ -525,26 +617,58 @@ export const AdminPortal: React.FC = () => {
                         {/* MARKETING Section */}
                         <div className="space-y-1">
                             <span className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">MARKETING</span>
-                            <button className="w-full flex items-center px-3 py-2 rounded-xl text-[11px] font-bold text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white uppercase tracking-wider space-x-3">
-                                <Sparkles size={14} />
-                                <span>Promotions</span>
+                            <button
+                                onClick={() => setActiveSubTab('promotions')}
+                                className={`w-full flex items-center px-3 py-2.5 rounded-xl text-[11px] font-bold transition duration-200 uppercase tracking-wider ${activeSubTab === 'promotions'
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/10'
+                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <Sparkles size={14} />
+                                    <span>Promotions</span>
+                                </div>
                             </button>
-                            <button className="w-full flex items-center px-3 py-2 rounded-xl text-[11px] font-bold text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white uppercase tracking-wider space-x-3">
-                                <Megaphone size={14} />
-                                <span>Promo Popup</span>
+                            <button
+                                onClick={() => setActiveSubTab('promo-popup')}
+                                className={`w-full flex items-center px-3 py-2.5 rounded-xl text-[11px] font-bold transition duration-200 uppercase tracking-wider ${activeSubTab === 'promo-popup'
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/10'
+                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <Megaphone size={14} />
+                                    <span>Promo Popup</span>
+                                </div>
                             </button>
-                            <button className="w-full flex items-center px-3 py-2 rounded-xl text-[11px] font-bold text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white uppercase tracking-wider space-x-3">
-                                <Mail size={14} />
-                                <span>Email Logs</span>
+                            <button
+                                onClick={() => setActiveSubTab('email-logs')}
+                                className={`w-full flex items-center px-3 py-2.5 rounded-xl text-[11px] font-bold transition duration-200 uppercase tracking-wider ${activeSubTab === 'email-logs'
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/10'
+                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <Mail size={14} />
+                                    <span>Email Logs</span>
+                                </div>
                             </button>
                         </div>
 
                         {/* ANALYTICS Section */}
                         <div className="space-y-1">
                             <span className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest block mb-2">ANALYTICS</span>
-                            <button className="w-full flex items-center px-3 py-2 rounded-xl text-[11px] font-bold text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white uppercase tracking-wider space-x-3">
-                                <FileSpreadsheet size={14} />
-                                <span>Analytics</span>
+                            <button
+                                onClick={() => setActiveSubTab('analytics')}
+                                className={`w-full flex items-center px-3 py-2.5 rounded-xl text-[11px] font-bold transition duration-200 uppercase tracking-wider ${activeSubTab === 'analytics'
+                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-600/10'
+                                    : 'text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800/50 hover:text-slate-900 dark:hover:text-white'
+                                    }`}
+                            >
+                                <div className="flex items-center space-x-3">
+                                    <FileSpreadsheet size={14} />
+                                    <span>Analytics</span>
+                                </div>
                             </button>
                         </div>
                     </div>
@@ -643,60 +767,87 @@ export const AdminPortal: React.FC = () => {
                     </div>
 
                     {/* Stats Rows */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-7 gap-4">
                         {/* Card 1: Total Students */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-6 flex justify-between items-start shadow-sm transition-all hover:shadow-md">
-                            <div className="space-y-2">
-                                <span className="text-[10px] text-slate-400 uppercase font-black block tracking-wider">Total Students</span>
-                                <h3 className="text-3xl font-black text-slate-900 dark:text-white">{totalStudentsCount}</h3>
-                                <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 select-none">
-                                    ▲ 12.5% <span className="text-slate-400 font-medium">vs last month</span>
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4 flex justify-between items-start shadow-sm transition-all hover:shadow-md">
+                            <div className="space-y-1">
+                                <span className="text-[9px] text-slate-400 uppercase font-black block tracking-wider leading-none">Total Students</span>
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white leading-none pt-1">{totalStudentsCount}</h3>
+                                <span className="text-[9px] font-bold text-emerald-600 block leading-none pt-1">
+                                    ▲ 12.5%
                                 </span>
-                            </div>
-                            <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-650 flex items-center justify-center dark:bg-purple-950/20">
-                                <Users size={18} />
                             </div>
                         </div>
 
                         {/* Card 2: Applications */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-6 flex justify-between items-start shadow-sm transition-all hover:shadow-md">
-                            <div className="space-y-2">
-                                <span className="text-[10px] text-slate-400 uppercase font-black block tracking-wider">Applications</span>
-                                <h3 className="text-3xl font-black text-slate-900 dark:text-white">{totalApplicationsCount}</h3>
-                                <span className="text-[10px] font-bold text-blue-600 flex items-center gap-1 select-none">
-                                    0 Pending Review
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4 flex justify-between items-start shadow-sm transition-all hover:shadow-md">
+                            <div className="space-y-1">
+                                <span className="text-[9px] text-slate-400 uppercase font-black block tracking-wider leading-none">Applications</span>
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white leading-none pt-1">{totalApplicationsCount}</h3>
+                                <span className="text-[9px] font-bold text-blue-600 block leading-none pt-1">
+                                    Total Registered
                                 </span>
-                            </div>
-                            <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center dark:bg-blue-950/20">
-                                <FileSpreadsheet size={18} />
                             </div>
                         </div>
 
                         {/* Card 3: Active Internships */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-6 flex justify-between items-start shadow-sm transition-all hover:shadow-md">
-                            <div className="space-y-2">
-                                <span className="text-[10px] text-slate-400 uppercase font-black block tracking-wider">Active Internships</span>
-                                <h3 className="text-3xl font-black text-slate-900 dark:text-white">{activeInternshipsCount}</h3>
-                                <span className="text-[10px] font-bold text-emerald-600 flex items-center gap-1 select-none">
-                                    ▲ 8.2% <span className="text-slate-400 font-medium">vs last month</span>
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4 flex justify-between items-start shadow-sm transition-all hover:shadow-md">
+                            <div className="space-y-1">
+                                <span className="text-[9px] text-slate-400 uppercase font-black block tracking-wider leading-none">Active</span>
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white leading-none pt-1">{activeInternshipsCount}</h3>
+                                <span className="text-[9px] font-bold text-emerald-600 block leading-none pt-1">
+                                    ▲ 8.2%
                                 </span>
-                            </div>
-                            <div className="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center dark:bg-green-950/20">
-                                <LayoutDashboard size={18} />
                             </div>
                         </div>
 
                         {/* Card 4: Certificates Issued */}
-                        <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-6 flex justify-between items-start shadow-sm transition-all hover:shadow-md">
-                            <div className="space-y-2">
-                                <span className="text-[10px] text-slate-400 uppercase font-black block tracking-wider">Certificates Issued</span>
-                                <h3 className="text-3xl font-black text-slate-900 dark:text-white">{certificatesIssuedCount}</h3>
-                                <span className="text-[10px] font-bold text-amber-500 flex items-center gap-1 select-none">
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4 flex justify-between items-start shadow-sm transition-all hover:shadow-md">
+                            <div className="space-y-1">
+                                <span className="text-[9px] text-slate-400 uppercase font-black block tracking-wider leading-none">Certs Issued</span>
+                                <h3 className="text-xl font-black text-slate-900 dark:text-white leading-none pt-1">{certificatesIssuedCount}</h3>
+                                <span className="text-[9px] font-bold text-amber-500 block leading-none pt-1">
                                     This month
                                 </span>
                             </div>
-                            <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center dark:bg-amber-950/20">
-                                <Award size={18} />
+                        </div>
+
+                        {/* Card 5: Pending Reviews */}
+                        <div
+                            onClick={() => {
+                                setSubmissionFilter('PENDING');
+                                setActiveSubTab('approve-projects');
+                            }}
+                            className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4 flex justify-between items-start shadow-sm transition-all hover:shadow-md cursor-pointer hover:border-blue-500/40 group"
+                        >
+                            <div className="space-y-1 font-sans">
+                                <span className="text-[9px] text-slate-400 uppercase font-black block tracking-wider leading-none">Pending Reviews</span>
+                                <h3 className="text-xl font-black text-amber-600 dark:text-amber-500 leading-none pt-1 group-hover:scale-105 transition-transform">{pendingReviewsCount}</h3>
+                                <span className="text-[9px] font-bold text-blue-600 dark:text-blue-400 block hover:underline leading-none pt-1">
+                                    Review →
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Card 6: Pending Projects */}
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4 flex justify-between items-start shadow-sm transition-all hover:shadow-md">
+                            <div className="space-y-1">
+                                <span className="text-[9px] text-slate-400 uppercase font-black block tracking-wider leading-none">Pending Projects</span>
+                                <h3 className="text-xl font-black text-purple-650 dark:text-purple-500 leading-none pt-1">{pendingProjectsCount}</h3>
+                                <span className="text-[9px] font-bold text-slate-500 block leading-none pt-1">
+                                    Final Submissions
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Card 7: Rejected Submissions */}
+                        <div className="bg-white dark:bg-slate-900 border border-slate-200/50 dark:border-slate-800/80 rounded-2xl p-4 flex justify-between items-start shadow-sm transition-all hover:shadow-md">
+                            <div className="space-y-1">
+                                <span className="text-[9px] text-slate-400 uppercase font-black block tracking-wider leading-none">Rejected Tasks</span>
+                                <h3 className="text-xl font-black text-red-600 dark:text-red-500 leading-none pt-1">{rejectedSubmissionsCount}</h3>
+                                <span className="text-[9px] font-bold text-rose-600 block leading-none pt-1">
+                                    Needs Revision
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -726,6 +877,7 @@ export const AdminPortal: React.FC = () => {
                                                 <th className="pb-3 text-[10px] tracking-wider uppercase">Domain</th>
                                                 <th className="pb-3 text-[10px] tracking-wider uppercase">Submitted On</th>
                                                 <th className="pb-3 text-[10px] tracking-wider uppercase">Status</th>
+                                                <th className="pb-3 text-[10px] tracking-wider uppercase text-right">Actions</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
@@ -744,7 +896,7 @@ export const AdminPortal: React.FC = () => {
                                                             </span>
                                                         </div>
                                                     </td>
-                                                    <td className="py-3 font-bold text-blue-600 dark:text-blue-400 truncate max-w-[140px] hover:underline cursor-pointer">
+                                                    <td className="py-3 font-bold text-blue-605 dark:text-blue-400 truncate max-w-[140px] hover:underline cursor-pointer">
                                                         {item.title}
                                                     </td>
                                                     <td className="py-3 text-[10.5px]">
@@ -755,13 +907,36 @@ export const AdminPortal: React.FC = () => {
                                                     </td>
                                                     <td className="py-3">
                                                         <span className={`px-2.5 py-1 text-[9px] font-black rounded-full uppercase tracking-wider inline-block leading-none border ${item.status === 'APPROVED'
-                                                            ? 'bg-green-50 text-green-700 border-green-100 dark:bg-green-950/20 dark:text-green-300 dark:border-green-900/30'
+                                                            ? 'bg-green-50 text-green-705 border-green-100 dark:bg-green-950/20 dark:text-green-300 dark:border-green-909/30'
                                                             : item.status === 'REJECTED'
                                                                 ? 'bg-red-50 text-red-750'
                                                                 : 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-950/20 dark:text-amber-300 dark:border-amber-900/30'
                                                             }`}>
                                                             {item.status.toLowerCase()}
                                                         </span>
+                                                    </td>
+                                                    <td className="py-3 text-right">
+                                                        {item.status === 'PENDING' || item.status === 'SUBMITTED' || item.status === 'UNDER_REVIEW' ? (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setReviewingSubmission(item);
+                                                                    setFeedbackInput(item.feedback || '');
+                                                                }}
+                                                                className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded text-[10px] font-black uppercase transition-all"
+                                                            >
+                                                                Review
+                                                            </button>
+                                                        ) : (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setReviewingSubmission(item);
+                                                                    setFeedbackInput(item.feedback || '');
+                                                                }}
+                                                                className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 rounded text-[10px] font-black uppercase transition-all"
+                                                            >
+                                                                View
+                                                            </button>
+                                                        )}
                                                     </td>
                                                 </tr>
                                             ))}
@@ -959,123 +1134,120 @@ export const AdminPortal: React.FC = () => {
 
                     {/* TAB: EVALUATE TASK SUBMISSIONS */}
                     {activeSubTab === 'approve-projects' && (
-                        <div className="space-y-6 w-full">
-                            <div className="space-y-1">
-                                <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Task Submissions</h1>
-                                <p className="text-xs text-slate-400 font-semibold">
-                                    Reviewed ({allSubmissions.filter(s => s.status === 'APPROVED' || s.status === 'REJECTED').length})
-                                </p>
+                        <div className="space-y-6 w-full text-left">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div className="space-y-1">
+                                    <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">Task Submissions</h1>
+                                    <p className="text-xs text-slate-400 font-semibold">
+                                        Monitor, evaluate, and provide constructive feedback on task deliverables.
+                                    </p>
+                                </div>
                             </div>
 
-                            {allSubmissions.length === 0 ? (
-                                <div className="bg-white dark:bg-slate-900 p-12 rounded-3xl text-center text-slate-400 text-xs border">
-                                    No submissions require evaluation reviews today.
-                                </div>
-                            ) : (
-                                <div className="space-y-3.5">
-                                    {allSubmissions.map((sub) => {
-                                        const isCalculator = sub.title.toLowerCase().includes('calculator');
-                                        const linkText = isCalculator ? 'Screenshot' : 'GitHub';
+                            {/* Filter controls tabs */}
+                            <div className="flex flex-wrap gap-2 pb-4 border-b border-slate-100 dark:border-slate-800">
+                                {[
+                                    { value: 'all', label: 'All Submissions', count: allSubmissions.length, color: 'bg-slate-500/10 text-slate-700 dark:text-slate-300' },
+                                    { value: 'PENDING', label: 'Pending Review', count: pendingReviewsCount, color: 'bg-amber-500/10 text-amber-600 dark:text-amber-400' },
+                                    { value: 'APPROVED', label: 'Approved', count: allSubmissions.filter(s => s.status === 'APPROVED').length, color: 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400' },
+                                    { value: 'REJECTED', label: 'Rejected', count: rejectedSubmissionsCount, color: 'bg-rose-500/10 text-rose-600 dark:text-rose-405' }
+                                ].map(tab => (
+                                    <button
+                                        key={tab.value}
+                                        onClick={() => setSubmissionFilter(tab.value as any)}
+                                        className={`px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${submissionFilter === tab.value
+                                            ? 'bg-blue-600 text-white shadow-sm shadow-blue-500/20'
+                                            : 'bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
+                                            }`}
+                                    >
+                                        <span>{tab.label}</span>
+                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-black ${submissionFilter === tab.value ? 'bg-white/20 text-white' : tab.color}`}>
+                                            {tab.count}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
 
-                                        return (
-                                            <div key={sub.id} className="p-5 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
-                                                <div className="space-y-1">
-                                                    <h3 className="font-bold text-sm text-slate-900 dark:text-white leading-tight">
-                                                        {sub.title}
-                                                    </h3>
-                                                    <p className="text-xs text-slate-450 font-medium">
-                                                        {sub.student?.name} · {sub.enrollmentId} · {sub.course?.title || 'Virtual Internship'}
-                                                    </p>
-                                                    <a
-                                                        href={sub.githubLink && sub.githubLink !== '#' ? sub.githubLink : 'https://github.com'}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center gap-1 mt-1 inline-flex"
-                                                    >
-                                                        <ExternalLink size={10} />
-                                                        <span>{linkText}</span>
-                                                    </a>
-                                                    {sub.feedback && (
-                                                        <p className="text-[10px] text-slate-400 bg-slate-50 dark:bg-slate-800/30 px-2 py-0.5 rounded mt-1.5 italic w-fit">
-                                                            Feedback: "{sub.feedback}"
+                            {(() => {
+                                const filteredSubmissions = allSubmissions.filter(sub => {
+                                    if (submissionFilter === 'all') return true;
+                                    if (submissionFilter === 'PENDING') {
+                                        return sub.status === 'SUBMITTED' || sub.status === 'PENDING' || sub.status === 'UNDER_REVIEW';
+                                    }
+                                    if (submissionFilter === 'APPROVED') {
+                                        return sub.status === 'APPROVED';
+                                    }
+                                    if (submissionFilter === 'REJECTED') {
+                                        return sub.status === 'REJECTED' || sub.status === 'RESUBMISSION_REQUIRED';
+                                    }
+                                    return true;
+                                });
+
+                                if (filteredSubmissions.length === 0) {
+                                    return (
+                                        <div className="bg-white dark:bg-slate-900 p-12 rounded-3xl text-center text-slate-400 text-xs border border-slate-200 dark:border-slate-800">
+                                            No task submissions match this filter.
+                                        </div>
+                                    );
+                                }
+
+                                return (
+                                    <div className="space-y-3.5">
+                                        {filteredSubmissions.map((sub) => {
+                                            const isCalculator = sub.title.toLowerCase().includes('calculator');
+                                            const linkText = isCalculator ? 'Screenshot' : 'GitHub';
+
+                                            return (
+                                                <div key={sub.id} className="p-5 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl shadow-sm hover:shadow-md transition-all duration-200 flex items-center justify-between">
+                                                    <div className="space-y-1">
+                                                        <h3 className="font-bold text-sm text-slate-900 dark:text-white leading-tight">
+                                                            {sub.title}
+                                                        </h3>
+                                                        <p className="text-xs text-slate-450 font-medium">
+                                                            {sub.student?.name} · {sub.enrollmentId} · {sub.course?.title || 'Virtual Internship'}
                                                         </p>
-                                                    )}
-                                                </div>
-
-                                                <div className="flex items-center space-x-3.5">
-                                                    <span className={`px-2.5 py-0.5 rounded text-[11px] font-medium leading-none uppercase tracking-wider ${sub.status === 'APPROVED'
-                                                        ? 'bg-emerald-58/10 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/35'
-                                                        : sub.status === 'REJECTED'
-                                                            ? 'bg-rose-58/10 text-rose-600 border border-rose-100 dark:bg-rose-950/20 dark:text-rose-400 dark:border-rose-900/35'
-                                                            : 'bg-amber-58/10 text-amber-600 border border-amber-100 dark:bg-amber-950/20 dark:text-amber-400'
-                                                        }`}>
-                                                        {sub.status.toLowerCase()}
-                                                    </span>
-
-                                                    <div className="relative">
-                                                        <button
-                                                            onClick={(e) => {
-                                                                e.stopPropagation();
-                                                                setOpenActionsId(openActionsId === sub.id ? null : sub.id);
-                                                            }}
-                                                            className="px-3.5 py-1.5 bg-white hover:bg-slate-50 dark:bg-slate-900 border border-slate-208 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-202 flex items-center gap-1.5 transition"
+                                                        <a
+                                                            href={sub.githubLink && sub.githubLink !== '#' ? sub.githubLink : 'https://github.com'}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="text-[11px] text-blue-600 dark:text-blue-400 font-semibold hover:underline flex items-center gap-1 mt-1 inline-flex"
                                                         >
-                                                            <span>Actions</span>
-                                                            <ChevronDown size={12} />
-                                                        </button>
-                                                        {openActionsId === sub.id && (
-                                                            <div className="absolute right-0 mt-1.5 w-40 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-805 rounded-xl shadow-lg z-20 py-1 text-xs">
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setOpenActionsId(null);
-                                                                        const txt = feedbackText[sub.id] || 'Excellent project submission!';
-                                                                        api.put(`/projects/review/${sub.id}`, { status: 'APPROVED', feedback: txt })
-                                                                            .then(() => {
-                                                                                alert('Project approved successfully!');
-                                                                                refreshData();
-                                                                            })
-                                                                            .catch(() => alert('Failed to review.'));
-                                                                    }}
-                                                                    className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-emerald-600 font-bold"
-                                                                >
-                                                                    Approve
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setOpenActionsId(null);
-                                                                        const txt = feedbackText[sub.id] || 'Requires changes, please revise.';
-                                                                        api.put(`/projects/review/${sub.id}`, { status: 'REJECTED', feedback: txt })
-                                                                            .then(() => {
-                                                                                alert('Project rejected.');
-                                                                                refreshData();
-                                                                            })
-                                                                            .catch(() => alert('Failed to review.'));
-                                                                    }}
-                                                                    className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-rose-600 font-bold"
-                                                                >
-                                                                    Reject
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => {
-                                                                        setOpenActionsId(null);
-                                                                        const text = prompt('Enter notes or feedback:', feedbackText[sub.id] || sub.feedback || '');
-                                                                        if (text !== null) {
-                                                                            setFeedbackText({ ...feedbackText, [sub.id]: text });
-                                                                        }
-                                                                    }}
-                                                                    className="w-full text-left px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-500 font-bold"
-                                                                >
-                                                                    Write Feedback
-                                                                </button>
-                                                            </div>
+                                                            <ExternalLink size={10} />
+                                                            <span>{linkText}</span>
+                                                        </a>
+                                                        {sub.feedback && (
+                                                            <p className="text-[10px] text-slate-450 bg-slate-50 dark:bg-slate-800/40 px-2 py-0.5 rounded mt-1.5 italic w-fit">
+                                                                Feedback: "{sub.feedback}"
+                                                            </p>
                                                         )}
                                                     </div>
+
+                                                    <div className="flex items-center space-x-3.5">
+                                                        <span className={`px-2.5 py-0.5 rounded text-[11px] font-medium leading-none uppercase tracking-wider ${sub.status === 'APPROVED'
+                                                            ? 'bg-emerald-58/10 text-emerald-600 border border-emerald-100 dark:bg-emerald-950/20 dark:text-emerald-400 dark:border-emerald-900/35'
+                                                            : sub.status === 'REJECTED'
+                                                                ? 'bg-rose-58/10 text-rose-605 border border-rose-100 dark:bg-rose-955/20 dark:text-rose-400 dark:border-rose-900/35'
+                                                                : 'bg-amber-58/10 text-amber-600 border border-amber-100 dark:bg-amber-950/20 dark:text-amber-400'
+                                                            }`}>
+                                                            {sub.status.toLowerCase()}
+                                                        </span>
+
+                                                        <button
+                                                            onClick={() => {
+                                                                setReviewingSubmission(sub);
+                                                                setFeedbackInput(sub.feedback || '');
+                                                            }}
+                                                            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition-all shadow-sm"
+                                                        >
+                                                            Evaluate
+                                                        </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            )}
+                                            );
+                                        })}
+                                    </div>
+                                );
+                            })()}
                         </div>
                     )}
 
@@ -1204,8 +1376,802 @@ export const AdminPortal: React.FC = () => {
                         </div>
                     )}
 
+                    {/* TAB: VERIFICATION QUEUE */}
+                    {activeSubTab === 'verification-queue' && (
+                        <div className="space-y-6 text-left">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider">Document Verification Center</h2>
+                                    <p className="text-xs text-slate-400 font-medium">Verify or revoke official internship offer letters and certificate registers.</p>
+                                </div>
+                                <div className="flex items-center space-x-3">
+                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-green-500/10 border border-green-500/20 text-green-705 dark:text-green-400 text-xs font-bold rounded-full">
+                                        <ShieldCheck size={12} />
+                                        <span>System Online</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Search inspector */}
+                            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Verifiable Code Inspector</h3>
+                                <div className="flex flex-col sm:flex-row gap-3">
+                                    <input
+                                        type="text"
+                                        placeholder="Enter Certificate No or Offer Letter Token..."
+                                        id="adminVerifyInput"
+                                        className="flex-1 bg-slate-50 dark:bg-slate-950 border border-slate-205 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-500"
+                                    />
+                                    <button
+                                        onClick={() => {
+                                            const val = (document.getElementById('adminVerifyInput') as HTMLInputElement)?.value.trim();
+                                            if (!val) return;
+                                            if (val.startsWith('VINIX-OFFER-')) {
+                                                window.open(`/verify/offer/${val}`, '_blank');
+                                            } else {
+                                                window.open(`/verify/${val}`, '_blank');
+                                            }
+                                        }}
+                                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2"
+                                    >
+                                        <ExternalLink size={13} />
+                                        <span>Inspect Document</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                {/* Offer Letters list */}
+                                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm flex flex-col">
+                                    <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-955/35">
+                                        <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                                            <FileSpreadsheet className="text-blue-505" size={14} />
+                                            <span>Active Offer Letters ({offerLetters.length})</span>
+                                        </h4>
+                                    </div>
+                                    <div className="divide-y dark:divide-slate-800 overflow-y-auto max-h-[380px]">
+                                        {offerLetters.map((letter) => (
+                                            <div key={letter.id} className="p-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                                <div>
+                                                    <h5 className="text-xs font-bold text-slate-850 dark:text-white">{letter.studentName}</h5>
+                                                    <p className="text-[10px] text-slate-400 mt-0.5">{letter.internshipTitle} • {letter.duration}</p>
+                                                    <p className="text-[9px] font-mono text-blue-600 dark:text-blue-400 mt-1 font-semibold">{letter.offerLetterId}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase tracking-wider border ${letter.status === 'ACCEPTED'
+                                                        ? 'bg-green-50 text-green-700 border-green-100 dark:bg-green-950/20 dark:text-green-300 dark:border-green-800'
+                                                        : letter.status === 'DECLINED'
+                                                            ? 'bg-red-50 text-red-600 border-red-100 dark:bg-red-955/20 dark:text-red-300'
+                                                            : 'bg-blue-50 text-blue-605 border-blue-100 dark:bg-blue-955/20 dark:text-blue-300'
+                                                        }`}>
+                                                        {letter.status}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(`${window.location.origin}/verify/offer/${letter.verificationToken || letter.offerLetterId}`);
+                                                            alert('Link copied to clipboard!');
+                                                        }}
+                                                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500"
+                                                        title="Copy Verification Link"
+                                                    >
+                                                        <ExternalLink size={12} />
+                                                    </button>
+                                                    {letter.status !== 'EXPIRED' && (
+                                                        <button
+                                                            onClick={async () => {
+                                                                if (window.confirm(`Are you sure you want to revoke offer letter ${letter.offerLetterId}?`)) {
+                                                                    try {
+                                                                        await api.post(`/offer-letters/${letter.id}/revoke`);
+                                                                        refreshData();
+                                                                    } catch (err) {
+                                                                        setOfferLetters(prev => prev.map(o => o.id === letter.id ? { ...o, status: 'EXPIRED' } : o));
+                                                                    }
+                                                                }
+                                                            }}
+                                                            className="p-1.5 hover:bg-red-50 dark:hover:bg-red-955/35 text-red-505 rounded"
+                                                            title="Revoke Offer"
+                                                        >
+                                                            <Trash2 size={12} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {offerLetters.length === 0 && (
+                                            <div className="p-8 text-center text-slate-400 text-xs font-medium">No offer letters generated yet. Mapped automatically on program enrollment.</div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Certificates list */}
+                                <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm flex flex-col">
+                                    <div className="p-5 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/30">
+                                        <h4 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-wider flex items-center gap-2">
+                                            <Award className="text-blue-500" size={14} />
+                                            <span>Active Certificates ({certificates.length})</span>
+                                        </h4>
+                                    </div>
+                                    <div className="divide-y dark:divide-slate-800 overflow-y-auto max-h-[380px]">
+                                        {certificates.map((cert) => (
+                                            <div key={cert.id} className="p-4 hover:bg-slate-50/50 dark:hover:bg-slate-800/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                                                <div>
+                                                    <h5 className="text-xs font-bold text-slate-850 dark:text-white">{cert.student?.name}</h5>
+                                                    <p className="text-[10px] text-slate-400 mt-0.5">{cert.courseName}</p>
+                                                    <p className="text-[9px] font-mono text-emerald-600 dark:text-emerald-400 mt-1 font-semibold">{cert.certificateNumber}</p>
+                                                </div>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        onClick={() => {
+                                                            navigator.clipboard.writeText(`${window.location.origin}/verify/${cert.certificateNumber}`);
+                                                            alert('Link copied to clipboard!');
+                                                        }}
+                                                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500"
+                                                        title="Copy Verification Link"
+                                                    >
+                                                        <ExternalLink size={12} />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => window.open(`/verify/${cert.certificateNumber}`, '_blank')}
+                                                        className="p-1.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-500"
+                                                        title="View LIVE Certificate"
+                                                    >
+                                                        <Eye size={12} />
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                        {certificates.length === 0 && (
+                                            <div className="p-8 text-center text-slate-400 text-xs font-medium">No certificates registered yet. Approve submissions to generate them.</div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB: STUDENTS */}
+                    {activeSubTab === 'students' && (
+                        <div className="space-y-6 text-left">
+                            <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider">Registered Graduates Directory</h2>
+                            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-50 dark:bg-slate-950 font-bold border-b text-slate-400 uppercase">
+                                                <th className="p-5">Student</th>
+                                                <th className="p-5">University & Profile</th>
+                                                <th className="p-5">Primary Skills Mapped</th>
+                                                <th className="p-5 text-center">Active Internships</th>
+                                                <th className="p-5 text-center">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {Array.from(new Set(allApplications.map(a => a.user.email))).map(email => {
+                                                const studentApps = allApplications.filter(a => a.user.email === email);
+                                                const rep = studentApps[0];
+                                                const repSkills = (rep.user as any).skills && (rep.user as any).skills.length > 0 ? (rep.user as any).skills : ['HTML/CSS', 'Javascript', 'React'];
+                                                return (
+                                                    <tr key={email} className="border-b dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 text-slate-700 dark:text-slate-350">
+                                                        <td className="p-5">
+                                                            <div className="flex items-center space-x-3">
+                                                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-606 dark:bg-blue-900/30 dark:text-blue-300 font-extrabold flex items-center justify-center text-[10px]">
+                                                                    {rep.user.name ? rep.user.name[0].toUpperCase() : 'G'}
+                                                                </div>
+                                                                <div>
+                                                                    <h5 className="font-bold text-slate-900 dark:text-white leading-tight">
+                                                                        {rep.user.name}
+                                                                    </h5>
+                                                                    <span className="text-[10px] text-slate-400 block mt-0.5 font-medium">
+                                                                        {rep.user.email}
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-5">
+                                                            <span className="block font-bold text-slate-805 dark:text-slate-205">{rep.college}</span>
+                                                            <span className="text-[10px] text-slate-400 block mt-0.5">{rep.branch}</span>
+                                                        </td>
+                                                        <td className="p-5">
+                                                            <div className="flex flex-wrap gap-1">
+                                                                {repSkills.map((sk: string) => (
+                                                                    <span key={sk} className="px-2 py-0.5 bg-slate-101 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded text-[9px] font-bold">
+                                                                        {sk}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-5 text-center font-bold text-slate-900 dark:text-white text-xs">
+                                                            {studentApps.length}
+                                                        </td>
+                                                        <td className="p-5 text-center">
+                                                            <div className="flex justify-center gap-2">
+                                                                <a href={`mailto:${email}`} className="p-2 hover:bg-purple-100/50 dark:hover:bg-purple-950/30 hover:text-purple-600 rounded-lg transition" title="Direct Email Support">
+                                                                    <Mail size={14} />
+                                                                </a>
+                                                                <button onClick={() => alert(`Showing log details for ${rep.user.name}`)} className="p-2 hover:bg-blue-100/50 dark:hover:bg-blue-955/35 hover:text-blue-500 rounded-lg transition" title="Profile Details">
+                                                                    <Eye size={14} />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB: PAYMENTS */}
+                    {activeSubTab === 'payments' && (
+                        <div className="space-y-6 text-left">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider">Billing Ledger & Invoices</h2>
+                                    <p className="text-xs text-slate-400 font-medium">Overview of program revenues, custom sponsorships, and individual registration fees.</p>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                                    <div>
+                                        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">Total Revenues</span>
+                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">₹24,995</h3>
+                                    </div>
+                                    <div className="p-3.5 bg-green-500/10 text-green-605 rounded-2xl">
+                                        <FileSpreadsheet size={20} />
+                                    </div>
+                                </div>
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-205 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                                    <div>
+                                        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">Completed Invoices</span>
+                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">5</h3>
+                                    </div>
+                                    <div className="p-3.5 bg-blue-500/10 text-blue-600 rounded-2xl">
+                                        <ShieldCheck size={20} />
+                                    </div>
+                                </div>
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-205 dark:border-slate-800 shadow-sm flex items-center justify-between">
+                                    <div>
+                                        <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">Pending Clearances</span>
+                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-1">₹0</h3>
+                                    </div>
+                                    <div className="p-3.5 bg-amber-505/10 text-amber-600 rounded-2xl">
+                                        <Sparkles size={20} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-50 dark:bg-slate-950 font-bold border-b text-slate-400 uppercase">
+                                                <th className="p-5">Invoice ID</th>
+                                                <th className="p-5">Reference Graduate</th>
+                                                <th className="p-5">Internship Domain</th>
+                                                <th className="p-5 text-right">Fee Transferred</th>
+                                                <th className="p-5">Date Cleared</th>
+                                                <th className="p-5">State</th>
+                                                <th className="p-5 text-center">Receipt</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {payments.map((p) => (
+                                                <tr key={p.id} className="border-b dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 text-slate-700 dark:text-slate-350">
+                                                    <td className="p-5 font-mono font-bold text-slate-900 dark:text-white">{p.id}</td>
+                                                    <td className="p-5 font-semibold text-slate-850 dark:text-white">{p.studentName}</td>
+                                                    <td className="p-5 font-medium">{p.program}</td>
+                                                    <td className="p-5 text-right font-extrabold text-slate-905 dark:text-white">{p.amount}</td>
+                                                    <td className="p-5 font-medium">{new Date(p.date).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                                                    <td className="p-5">
+                                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black tracking-wider uppercase border inline-block ${p.status === 'PAID'
+                                                            ? 'bg-green-55 text-green-700 border-green-100 dark:bg-green-950/20 dark:text-green-300'
+                                                            : 'bg-red-50 text-red-600 border-red-100 dark:bg-red-955/20'
+                                                            }`}>
+                                                            {p.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-5 text-center">
+                                                        <button onClick={() => alert(`Receipt downloaded for ${p.id}`)} className="p-1.5 bg-slate-100 hover:bg-slate-205 dark:bg-slate-800 dark:hover:bg-slate-700 rounded text-slate-600 dark:text-slate-300" title="Download Transaction Receipt">
+                                                            <Download size={12} />
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB: PROMOTIONS */}
+                    {activeSubTab === 'promotions' && (
+                        <div className="space-y-6 text-left">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h2 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-wider">Promotional Discount Coupons</h2>
+                                    <p className="text-xs text-slate-400 font-medium">Issue or expire dynamic curriculum program registration discounts.</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">Coupon Generator</h3>
+                                <form onSubmit={(e) => {
+                                    e.preventDefault();
+                                    if (!newPromoCode.trim()) return;
+                                    setPromoCodes(prev => [
+                                        ...prev,
+                                        { code: newPromoCode.trim().toUpperCase(), discount: newPromoDiscount, status: 'ACTIVE', uses: 0, expiry: '2026-12-31' }
+                                    ]);
+                                    setNewPromoCode('');
+                                    alert('New promotion code successfully issued!');
+                                }} className="flex flex-col sm:flex-row gap-3 items-end">
+                                    <div className="flex-1 space-y-1 text-left">
+                                        <label className="text-[10px] font-bold text-slate-400">Promo Code</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={newPromoCode}
+                                            onChange={(e) => setNewPromoCode(e.target.value)}
+                                            placeholder="e.g. AUTUMN2026"
+                                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <div className="w-full sm:w-40 space-y-1 text-left">
+                                        <label className="text-[10px] font-bold text-slate-400">Discount Description</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            value={newPromoDiscount}
+                                            onChange={(e) => setNewPromoDiscount(e.target.value)}
+                                            placeholder="e.g. 20% or ₹1000 Off"
+                                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition flex items-center justify-center space-x-2 w-full sm:w-auto"
+                                    >
+                                        <Ticket size={14} />
+                                        <span>Issue Coupon</span>
+                                    </button>
+                                </form>
+                            </div>
+
+                            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-50 dark:bg-slate-950 font-bold border-b text-slate-400 uppercase">
+                                                <th className="p-5">Promo Code</th>
+                                                <th className="p-5">Discount Offered</th>
+                                                <th className="p-5">Valid Expiry</th>
+                                                <th className="p-5 text-center">Total Redemptions</th>
+                                                <th className="p-5">State</th>
+                                                <th className="p-5 text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {promoCodes.map((c) => (
+                                                <tr key={c.code} className="border-b dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 text-slate-700 dark:text-slate-350">
+                                                    <td className="p-5 font-bold font-mono text-slate-905 dark:text-white">{c.code}</td>
+                                                    <td className="p-5 font-semibold text-blue-600 dark:text-blue-400">{c.discount}</td>
+                                                    <td className="p-5">{new Date(c.expiry).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</td>
+                                                    <td className="p-5 text-center font-bold">{c.uses}</td>
+                                                    <td className="p-5">
+                                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border inline-block ${c.status === 'ACTIVE'
+                                                            ? 'bg-green-50 text-green-700 border-green-150'
+                                                            : 'bg-red-50 text-red-650 border-red-155'
+                                                            }`}>
+                                                            {c.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-5 text-center">
+                                                        {c.status === 'ACTIVE' ? (
+                                                            <button
+                                                                onClick={() => {
+                                                                    setPromoCodes(prev => prev.map(item => item.code === c.code ? { ...item, status: 'EXPIRED' } : item));
+                                                                    alert(`Promo code ${c.code} has been declared EXPIRED.`);
+                                                                }}
+                                                                className="px-2 py-1 bg-red-50 text-red-600 border border-red-100 rounded text-[9px] font-black hover:bg-red-100"
+                                                            >
+                                                                Expire
+                                                            </button>
+                                                        ) : (
+                                                            <span className="text-[10px] text-slate-400 font-semibold select-none">No Action</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB: PROMO POPUP */}
+                    {activeSubTab === 'promo-popup' && (
+                        <div className="space-y-6 text-left">
+                            <div>
+                                <h2 className="text-xl font-black text-[#1e293b] dark:text-white uppercase tracking-wider">Master Website Promo Popup</h2>
+                                <p className="text-xs text-slate-405 font-medium">Control the marketing flash banner popup shown to visiting visitors on the Vinix Homepage.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-202 dark:border-slate-800 shadow-sm space-y-5 text-left">
+                                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">Settings Panel</h3>
+
+                                    <div className="flex items-center justify-between pb-3 border-b dark:border-slate-800">
+                                        <div>
+                                            <h5 className="text-xs font-black text-slate-900 dark:text-white">Active Status</h5>
+                                            <p className="text-[10px] text-slate-400 mt-0.5">Toggle visibility of popup to homepage visitors</p>
+                                        </div>
+                                        <div>
+                                            <input
+                                                type="checkbox"
+                                                checked={promoPopup.isActive}
+                                                onChange={(e) => setPromoPopup(prev => ({ ...prev, isActive: e.target.checked }))}
+                                                className="w-10 h-5 bg-slate-200 border-none rounded-full cursor-pointer focus:outline-none"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-slate-400 block">Banner Headline Text</label>
+                                        <input
+                                            type="text"
+                                            value={promoPopup.headline}
+                                            onChange={(e) => setPromoPopup(prev => ({ ...prev, headline: e.target.value }))}
+                                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-slate-400 block">Redirect URL Link</label>
+                                        <input
+                                            type="text"
+                                            value={promoPopup.redirectUrl}
+                                            onChange={(e) => setPromoPopup(prev => ({ ...prev, redirectUrl: e.target.value }))}
+                                            className="w-full bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-808 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <label className="text-[10px] font-bold text-slate-400 block">Button Call to Action</label>
+                                        <input
+                                            type="text"
+                                            value={promoPopup.buttonText}
+                                            onChange={(e) => setPromoPopup(prev => ({ ...prev, buttonText: e.target.value }))}
+                                            className="w-full bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-500"
+                                        />
+                                    </div>
+
+                                    <button onClick={() => alert('Website Popup Details saved to database sync registry!')} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition">
+                                        Save Popup Configs
+                                    </button>
+                                </div>
+
+                                <div className="bg-slate-50 dark:bg-slate-950 p-6 rounded-3xl border border-dashed border-slate-300 dark:border-slate-800 flex flex-col justify-center items-center">
+                                    <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider mb-4 select-none">Live Screen Preview</span>
+                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-805 max-w-sm rounded-[24px] overflow-hidden shadow-2xl p-6 text-left relative space-y-4">
+                                        <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 mx-auto">
+                                            <Megaphone size={20} />
+                                        </div>
+                                        <div className="text-center space-y-1.5">
+                                            <h4 className="text-xs font-bold text-slate-850 dark:text-white">Special Announcement</h4>
+                                            <p className="text-xs font-black text-slate-900 dark:text-white tracking-tight">{promoPopup.headline}</p>
+                                        </div>
+                                        <button className="w-full py-2 bg-blue-600 text-white rounded-lg text-xs font-bold transition shadow-md shadow-blue-500/10">
+                                            {promoPopup.buttonText}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB: EMAIL LOGS */}
+                    {activeSubTab === 'email-logs' && (
+                        <div className="space-y-6 text-left">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <h2 className="text-xl font-black text-[#1e293b] dark:text-white uppercase tracking-wider">System Communication Logs</h2>
+                                    <p className="text-xs text-slate-400 font-medium">Audit logs of automated offer letter and certificate distribution notifications.</p>
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 overflow-hidden shadow-sm">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left text-xs border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-50 dark:bg-slate-950 font-bold border-b text-slate-400 uppercase">
+                                                <th className="p-5">Recipient Details</th>
+                                                <th className="p-5 font-center">Document Type</th>
+                                                <th className="p-5">Subject Header</th>
+                                                <th className="p-5 font-mono text-center">Ref ID</th>
+                                                <th className="p-5">Delivery Time</th>
+                                                <th className="p-5">Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {emailLogs.map((log) => (
+                                                <tr key={log.id} className="border-b dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/50 text-slate-700 dark:text-slate-350 text-left">
+                                                    <td className="p-5">
+                                                        <div className="font-bold text-slate-905 dark:text-white leading-tight">{log.studentName}</div>
+                                                        <div className="text-[10px] text-slate-400 mt-0.5">{log.emailTo}</div>
+                                                    </td>
+                                                    <td className="p-5">
+                                                        <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded text-[9px] font-bold uppercase">
+                                                            {log.documentType.replace('_', ' ')}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-5 font-medium">{log.subject}</td>
+                                                    <td className="p-5 font-mono text-center text-blue-600 dark:text-blue-400">{log.referenceId}</td>
+                                                    <td className="p-5 font-medium">{log.sentAt ? new Date(log.sentAt).toLocaleString('en-US') : 'N/A'}</td>
+                                                    <td className="p-5">
+                                                        <span className={`px-2 py-0.5 rounded text-[8px] font-black uppercase border inline-block ${log.status === 'sent'
+                                                            ? 'bg-green-55 text-green-700 border-green-150'
+                                                            : 'bg-amber-50 text-amber-600 border-amber-150'
+                                                            }`}>
+                                                            {log.status}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                            {emailLogs.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={6} className="p-6 text-center text-slate-400 font-semibold text-xs">
+                                                        No transaction email logs found in current database registry.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* TAB: ANALYTICS */}
+                    {activeSubTab === 'analytics' && (
+                        <div className="space-y-6 text-left">
+                            <h2 className="text-xl font-black text-slate-909 dark:text-white uppercase tracking-wider">Vinix Intelligence & Insights</h2>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Direct Admissions</span>
+                                    <div className="flex items-baseline space-x-2 mt-2">
+                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white">88%</h3>
+                                        <span className="text-[10px] text-green-500 font-black">+4.1% MoM</span>
+                                    </div>
+                                    <div className="w-full bg-slate-100 dark:bg-slate-950 h-1.5 rounded-full mt-4 overflow-hidden">
+                                        <div className="bg-blue-600 h-full rounded-full" style={{ width: '88%' }}></div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-202 dark:border-slate-800 shadow-sm">
+                                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Certificate Issue Conversion</span>
+                                    <div className="flex items-baseline space-x-2 mt-2">
+                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white">94%</h3>
+                                        <span className="text-[10px] text-green-500 font-black">Stable</span>
+                                    </div>
+                                    <div className="w-full bg-slate-100 dark:bg-slate-955 h-1.5 rounded-full mt-4 overflow-hidden">
+                                        <div className="bg-green-600 h-full rounded-full" style={{ width: '94%' }}></div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-202 dark:border-slate-800 shadow-sm">
+                                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Avg. Task Success Rate</span>
+                                    <div className="flex items-baseline space-x-2 mt-2">
+                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white">76%</h3>
+                                        <span className="text-[10px] text-red-500 font-black">-0.6% MoM</span>
+                                    </div>
+                                    <div className="w-full bg-slate-101 dark:bg-slate-950 h-1.5 rounded-full mt-4 overflow-hidden">
+                                        <div className="bg-amber-500 h-full rounded-full" style={{ width: '76%' }}></div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white dark:bg-slate-900 p-5 rounded-3xl border border-slate-202 dark:border-slate-800 shadow-sm">
+                                    <span className="text-[10px] uppercase font-bold text-slate-400 block">Active Engagement</span>
+                                    <div className="flex items-baseline space-x-2 mt-2">
+                                        <h3 className="text-2xl font-black text-slate-900 dark:text-white">92.4%</h3>
+                                        <span className="text-[10px] text-green-500 font-black">+2.4% MoM</span>
+                                    </div>
+                                    <div className="w-full bg-slate-100 dark:bg-slate-950 h-1.5 rounded-full mt-4 overflow-hidden">
+                                        <div className="bg-indigo-650 h-full rounded-full" style={{ width: '92.4%' }}></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <div className="lg:col-span-2 bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+                                    <h3 className="text-xs font-black uppercase tracking-wider text-slate-400">Internship Domain Distribution</h3>
+                                    <div className="space-y-3.5">
+                                        {[
+                                            { name: 'MERN Stack Development', count: 18, pct: 45, color: 'bg-blue-600' },
+                                            { name: 'Python Development', count: 12, pct: 30, color: 'bg-emerald-500' },
+                                            { name: 'Java Development', count: 6, pct: 15, color: 'bg-amber-500' },
+                                            { name: 'UI/UX Design & Research', count: 4, pct: 10, color: 'bg-purple-500' }
+                                        ].map(item => (
+                                            <div key={item.name} className="space-y-1">
+                                                <div className="flex justify-between items-center text-xs">
+                                                    <span className="font-bold text-slate-750 dark:text-slate-205">{item.name}</span>
+                                                    <span className="font-semibold text-slate-400">{item.count} Active ({item.pct}%)</span>
+                                                </div>
+                                                <div className="w-full bg-slate-100 dark:bg-slate-950 h-1.5 rounded-full overflow-hidden">
+                                                    <div className={`${item.color} h-full rounded-full`} style={{ width: `${item.pct}%` }}></div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between space-y-4">
+                                    <h4 className="text-xs font-black uppercase tracking-wider text-slate-400">Total Program Stats</h4>
+                                    <div className="divide-y dark:divide-slate-800 flex-1 flex flex-col justify-around">
+                                        <div className="py-2.5 flex justify-between items-center text-xs">
+                                            <span className="text-slate-500 font-medium">Graduate Placement Status</span>
+                                            <span className="font-black text-green-600">84% Placed</span>
+                                        </div>
+                                        <div className="py-2.5 flex justify-between items-center text-xs">
+                                            <span className="text-slate-500 font-medium">Program Success Rating</span>
+                                            <span className="font-black text-blue-600">4.8 / 5.0</span>
+                                        </div>
+                                        <div className="py-2.5 flex justify-between items-center text-xs">
+                                            <span className="text-slate-500 font-medium">Corporate Partners</span>
+                                            <span className="font-black text-slate-850 dark:text-white">12 Verified</span>
+                                        </div>
+                                    </div>
+                                    <button onClick={() => alert('Exporting full analytics summary report PDF!')} className="w-full py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-750 dark:text-slate-200 text-xs font-bold rounded-xl transition">
+                                        Export Analytics Digest
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                 </main>
             </div>
+
+            {/* Evaluate/Review Modal */}
+            {reviewingSubmission && (
+                <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 rounded-3xl w-full max-w-xl overflow-hidden shadow-2xl animate-in scale-in duration-200 flex flex-col">
+                        <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center bg-slate-50/50 dark:bg-slate-950/20">
+                            <div>
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400">Evaluate Submission</span>
+                                <h3 className="text-base font-black text-slate-900 dark:text-white leading-tight mt-0.5">{reviewingSubmission.title}</h3>
+                            </div>
+                            <button
+                                onClick={() => setReviewingSubmission(null)}
+                                className="p-2 hover:bg-slate-150 dark:hover:bg-slate-800 rounded-full text-slate-400 hover:text-slate-655 transition"
+                            >
+                                <X size={16} />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-4 flex-1 overflow-y-auto">
+                            {/* Student Metadata Card */}
+                            <div className="p-4 bg-slate-50 dark:bg-slate-950 rounded-2xl border border-slate-100 dark:border-slate-800 space-y-2">
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-slate-450 font-semibold text-left">Student Name:</span>
+                                    <span className="font-extrabold text-slate-850 dark:text-white text-right">{reviewingSubmission.student?.name}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-slate-455 font-semibold text-left">Email Identifier:</span>
+                                    <span className="font-medium text-slate-500 text-right">{reviewingSubmission.student?.email}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-slate-450 font-semibold text-left">Enrollment Reference:</span>
+                                    <span className="font-mono font-bold text-blue-600 dark:text-blue-400 text-right">{reviewingSubmission.enrollmentId}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-slate-450 font-semibold text-left">Internship Title:</span>
+                                    <span className="font-bold text-slate-705 dark:text-slate-350 text-right">{reviewingSubmission.course?.title}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-xs">
+                                    <span className="text-slate-450 font-semibold text-left">Submitted On:</span>
+                                    <span className="font-medium text-slate-600 dark:text-slate-400 text-right">
+                                        {new Date(reviewingSubmission.submittedAt).toLocaleString('en-US', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Code details */}
+                            <div className="space-y-1 text-left">
+                                <label className="text-[10px] uppercase font-black tracking-wider text-slate-400">Submission URL / Link</label>
+                                <a
+                                    href={reviewingSubmission.githubLink && reviewingSubmission.githubLink !== '#' ? reviewingSubmission.githubLink : 'https://github.com'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="block p-3.5 bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/50 dark:border-blue-900/30 rounded-2xl text-[11px] font-bold text-blue-600 dark:text-blue-400 hover:underline truncate flex items-center justify-between"
+                                >
+                                    <span className="truncate">{reviewingSubmission.githubLink || 'http://github.com'}</span>
+                                    <ExternalLink size={13} className="flex-shrink-0" />
+                                </a>
+                            </div>
+
+                            <div className="space-y-1 text-left">
+                                <label className="text-[10px] uppercase font-black tracking-wider text-slate-400">Student Description Notes</label>
+                                <p className="p-4 bg-slate-50 dark:bg-slate-900/50 border border-slate-200/50 dark:border-slate-800 rounded-2xl text-xs text-slate-600 dark:text-slate-300 italic min-h-[60px]">
+                                    {reviewingSubmission.description || 'No description notes provided by the student.'}
+                                </p>
+                            </div>
+
+                            {/* Evaluation feedback */}
+                            <div className="space-y-1.5 text-left">
+                                <label className="text-[10px] uppercase font-black tracking-wider text-slate-400">Evaluation Review Feedback</label>
+                                <textarea
+                                    rows={3}
+                                    value={feedbackInput}
+                                    onChange={(e) => setFeedbackInput(e.target.value)}
+                                    placeholder="Provide detailed instruction, critique, or encouraging feedback to the student..."
+                                    className="w-full p-4 bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-2xl text-xs text-slate-800 dark:text-white focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-black transition resize-none"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modal control actions */}
+                        <div className="p-6 bg-slate-50 dark:bg-slate-955 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center gap-3">
+                            <span className="text-[9px] uppercase font-black text-slate-400">Status Flow Decision</span>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const finalFeedback = feedbackInput.trim() || 'Requires review, please refine.';
+                                            if (reviewingSubmission.id.startsWith('mocksub-')) {
+                                                alert('Action disabled for mock student submissions records.');
+                                                setReviewingSubmission(null);
+                                                return;
+                                            }
+                                            await api.put(`/projects/review/${reviewingSubmission.id}`, {
+                                                status: 'REJECTED',
+                                                feedback: finalFeedback
+                                            });
+                                            alert('Task submission reviewed and REJECTED successfully.');
+                                            refreshData();
+                                            setReviewingSubmission(null);
+                                        } catch (error) {
+                                            alert('Failed to evaluate project submission.');
+                                        }
+                                    }}
+                                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
+                                >
+                                    Reject / Revise
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            const finalFeedback = feedbackInput.trim() || 'Excellent work. Approved!';
+                                            if (reviewingSubmission.id.startsWith('mocksub-')) {
+                                                alert('Action disabled for mock student submissions records.');
+                                                setReviewingSubmission(null);
+                                                return;
+                                            }
+                                            await api.put(`/projects/review/${reviewingSubmission.id}`, {
+                                                status: 'APPROVED',
+                                                feedback: finalFeedback
+                                            });
+                                            alert('Task submission reviewed and APPROVED successfully.');
+                                            refreshData();
+                                            setReviewingSubmission(null);
+                                        } catch (error) {
+                                            alert('Failed to evaluate project submission.');
+                                        }
+                                    }}
+                                    className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
+                                >
+                                    Approve Task
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

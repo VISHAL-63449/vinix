@@ -170,6 +170,26 @@ router.get('/admin/offer-letters', authenticateToken, isAdmin, async (req, res) 
     }
 });
 
+// ADMIN: Get all email logs
+router.get('/admin/email-logs', authenticateToken, isAdmin, async (req, res) => {
+    try {
+        const logs = await prisma.$queryRaw`
+            SELECT id, email_to as "emailTo", student_name as "studentName", 
+                   document_type as "documentType", status, subject, 
+                   reference_id as "referenceId", error_message as "errorMessage", 
+                   sent_at as "sentAt", created_at as "createdAt"
+            FROM public.email_logs
+            ORDER BY created_at DESC
+            LIMIT 100
+        `;
+        res.json(logs);
+    } catch (error) {
+        console.warn('Prisma queryRaw for email_logs failed, returning empty list:', error.message);
+        res.json([]);
+    }
+});
+
+
 // 4. STUDENT Route: Get my offer letters
 router.get('/offer-letters', authenticateToken, async (req, res) => {
     try {

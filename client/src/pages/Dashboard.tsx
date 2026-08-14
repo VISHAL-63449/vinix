@@ -48,7 +48,7 @@ interface Project {
     description: string;
     githubLink: string;
     fileUrl?: string;
-    status: 'PENDING' | 'APPROVED' | 'REJECTED';
+    status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUBMITTED' | 'RESUBMISSION_REQUIRED';
     feedback?: string;
     submittedAt: string;
 }
@@ -160,14 +160,15 @@ export const Dashboard: React.FC = () => {
 
     // Dynamically calculate progress metrics for tasks indicator
     const totalAssignments = displayEnrollment?.course?.assignments?.length || 0;
-    const submittedProjects = projects.filter(p =>
+    const approvedProjects = projects.filter(p =>
+        p.status === 'APPROVED' &&
         displayEnrollment?.course?.assignments?.some((as: { title: string }) =>
             p.title.toLowerCase().includes(as.title.toLowerCase()) ||
             as.title.toLowerCase().includes(p.title.toLowerCase())
         )
     );
-    const submittedProjectsCount = submittedProjects.length;
-    const completedTasksCount = (hasLinkedIn ? 1 : 0) + submittedProjectsCount;
+    const approvedProjectsCount = approvedProjects.length;
+    const completedTasksCount = (hasLinkedIn ? 1 : 0) + approvedProjectsCount;
     const totalTasksCount = (displayEnrollment?.course?.assignments ? 1 + totalAssignments : 1);
 
     const progress = (() => {
@@ -176,9 +177,18 @@ export const Dashboard: React.FC = () => {
         if (totalAssignmentsCount === 0) {
             return Math.max(displayEnrollment.progress, hasLinkedIn ? 100 : 0);
         }
-        const computed = (hasLinkedIn ? 20 : 0) + Math.round((submittedProjectsCount / totalAssignmentsCount) * 80);
-        return Math.max(displayEnrollment.progress, computed);
+        const computed = (hasLinkedIn ? 20 : 0) + Math.round((approvedProjectsCount / totalAssignmentsCount) * 80);
+        return Math.min(100, Math.max(displayEnrollment.progress, computed));
     })();
+
+    const getLatestTaskSubmission = (taskTitle: string) => {
+        const subs = projects.filter(p =>
+            p.title.toLowerCase().includes(taskTitle.toLowerCase()) ||
+            taskTitle.toLowerCase().includes(p.title.toLowerCase())
+        );
+        if (subs.length === 0) return null;
+        return subs.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())[0];
+    };
 
     const loadData = async () => {
         try {
@@ -700,54 +710,98 @@ export const Dashboard: React.FC = () => {
                                     const dueDate = new Date();
                                     dueDate.setDate(dueDate.getDate() + offsetDays);
 
-                                    const isSubmitted = projects.some(p => p.title.toLowerCase().includes(as.title.toLowerCase()) || as.title.toLowerCase().includes(p.title.toLowerCase()));
+                                    const sub = getLatestTaskSubmission(as.title);
+
+                                    let isUnlocked = true;
+                                    if (index > 0 && displayEnrollment.course.assignments) {
+                                        const prevTask = displayEnrollment.course.assignments[index - 1];
+                                        const prevSub = getLatestTaskSubmission(prevTask.title);
+                                        isUnlocked = !!prevSub && prevSub.status === 'APPROVED';
+                                    }
 
                                     return (
                                         <div
                                             key={as.id || index}
-                                            className="p-5 rounded-2xl bg-white border border-slate-205 dark:bg-slate-900 dark:border-slate-850 flex flex-col justify-between space-y-4 hover:shadow-lg hover:border-blue-500/30 transition-all duration-300 transform hover:-translate-y-0.5"
+                                            className={`p-5 rounded-2xl bg-white border border-slate-205 dark:bg-slate-900 dark:border-slate-850 flex flex-col justify-between space-y-4 shadow-sm transition-all duration-300 ${!isUnlocked ? 'opacity-65 saturate-50 select-none' : 'hover:shadow-lg hover:border-blue-500/30 transform hover:-translate-y-0.5'
+                                                }`}
                                         >
-                                            <div className="space-y-3">
+                                            <div className="space-y-3 font-sans">
                                                 <div className="flex justify-between items-center">
                                                     <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-650 flex items-center justify-center font-extrabold text-sm dark:bg-blue-955/20 dark:text-blue-400">
                                                         {index + 1}
                                                     </div>
                                                     <div className="flex flex-col items-end gap-1 select-none">
-                                                        <span className={`px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wide rounded-full ${isSubmitted ? 'bg-green-500/10 text-green-500' : 'bg-blue-55 text-blue-700 dark:bg-blue-900/30'}`}>
-                                                            {isSubmitted ? 'SUBMITTED' : 'AVAILABLE'}
-                                                        </span>
-                                                        {!isSubmitted && (
-                                                            <span className="px-2 py-0.5 text-[8px] font-bold text-emerald-600 bg-emerald-50 rounded-full dark:bg-emerald-950/20">{offsetDays} Days Left</span>
+                                                        {!isUnlocked ? (
+                                                            <span className="px-2 py-0.5 text-[8px] font-black uppercase tracking-wide rounded-full bg-slate-100 text-slate-400 dark:bg-slate-800 dark:text-slate-500">
+                                                                🔒 LOCKED
+                                                            </span>
+                                                        ) : sub ? (
+                                                            <span className={`px-2 py-0.5 text-[8px] font-black uppercase tracking-wide rounded-full ${sub.status === 'APPROVED' ? 'bg-green-500/10 text-green-500' :
+                                                                sub.status === 'REJECTED' || sub.status === 'RESUBMISSION_REQUIRED' ? 'bg-red-500/10 text-red-500' :
+                                                                    'bg-amber-500/10 text-amber-500'
+                                                                }`}>
+                                                                {sub.status === 'SUBMITTED' || sub.status === 'PENDING' ? 'PENDING REVIEW' : sub.status}
+                                                            </span>
+                                                        ) : (
+                                                            <span className="px-2 py-0.5 text-[8px] font-extrabold uppercase tracking-wide rounded-full bg-blue-55 text-blue-700 dark:bg-blue-900/30">
+                                                                AVAILABLE
+                                                            </span>
                                                         )}
                                                     </div>
                                                 </div>
 
-                                                <p className="text-[10px] text-slate-400 font-bold">Due Date: {dueDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                                                <p className="text-[10px] text-slate-405 font-bold font-mono">Due Date: {dueDate.toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
 
                                                 <h4 className="text-xs font-extrabold text-slate-950 dark:text-white">
                                                     {as.title}
                                                 </h4>
 
-                                                {/* Key Features mock bullet list for high-fidelity aesthetics matching screenshot */}
                                                 <div className="space-y-1">
                                                     <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block leading-none mb-1">Tasks Scope:</span>
-                                                    <p className="text-[11px] text-slate-550 dark:text-slate-400 leading-relaxed font-semibold">
+                                                    <p className="text-[11px] text-slate-550 dark:text-slate-405 leading-relaxed font-semibold">
                                                         {as.desc}
                                                     </p>
-
-                                                    {/* Key Features Mock */}
                                                     <ul className="text-[10px] text-slate-450 space-y-1 pt-1.5 list-disc pl-3 leading-normal">
                                                         <li>Complete modular structure and validations</li>
                                                         <li>Submit deployment code repository</li>
                                                     </ul>
                                                 </div>
+
+                                                {isUnlocked && sub && (sub.status === 'REJECTED' || sub.status === 'RESUBMISSION_REQUIRED') && sub.feedback && (
+                                                    <div className="p-3 bg-red-500/5 border border-red-500/20 rounded-xl space-y-1 mt-2">
+                                                        <span className="text-[9px] font-black uppercase text-red-500 block">❌ Submission Rejected</span>
+                                                        <span className="text-[9px] font-bold text-slate-400 block pb-0.5">Feedback/Reason:</span>
+                                                        <p className="text-[10px] text-red-800 dark:text-red-300 font-medium leading-relaxed font-sans">{sub.feedback}</p>
+                                                    </div>
+                                                )}
                                             </div>
 
                                             <div className="pt-3 border-t border-slate-100 dark:border-slate-800">
-                                                {isSubmitted ? (
-                                                    <span className="w-full flex items-center justify-center space-x-1 py-2 text-xs font-bold text-green-700 bg-green-50 border border-green-150 rounded-xl select-none">
-                                                        <span>✓ Submitted & Logged</span>
+                                                {!isUnlocked ? (
+                                                    <span className="w-full flex items-center justify-center space-x-1 py-2 text-xs font-bold text-slate-400 bg-slate-105 dark:bg-slate-800 rounded-xl select-none">
+                                                        <span>🔒 Locked — Complete previous tasks</span>
                                                     </span>
+                                                ) : sub ? (
+                                                    sub.status === 'APPROVED' ? (
+                                                        <span className="w-full flex items-center justify-center space-x-1 py-2 text-xs font-bold text-green-700 bg-green-50 border border-green-150 rounded-xl select-none">
+                                                            <span>✓ Approved ✓</span>
+                                                        </span>
+                                                    ) : sub.status === 'REJECTED' || sub.status === 'RESUBMISSION_REQUIRED' ? (
+                                                        <button
+                                                            onClick={() => {
+                                                                setProjectTitle(as.title);
+                                                                setIsSubmitModalOpen(true);
+                                                            }}
+                                                            className="w-full py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition duration-150 shadow-sm"
+                                                        >
+                                                            Resubmit Project
+                                                        </button>
+                                                    ) : (
+                                                        <div className="w-full text-center py-2.5 text-[11px] font-bold text-amber-700 bg-amber-50/50 dark:bg-amber-950/20 rounded-xl select-none leading-none flex flex-col items-center justify-center gap-1 border border-amber-205/60">
+                                                            <span className="text-xs">✓ Submission Received</span>
+                                                            <span className="text-[9px] text-slate-500 font-medium mt-1">⏳ Waiting for Admin Review</span>
+                                                        </div>
+                                                    )
                                                 ) : (
                                                     <button
                                                         onClick={() => {
@@ -760,7 +814,6 @@ export const Dashboard: React.FC = () => {
                                                     </button>
                                                 )}
                                             </div>
-
                                         </div>
                                     );
                                 })}
@@ -1007,13 +1060,42 @@ export const Dashboard: React.FC = () => {
 
                 {/* Tab 5: Certificates */}
                 {activeTab === 'credentials' && (
-                    <div className="space-y-6">
-                        <h2 className="text-2xl font-bold">Certificates of Internship</h2>
+                    <div className="space-y-6 font-sans">
+                        <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                            <Award className="text-blue-600" />
+                            <span>Certificates of Internship</span>
+                        </h2>
                         {certificates.length === 0 ? (
-                            <div className="bg-white dark:bg-slate-900 border p-12 rounded-3xl text-center space-y-2">
-                                <Award size={36} className="mx-auto text-slate-400" />
-                                <h3 className="font-bold">No certificates generated yet</h3>
-                            </div>
+                            (!displayEnrollment || completedTasksCount < totalTasksCount) ? (
+                                <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 p-12 rounded-3xl text-center space-y-4 shadow-sm max-w-lg mx-auto">
+                                    <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mx-auto text-2xl">
+                                        🔒
+                                    </div>
+                                    <h3 className="font-extrabold text-lg text-slate-900 dark:text-white">Certificate Locked</h3>
+                                    <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
+                                        Complete admin verification to receive your certificate. All milestone tasks and the final project submissions must be evaluated and approved.
+                                    </p>
+                                    <div className="text-[11px] text-slate-400 font-bold bg-slate-50 dark:bg-slate-950 p-4 rounded-2xl max-w-xs mx-auto border dark:border-slate-850 space-y-2">
+                                        <div className="flex justify-between text-xs text-slate-600 dark:text-slate-300">
+                                            <span>Task Progress:</span>
+                                            <span>{completedTasksCount} / {totalTasksCount} Approved</span>
+                                        </div>
+                                        <div className="w-full bg-slate-200 dark:bg-slate-850 h-2 rounded-full overflow-hidden">
+                                            <div className="bg-blue-650 h-full rounded-full transition-all duration-300" style={{ width: `${(completedTasksCount / totalTasksCount) * 100}%` }}></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 p-12 rounded-3xl text-center space-y-4 shadow-sm max-w-lg mx-auto">
+                                    <div className="w-16 h-16 bg-blue-50 text-blue-600 dark:bg-blue-955/20 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto">
+                                        <Award size={32} />
+                                    </div>
+                                    <h3 className="font-bold text-slate-850 dark:text-white">Eligible for Certificate!</h3>
+                                    <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
+                                        Congratulations! You have completed all task requirements. Your official certificate is being compiled and will be available to preview shortly.
+                                    </p>
+                                </div>
+                            )
                         ) : (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {certificates.map((cert) => (

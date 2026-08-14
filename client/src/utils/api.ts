@@ -273,6 +273,13 @@ const initMockDB = () => {
     ];
     localStorage.setItem('vionix_mock_certificates', JSON.stringify(defaultCertificates));
 
+    const defaultEmailLogs = [
+        { id: 'mock-log-1', emailTo: 'aravind@gmail.com', studentName: 'Aravind S', documentType: 'OFFER_LETTER', status: 'SENT', subject: 'Your Vinix Internship Offer Letter', referenceId: 'VINIX-OFFER-2026-1001', sentAt: new Date(Date.now() - 3600000).toISOString(), createdAt: new Date(Date.now() - 3600000).toISOString() },
+        { id: 'mock-log-2', emailTo: 'student@vinix.com', studentName: 'Vishal R', documentType: 'CERTIFICATE', status: 'SENT', subject: 'Your Vinix Internship Certificate', referenceId: 'VINIX-WEB-2026-0001', sentAt: new Date(Date.now() - 7200000).toISOString(), createdAt: new Date(Date.now() - 7200000).toISOString() },
+        { id: 'mock-log-3', emailTo: 'aditya@gmail.com', studentName: 'Aditya Kumar', documentType: 'OFFER_LETTER', status: 'SENT', subject: 'Your Vinix Internship Offer Letter', referenceId: 'VINIX-OFFER-2026-1002', sentAt: new Date(Date.now() - 86400000).toISOString(), createdAt: new Date(Date.now() - 86400000).toISOString() }
+    ];
+    localStorage.setItem('vionix_mock_email_logs', JSON.stringify(defaultEmailLogs));
+
     localStorage.setItem('vionix_mock_initialized', 'true');
 };
 
@@ -386,6 +393,7 @@ const handleMockRequest = async (config: { url?: string; method?: string; data?:
     const offerLetters = getStore('vionix_mock_offer_letters');
     const projects = getStore('vionix_mock_projects');
     const certificates = getStore('vionix_mock_certificates');
+    const emailLogs = getStore('vionix_mock_email_logs');
 
     const currentUser = users.find((u: { id: string }) => u.id === currentUserId);
 
@@ -794,6 +802,16 @@ const handleMockRequest = async (config: { url?: string; method?: string; data?:
         (letter as Record<string, unknown>).status = 'DECLINED';
         setStore('vionix_mock_offer_letters', offerLetters);
         return returnJSON(letter);
+    }
+
+    if (path === '/admin/offer-letters' && method === 'get') {
+        if (!currentUser || currentUser.role !== 'ADMIN') return returnError('Admin role required.', 403);
+        return returnJSON(offerLetters);
+    }
+
+    if (path === '/admin/email-logs' && method === 'get') {
+        if (!currentUser || currentUser.role !== 'ADMIN') return returnError('Admin role required.', 403);
+        return returnJSON(emailLogs);
     }
 
     return returnError('Endpoint mock route not implemented.', 404);
