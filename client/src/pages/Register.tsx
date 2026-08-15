@@ -31,7 +31,7 @@ export const Register: React.FC = () => {
                     .eq('id', sbUser.id)
                     .maybeSingle();
 
-                if (profile?.role === 'ADMIN') {
+                if (profile?.role?.toUpperCase() === 'ADMIN' || profile?.role?.toUpperCase() === 'FOUNDER') {
                     navigate('/admin');
                 } else {
                     navigate('/dashboard');
