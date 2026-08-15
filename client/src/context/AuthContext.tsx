@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../utils/api';
 import { supabase } from '../utils/supabase';
 
 interface User {
@@ -24,48 +23,83 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(localStorage.getItem('vionix_token'));
+    const [token, setToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
+
+    const checkAndSyncProfile = async (sbUser: any) => {
+        if (!sbUser) return null;
+        try {
+            // Check if profile exists
+            const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', sbUser.id)
+                .maybeSingle();
+
+            if (error) throw error;
+
+            let finalProfile = profile;
+            if (!finalProfile) {
+                // Try backfilling profile
+                const fullName = sbUser.user_metadata?.name || sbUser.email?.split('@')[0] || 'New Student';
+                const email = sbUser.email || '';
+                const role = sbUser.user_metadata?.role || 'student';
+
+                const { data: inserted, error: insertErr } = await supabase
+                    .from('profiles')
+                    .insert({
+                        id: sbUser.id,
+                        full_name: fullName,
+                        email: email,
+                        role: role
+                    })
+                    .select()
+                    .single();
+
+                if (insertErr) {
+                    console.warn('[AuthContext] Profile backfill insert error:', insertErr);
+                } else {
+                    finalProfile = inserted;
+                }
+            }
+
+            const mappedRole = (finalProfile?.role === 'admin' || finalProfile?.role === 'founder') ? 'ADMIN' : 'STUDENT';
+            return {
+                id: sbUser.id,
+                name: finalProfile?.full_name || sbUser.user_metadata?.name || sbUser.email?.split('@')[0] || 'Student',
+                email: sbUser.email || '',
+                role: mappedRole,
+                skills: []
+            } as User;
+        } catch (err) {
+            console.error('[AuthContext] Error syncing user profile:', err);
+            // Return a safe fallback context
+            return {
+                id: sbUser.id,
+                name: sbUser.user_metadata?.name || sbUser.email?.split('@')[0] || 'Student',
+                email: sbUser.email || '',
+                role: (sbUser.user_metadata?.role === 'admin') ? 'ADMIN' : 'STUDENT',
+                skills: []
+            } as User;
+        }
+    };
 
     useEffect(() => {
         const initAuth = async () => {
             console.log("[AuthContext] Initializing auth session check...");
             setLoading(true);
             try {
-                // 1. Fetch current user session from Supabase first
-                const { data: { user: sbUser } } = await supabase.auth.getUser();
-                console.log("[AuthContext] CURRENT AUTH USER on init:", sbUser);
-
-                if (sbUser) {
-                    console.log("[AuthContext] Restoring login details for user:", sbUser.id);
-                    try {
-                        const res = await api.get('/auth/me');
-                        setUser(res.data);
-                    } catch (err) {
-                        console.warn("[AuthContext] Local /me endpoint failed, reconstructing from Supabase profile metadata:", err);
-                        setUser({
-                            id: sbUser.id,
-                            name: sbUser.user_metadata?.name || sbUser.email?.split('@')[0] || 'Student',
-                            email: sbUser.email || '',
-                            role: sbUser.user_metadata?.role || 'STUDENT',
-                            skills: []
-                        });
-                    }
+                const { data: { session } } = await supabase.auth.getSession();
+                if (session?.user) {
+                    const mappedUser = await checkAndSyncProfile(session.user);
+                    setUser(mappedUser);
+                    setToken(session.access_token);
                 } else {
-                    // Fall back to local check (e.g. mock user or local account without Supabase sync)
-                    const storedToken = localStorage.getItem('vionix_token');
-                    if (storedToken) {
-                        try {
-                            const res = await api.get('/auth/me');
-                            setUser(res.data);
-                        } catch (error) {
-                            console.error('[AuthContext] Failed to get local profile of stored token:', error);
-                            // Do not call logout() which could clear local token if connection is transiently offline
-                        }
-                    }
+                    setUser(null);
+                    setToken(null);
                 }
             } catch (err) {
-                console.error("[AuthContext] Auth session initialization skipped/error:", err);
+                console.error("[AuthContext] Auth session initialization failed:", err);
             } finally {
                 setLoading(false);
             }
@@ -73,31 +107,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         initAuth();
 
-        // Listen for Supabase authorization state changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log("[AuthContext] SUPABASE AUTH EVENT TRIGGERED:", event);
-            console.log("SESSION USER:", session?.user?.id);
-
-            if (event === 'SIGNED_IN' && session?.user) {
-                const sbUser = session.user;
-                try {
-                    const res = await api.get('/auth/me');
-                    setUser(res.data);
-                } catch (err) {
-                    console.warn("[AuthContext] Syncing on signed_in event failed, setting local state to Supabase profile:", err);
-                    setUser({
-                        id: sbUser.id,
-                        name: sbUser.user_metadata?.name || sbUser.email?.split('@')[0] || 'Student',
-                        email: sbUser.email || '',
-                        role: sbUser.user_metadata?.role || 'STUDENT',
-                        skills: []
-                    });
-                }
-            } else if (event === 'SIGNED_OUT') {
-                console.log("[AuthContext] User log out event received.");
+            if (session?.user) {
+                const mappedUser = await checkAndSyncProfile(session.user);
+                setUser(mappedUser);
+                setToken(session.access_token);
+            } else {
                 setUser(null);
                 setToken(null);
             }
+            setLoading(false);
         });
 
         return () => {
@@ -109,68 +129,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(true);
         console.log("[AuthContext] Initiating login for:", email);
         try {
-            // 1. Authenticate with Supabase Auth
-            let sbUser: Record<string, unknown> | null = null;
-            try {
-                const { data, error: sbError } = await supabase.auth.signInWithPassword({
-                    email,
-                    password,
-                });
-                if (sbError) {
-                    console.warn('[AuthContext] Supabase login error status:', sbError.status, sbError.message);
-                } else if (data?.user) {
-                    sbUser = data.user as unknown as Record<string, unknown>;
-                    console.log('[AuthContext] Supabase login success:', sbUser.id);
-                }
-            } catch (err) {
-                console.warn('[AuthContext] Supabase offline/error, proceeding with local auth:', (err as Error).message);
-            }
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
 
-            // 2. Authenticate with Local Server
-            try {
-                console.log("[AuthContext] Authenticating with local server...");
-                const res = await api.post('/auth/login', { email, password });
-                const { token: receivedToken, user: receivedUser } = res.data;
-                console.log("[AuthContext] Local server authentication success for role:", receivedUser.role);
-                localStorage.setItem('vionix_token', receivedToken);
-                setToken(receivedToken);
-                setUser(receivedUser);
-            } catch (localErr) {
-                const errObj = localErr as Record<string, unknown>;
-                const responseObj = errObj.response as Record<string, unknown> | undefined;
-                const dataObj = responseObj?.data as Record<string, unknown> | undefined;
-                console.warn("[AuthContext] Local login failed:", (dataObj?.message as string) || (errObj.message as string));
-                // If local login fails but we did authenticate with Supabase, auto-create local record
-                if (sbUser) {
-                    try {
-                        console.log("[AuthContext] Syncing Supabase user to local DB...");
-                        const metadata = sbUser.user_metadata as Record<string, unknown> | undefined;
-                        const name = metadata?.name as string | undefined || email.split('@')[0];
-                        const role = metadata?.role as string | undefined || 'STUDENT';
+            if (error) throw error;
 
-                        const registerRes = await api.post('/auth/register', { id: sbUser.id as string, name, email, password, role });
-                        const { token: receivedToken, user: receivedUser } = registerRes.data;
-                        console.log("[AuthContext] Sync completed, logged in local user:", receivedUser.id);
-                        localStorage.setItem('vionix_token', receivedToken);
-                        setToken(receivedToken);
-                        setUser(receivedUser);
-                    } catch (syncErr) {
-                        const errObjSync = syncErr as Record<string, unknown>;
-                        const responseObjSync = errObjSync.response as Record<string, unknown> | undefined;
-                        const dataObjSync = responseObjSync?.data as Record<string, unknown> | undefined;
-                        throw new Error((dataObjSync?.message as string) || (errObjSync.message as string) || 'Authentication synchronization failed.');
-                    }
-                } else {
-                    throw localErr;
-                }
+            if (data?.user) {
+                const mappedUser = await checkAndSyncProfile(data.user);
+                setUser(mappedUser);
+                setToken(data.session?.access_token || null);
             }
-        } catch (error) {
-            setLoading(false);
-            console.error("[AuthContext] Login failed with error:", error);
-            const errObj = error as Record<string, unknown>;
-            const responseObj = errObj.response as Record<string, unknown> | undefined;
-            const dataObj = responseObj?.data as Record<string, unknown> | undefined;
-            throw new Error((dataObj?.message as string) || (errObj.message as string) || 'Login failed.');
+        } catch (error: any) {
+            console.error("[AuthContext] login failed:", error);
+            throw new Error(error.message || 'Login failed.');
         } finally {
             setLoading(false);
         }
@@ -179,82 +152,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const register = async (name: string, email: string, password: string, role = 'STUDENT') => {
         setLoading(true);
         try {
-            // 1. Register user on Supabase Auth
-            let sbUserId: string | undefined = undefined;
-            let isAlreadyRegistered = false;
-            try {
-                const { data: sbSignUpData, error: sbError } = await supabase.auth.signUp({
-                    email,
-                    password,
-                    options: {
-                        data: { name, role }
-                    }
-                });
-                if (sbSignUpData?.user) {
-                    sbUserId = sbSignUpData.user.id;
-                }
-                if (sbError) {
-                    if (sbError.status === 400 || sbError.status === 422 || sbError.message?.includes('already')) {
-                        isAlreadyRegistered = true;
-                    } else {
-                        console.warn('Supabase registration warning:', sbError);
+            const cleanRole = role.toLowerCase();
+            const { data, error } = await supabase.auth.signUp({
+                email,
+                password,
+                options: {
+                    data: {
+                        name: name,
+                        role: cleanRole
                     }
                 }
-            } catch (err) {
-                const errObj = err as Record<string, unknown>;
-                const status = errObj.status as number | undefined;
-                const msg = errObj.message as string | undefined;
-                if (status === 400 || status === 422 || msg?.includes('already')) {
-                    isAlreadyRegistered = true;
-                } else {
-                    console.warn('Supabase offline or unreachable. Registering user on Local/Mock database only.');
-                }
-            }
+            });
 
-            if (isAlreadyRegistered) {
-                // Check if they can log in to that account on Supabase (validating password)
-                try {
-                    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
-                        email,
-                        password,
-                    });
-                    if (signInData?.user) {
-                        sbUserId = signInData.user.id;
-                    }
-                    if (signInError) {
-                        const msg = signInError.message?.toLowerCase() || '';
-                        if (msg.includes('confirm') || msg.includes('verification')) {
-                            // Password is correct, but email is not confirmed yet. Allow recovery of local DB sync.
-                        } else {
-                            throw new Error('This email is already registered. If you are the owner, please use the correct password.');
-                        }
-                    }
-                } catch (signInErr) {
-                    const errObj = signInErr as Record<string, unknown>;
-                    const msg = (errObj.message as string | undefined)?.toLowerCase() || '';
-                    if (!msg.includes('confirm') && !msg.includes('verification')) {
-                        throw new Error((errObj.message as string) || 'This email is already registered. If you are the owner, please use the correct password.');
-                    }
-                }
-            }
+            if (error) throw error;
 
-            // 2. Save user on the Database through Local Server (passing custom Supabase UUID id)
-            const res = await api.post('/auth/register', { id: sbUserId, name, email, password, role });
-            const { token: receivedToken, user: receivedUser } = res.data;
-            localStorage.setItem('vionix_token', receivedToken);
-            setToken(receivedToken);
-            setUser(receivedUser);
-        } catch (error) {
-            setLoading(false);
-            const errObj = error as Record<string, unknown>;
-            const responseObj = errObj.response as Record<string, unknown> | undefined;
-            const dataObj = responseObj?.data as Record<string, unknown> | undefined;
-            throw new Error((dataObj?.message as string) || (errObj.message as string) || 'Registration failed.');
+            if (data?.user) {
+                const mappedUser = await checkAndSyncProfile(data.user);
+                setUser(mappedUser);
+                setToken(data.session?.access_token || null);
+            }
+        } catch (error: any) {
+            console.error("[AuthContext] registration failed:", error);
+            throw new Error(error.message || 'Registration failed.');
         } finally {
             setLoading(false);
         }
     };
-
 
     const logout = async () => {
         try {
@@ -262,22 +185,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         } catch (err) {
             console.error('Failed to sign out from Supabase Auth:', err);
         }
-        localStorage.removeItem('vionix_token');
-        setToken(null);
         setUser(null);
+        setToken(null);
         setLoading(false);
     };
 
-
     const updateProfile = async (name: string, skills: string[]) => {
         try {
-            const res = await api.put('/auth/profile', { name, skills });
-            setUser(res.data);
-        } catch (error) {
-            const errObj = error as Record<string, unknown>;
-            const responseObj = errObj.response as Record<string, unknown> | undefined;
-            const dataObj = responseObj?.data as Record<string, unknown> | undefined;
-            throw new Error((dataObj?.message as string) || 'Failed to update profile.');
+            const { data: { user: sbUser } } = await supabase.auth.getUser();
+            if (!sbUser) throw new Error('No user session found.');
+
+            const { error } = await supabase
+                .from('profiles')
+                .update({
+                    full_name: name
+                })
+                .eq('id', sbUser.id);
+
+            if (error) throw error;
+            setUser(prev => prev ? { ...prev, name, skills } : null);
+        } catch (error: any) {
+            console.error('[AuthContext] Update profile error:', error);
+            throw new Error(error.message || 'Failed to update profile.');
         }
     };
 

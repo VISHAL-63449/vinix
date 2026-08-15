@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../utils/api';
+import { supabase } from '../utils/supabase';
 import { Search, ShieldCheck, Calendar, User, Award, ShieldAlert, FileDown, Printer, GraduationCap, Briefcase, FileCode2, CalendarRange } from 'lucide-react';
 
 interface VerificationResult {
@@ -29,13 +29,33 @@ export const VerifyCertificate: React.FC = () => {
         setResult(null);
 
         try {
-            const res = await api.get(`/certificates/verify/${idToVerify.trim()}`);
-            setResult(res.data);
-        } catch (err) {
-            const errorObj = err as Record<string, unknown>;
-            const responseObj = errorObj.response as Record<string, unknown> | undefined;
-            const dataObj = responseObj?.data as Record<string, unknown> | undefined;
-            setError((dataObj?.message as string) || 'Certificate ID not found. Verify character spelling.');
+            const { data, error: fetchError } = await supabase
+                .from('certificates')
+                .select('*')
+                .eq('certificate_number', idToVerify.trim())
+                .maybeSingle();
+
+            if (fetchError || !data) {
+                throw new Error('Certificate ID not found. Verify character spelling.');
+            }
+
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('full_name')
+                .eq('id', data.user_id)
+                .maybeSingle();
+
+            setResult({
+                verified: true,
+                certificateNumber: data.certificate_number,
+                studentName: profile?.full_name || 'Vinix Graduate',
+                courseName: data.course_name,
+                issueDate: data.issue_date,
+                organization: 'Vinix Technologies',
+                status: data.status
+            });
+        } catch (err: any) {
+            setError(err.message || 'Certificate ID not found. Verify character spelling.');
         } finally {
             setLoading(false);
         }

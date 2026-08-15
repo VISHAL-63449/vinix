@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { GraduationCap } from 'lucide-react';
-import api from '../utils/api';
+import { supabase } from '../utils/supabase';
 
 export const Register: React.FC = () => {
     const { register } = useAuth();
@@ -23,9 +23,19 @@ export const Register: React.FC = () => {
         try {
             await register(name, email, password, role);
 
-            const meRes = await api.get('/auth/me');
-            if (meRes.data.role === 'ADMIN') {
-                navigate('/admin');
+            const { data: { user: sbUser } } = await supabase.auth.getUser();
+            if (sbUser) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', sbUser.id)
+                    .maybeSingle();
+
+                if (profile?.role === 'ADMIN') {
+                    navigate('/admin');
+                } else {
+                    navigate('/dashboard');
+                }
             } else {
                 navigate('/dashboard');
             }

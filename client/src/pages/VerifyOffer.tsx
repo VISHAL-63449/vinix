@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import api from '../utils/api';
+import { supabase } from '../utils/supabase';
 import { Search, ShieldCheck, Calendar, User, Award, ShieldAlert, CheckCircle } from 'lucide-react';
 
 interface OfferLetterVerificationResult {
@@ -30,13 +30,28 @@ export const VerifyOffer: React.FC = () => {
         setResult(null);
 
         try {
-            const res = await api.get(`/offer-letters/verify/${tokenToVerify.trim()}`);
-            setResult(res.data);
-        } catch (err) {
-            const errorObj = err as Record<string, unknown>;
-            const responseObj = errorObj.response as Record<string, unknown> | undefined;
-            const dataObj = responseObj?.data as Record<string, unknown> | undefined;
-            setError((dataObj?.message as string) || 'Offer Letter verification token not found or invalid.');
+            const { data, error: fetchError } = await supabase
+                .from('offer_letters')
+                .select('*')
+                .or(`offer_letter_id.eq.${tokenToVerify.trim()},verification_token.eq.${tokenToVerify.trim()}`)
+                .maybeSingle();
+
+            if (fetchError || !data) {
+                throw new Error('Offer Letter verification token not found or invalid.');
+            }
+
+            setResult({
+                verified: true,
+                offerLetterId: data.offer_letter_id,
+                studentName: data.student_name,
+                internshipTitle: data.internship_title,
+                duration: data.duration,
+                issueDate: data.issue_date,
+                status: data.status,
+                verificationResult: 'OFFICIAL RECORD VALIDATED'
+            });
+        } catch (err: any) {
+            setError(err.message || 'Offer Letter verification token not found or invalid.');
         } finally {
             setLoading(false);
         }

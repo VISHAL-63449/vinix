@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../utils/supabase';
 import {
     LayoutDashboard, CheckSquare, Search, ShieldCheck,
     User, FolderOpen, Award, FileSpreadsheet, Plus, Trash2, Edit3,
@@ -160,29 +160,145 @@ export const AdminPortal: React.FC = () => {
 
     const refreshData = async () => {
         try {
-            const [coursesRes, submitRes, certsRes, enrollRes, offerLettersRes, emailLogsRes] = await Promise.all([
-                api.get('/courses'),
-                api.get('/projects'),
-                api.get('/certificates'),
-                api.get('/enrollments/admin/all').catch(err => {
-                    console.warn('Fallback admin enrollments request:', err);
-                    return { data: [] };
-                }),
-                api.get('/admin/offer-letters').catch(err => {
-                    console.warn('Fallback admin offer letters request:', err);
-                    return { data: [] };
-                }),
-                api.get('/admin/email-logs').catch(err => {
-                    console.warn('Fallback admin email logs request:', err);
-                    return { data: [] };
-                })
-            ]);
-            setCourses(coursesRes.data);
-            setSubmissions(submitRes.data);
-            setCertificates(certsRes.data);
-            setEnrollments(enrollRes.data);
-            setOfferLetters(offerLettersRes.data);
-            setEmailLogs(emailLogsRes.data || []);
+            // 1. Fetch internships (courses)
+            const { data: coursesData } = await supabase
+                .from('internships')
+                .select('*');
+
+            const formattedCourses: Course[] = (coursesData || []).map(i => ({
+                id: i.id,
+                title: i.title,
+                category: i.domain,
+                description: i.description || '',
+                duration: i.duration || '3 Months',
+                type: 'INTERNSHIP',
+                skills: [i.domain]
+            }));
+            setCourses(formattedCourses);
+
+            // 2. Fetch submissions (task_progress)
+            const { data: progressData } = await supabase
+                .from('task_progress')
+                .select(`
+                    *,
+                    task:task_id (*),
+                    profile:user_id (*)
+                `)
+                .order('submitted_at', { ascending: false });
+
+            const formattedSubmissions: Submission[] = [];
+            for (const p of (progressData || [])) {
+                if (p.status === 'submitted' || p.status === 'approved' || p.status === 'rejected') {
+                    formattedSubmissions.push({
+                        id: p.id,
+                        title: p.task?.title || 'Milestone Task',
+                        description: p.student_note || '',
+                        githubLink: p.github_url || p.linkedin_url || '',
+                        status: p.status === 'submitted' ? 'PENDING' : p.status.toUpperCase(),
+                        feedback: p.admin_feedback || '',
+                        submittedAt: p.submitted_at || p.created_at,
+                        studentId: p.user_id,
+                        student: {
+                            id: p.user_id,
+                            name: p.profile?.full_name || 'Anonymous student',
+                            email: p.profile?.email || ''
+                        },
+                        course: {
+                            title: (coursesData || []).find(c => c.id === p.internship_id)?.title || 'Virtual Internship'
+                        }
+                    });
+                }
+            }
+            setSubmissions(formattedSubmissions);
+
+            // 3. Fetch certificates
+            const { data: certsData } = await supabase
+                .from('certificates')
+                .select(`
+                    *,
+                    profile:user_id (*)
+                `);
+
+            const formattedCerts: Certificate[] = (certsData || []).map(c => ({
+                id: c.id,
+                certificateNumber: c.certificate_number,
+                courseName: c.course_name,
+                issueDate: c.issue_date,
+                student: {
+                    name: c.profile?.full_name || 'Anonymous'
+                }
+            }));
+            setCertificates(formattedCerts);
+
+            // 4. Fetch enrollments
+            const { data: enrollRes } = await supabase
+                .from('internship_enrollments')
+                .select(`
+                    *,
+                    profile:user_id (*),
+                    internship:internship_id (*)
+                `)
+                .order('joined_at', { ascending: false });
+
+            const formattedEnrollments: AdminEnrollment[] = (enrollRes || []).map(e => ({
+                id: e.id,
+                joinedAt: e.joined_at,
+                status: e.status,
+                user: {
+                    name: e.profile?.full_name || 'Anonymous student',
+                    email: e.profile?.email || ''
+                },
+                course: {
+                    title: e.internship?.title || 'Virtual Internship'
+                }
+            }));
+            setEnrollments(formattedEnrollments);
+
+            // 5. Fetch offer letters
+            const { data: lettersData } = await supabase
+                .from('offer_letters')
+                .select('*')
+                .order('issue_date', { ascending: false });
+
+            const formattedLetters: OfferLetter[] = (lettersData || []).map(l => ({
+                id: l.id,
+                offerLetterId: l.offer_letter_id,
+                studentId: l.user_id,
+                studentName: l.student_name,
+                studentEmail: l.student_email,
+                internshipTitle: l.internship_title,
+                internshipDomain: l.internship_title.split(' ')[0],
+                startDate: l.issue_date,
+                endDate: l.issue_date,
+                duration: l.duration,
+                mentorName: 'Vishal R',
+                issueDate: l.issue_date,
+                status: l.status,
+                verificationToken: l.verification_token,
+                createdAt: l.created_at,
+                updatedAt: l.updated_at
+            }));
+            setOfferLetters(formattedLetters);
+
+            // 6. Fetch admin audit logs (for email logs)
+            const { data: logsData } = await supabase
+                .from('admin_audit_logs')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            const formattedLogs: EmailLog[] = (logsData || []).map(log => ({
+                id: log.id,
+                emailTo: log.notes || 'system',
+                studentName: 'Intern',
+                documentType: log.action,
+                status: 'SUCCESS',
+                subject: `Admin Audit Log: ${log.action}`,
+                referenceId: log.target_user_id || undefined,
+                sentAt: log.created_at,
+                createdAt: log.created_at
+            }));
+            setEmailLogs(formattedLogs);
+
         } catch (err) {
             console.error('Failed to load admin payload:', err);
         }
@@ -215,10 +331,29 @@ export const AdminPortal: React.FC = () => {
 
         try {
             if (editingCourseId) {
-                await api.put(`/courses/${editingCourseId}`, payload);
+                const { error } = await supabase
+                    .from('internships')
+                    .update({
+                        title: payload.title,
+                        domain: payload.category,
+                        description: payload.description,
+                        duration: payload.duration,
+                        status: 'published'
+                    })
+                    .eq('id', editingCourseId);
+                if (error) throw error;
                 alert('Course updated successfully!');
             } else {
-                await api.post('/courses', payload);
+                const { error } = await supabase
+                    .from('internships')
+                    .insert({
+                        title: payload.title,
+                        domain: payload.category,
+                        description: payload.description,
+                        duration: payload.duration,
+                        status: 'published'
+                    });
+                if (error) throw error;
                 alert('New Course/Internship created!');
             }
             setTitle('');
@@ -227,8 +362,8 @@ export const AdminPortal: React.FC = () => {
             setSkillsCsv('');
             refreshData();
             setActiveSubTab('manage-courses');
-        } catch {
-            alert('Failed to submit course configuration.');
+        } catch (err: any) {
+            alert('Failed to submit course configuration: ' + err.message);
         }
     };
 
@@ -246,11 +381,15 @@ export const AdminPortal: React.FC = () => {
     const handleDeleteCourse = async (id: string) => {
         if (!confirm('Are you sure you want to delete this course/internship?')) return;
         try {
-            await api.delete(`/courses/${id}`);
+            const { error } = await supabase
+                .from('internships')
+                .delete()
+                .eq('id', id);
+            if (error) throw error;
             alert('Course deleted.');
             refreshData();
-        } catch {
-            alert('Failed to delete course.');
+        } catch (err: any) {
+            alert('Failed to delete course: ' + err.message);
         }
     };
 
@@ -262,12 +401,16 @@ export const AdminPortal: React.FC = () => {
             return;
         }
         try {
-            await api.delete(`/enrollments/admin/${appId}`);
+            const { error } = await supabase
+                .from('internship_enrollments')
+                .delete()
+                .eq('id', appId);
+            if (error) throw error;
             alert('Student enrollment record deleted successfully.');
             refreshData();
-        } catch (err) {
+        } catch (err: any) {
             console.error('Delete application error:', err);
-            alert('Failed to delete user enrollment record.');
+            alert('Failed to delete user enrollment record: ' + err.message);
         }
     };
 
@@ -1484,7 +1627,11 @@ export const AdminPortal: React.FC = () => {
                                                             onClick={async () => {
                                                                 if (window.confirm(`Are you sure you want to revoke offer letter ${letter.offerLetterId}?`)) {
                                                                     try {
-                                                                        await api.post(`/offer-letters/${letter.id}/revoke`);
+                                                                        const { error } = await supabase
+                                                                            .from('offer_letters')
+                                                                            .update({ status: 'EXPIRED' })
+                                                                            .eq('id', letter.id);
+                                                                        if (error) throw error;
                                                                         refreshData();
                                                                     } catch (err) {
                                                                         setOfferLetters(prev => prev.map(o => o.id === letter.id ? { ...o, status: 'EXPIRED' } : o));
@@ -2151,15 +2298,23 @@ export const AdminPortal: React.FC = () => {
                                                 setReviewingSubmission(null);
                                                 return;
                                             }
-                                            await api.put(`/projects/review/${reviewingSubmission.id}`, {
-                                                status: 'REJECTED',
-                                                feedback: finalFeedback
-                                            });
+                                            const { data: { user: adminUser } } = await supabase.auth.getUser();
+                                            const { error } = await supabase
+                                                .from('task_progress')
+                                                .update({
+                                                    status: 'rejected',
+                                                    admin_feedback: finalFeedback,
+                                                    reviewed_at: new Date().toISOString(),
+                                                    reviewed_by: adminUser?.id
+                                                })
+                                                .eq('id', reviewingSubmission.id);
+
+                                            if (error) throw error;
                                             alert('Task submission reviewed and REJECTED successfully.');
                                             refreshData();
                                             setReviewingSubmission(null);
-                                        } catch (error) {
-                                            alert('Failed to evaluate project submission.');
+                                        } catch (error: any) {
+                                            alert('Failed to evaluate project submission: ' + error.message);
                                         }
                                     }}
                                     className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs font-bold transition shadow-sm"
@@ -2175,15 +2330,89 @@ export const AdminPortal: React.FC = () => {
                                                 setReviewingSubmission(null);
                                                 return;
                                             }
-                                            await api.put(`/projects/review/${reviewingSubmission.id}`, {
-                                                status: 'APPROVED',
-                                                feedback: finalFeedback
-                                            });
+                                            const { data: { user: adminUser } } = await supabase.auth.getUser();
+                                            const { error } = await supabase
+                                                .from('task_progress')
+                                                .update({
+                                                    status: 'approved',
+                                                    admin_feedback: finalFeedback,
+                                                    reviewed_at: new Date().toISOString(),
+                                                    reviewed_by: adminUser?.id
+                                                })
+                                                .eq('id', reviewingSubmission.id);
+
+                                            if (error) throw error;
+
+                                            // Fetch data for next task unlocking/completion/certificates
+                                            const { data: currentProg } = await supabase
+                                                .from('task_progress')
+                                                .select('*')
+                                                .eq('id', reviewingSubmission.id)
+                                                .single();
+
+                                            if (currentProg) {
+                                                // Load task details to get its task number
+                                                const { data: currentTask } = await supabase
+                                                    .from('internship_tasks')
+                                                    .select('*')
+                                                    .eq('id', currentProg.task_id)
+                                                    .single();
+
+                                                if (currentTask) {
+                                                    const nextTaskNum = currentTask.task_number + 1;
+                                                    const { data: nextTask } = await supabase
+                                                        .from('internship_tasks')
+                                                        .select('*')
+                                                        .eq('internship_id', currentProg.internship_id)
+                                                        .eq('task_number', nextTaskNum)
+                                                        .single();
+
+                                                    if (nextTask) {
+                                                        // Unlock the next task as 'available'
+                                                        await supabase
+                                                            .from('task_progress')
+                                                            .upsert({
+                                                                user_id: currentProg.user_id,
+                                                                internship_id: currentProg.internship_id,
+                                                                task_id: nextTask.id,
+                                                                status: 'available'
+                                                            }, {
+                                                                onConflict: 'user_id,task_id'
+                                                            });
+                                                    } else {
+                                                        // No more tasks! Completed!
+                                                        await supabase
+                                                            .from('internship_enrollments')
+                                                            .update({ status: 'completed' })
+                                                            .eq('user_id', currentProg.user_id)
+                                                            .eq('internship_id', currentProg.internship_id);
+
+                                                        // Generate certificate
+                                                        const certNo = `VINIX-CERT-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+                                                        const { data: internshipRecord } = await supabase
+                                                            .from('internships')
+                                                            .select('title')
+                                                            .eq('id', currentProg.internship_id)
+                                                            .single();
+
+                                                        await supabase
+                                                            .from('certificates')
+                                                            .insert({
+                                                                course_id: currentProg.internship_id,
+                                                                user_id: currentProg.user_id,
+                                                                certificate_number: certNo,
+                                                                course_name: internshipRecord?.title || 'Virtual Internship',
+                                                                status: 'ACTIVE'
+                                                            });
+                                                    }
+                                                }
+                                            }
+
                                             alert('Task submission reviewed and APPROVED successfully.');
                                             refreshData();
                                             setReviewingSubmission(null);
-                                        } catch (error) {
-                                            alert('Failed to evaluate project submission.');
+                                        } catch (error: any) {
+                                            alert('Failed to evaluate project submission: ' + error.message);
                                         }
                                     }}
                                     className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-sm"

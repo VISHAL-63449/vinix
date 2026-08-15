@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { GraduationCap, ArrowRight } from 'lucide-react';
-import api from '../utils/api';
+import { supabase } from '../utils/supabase';
 
 export const Login: React.FC = () => {
     const { login } = useAuth();
@@ -32,7 +32,69 @@ export const Login: React.FC = () => {
 
             if (action === 'enroll' && courseId) {
                 try {
-                    await api.post('/enrollments/enroll', { courseId });
+                    const { data: { user: sbUser } } = await supabase.auth.getUser();
+                    if (sbUser) {
+                        const { data: existing } = await supabase
+                            .from('internship_enrollments')
+                            .select('*')
+                            .eq('user_id', sbUser.id)
+                            .eq('internship_id', courseId);
+
+                        if (!existing || existing.length === 0) {
+                            const { data: enrolledRecord, error: enrollErr } = await supabase
+                                .from('internship_enrollments')
+                                .insert({
+                                    user_id: sbUser.id,
+                                    internship_id: courseId,
+                                    status: 'active',
+                                    application_status: 'active'
+                                })
+                                .select()
+                                .single();
+
+                            if (!enrollErr && enrolledRecord) {
+                                // Seed offer letter
+                                const offerLetterNumber = `VINIX-OFFER-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+                                const { data: profile } = await supabase
+                                    .from('profiles')
+                                    .select('*')
+                                    .eq('id', sbUser.id)
+                                    .single();
+
+                                await supabase
+                                    .from('offer_letters')
+                                    .insert({
+                                        enrollment_id: enrolledRecord.id,
+                                        user_id: sbUser.id,
+                                        offer_letter_id: offerLetterNumber,
+                                        student_name: profile?.full_name || sbUser.email?.split('@')[0] || 'student',
+                                        student_email: sbUser.email || '',
+                                        internship_title: 'Developer Internship',
+                                        duration: '3 Months',
+                                        status: 'GENERATED'
+                                    });
+
+                                // Seed task progress
+                                const { data: tasks } = await supabase
+                                    .from('internship_tasks')
+                                    .select('*')
+                                    .eq('internship_id', courseId)
+                                    .order('task_number', { ascending: true });
+
+                                if (tasks && tasks.length > 0) {
+                                    const progressToInsert = tasks.map(t => ({
+                                        user_id: sbUser.id,
+                                        internship_id: courseId,
+                                        task_id: t.id,
+                                        status: t.task_number === 1 ? 'approved' : t.task_number === 2 ? 'available' : 'locked'
+                                    }));
+                                    await supabase
+                                        .from('task_progress')
+                                        .insert(progressToInsert);
+                                }
+                            }
+                        }
+                    }
                     navigate('/dashboard');
                     return;
                 } catch (err) {
@@ -40,9 +102,19 @@ export const Login: React.FC = () => {
                 }
             }
 
-            const meRes = await api.get('/auth/me');
-            if (meRes.data.role === 'ADMIN') {
-                navigate('/admin');
+            const { data: { user: sbUser } } = await supabase.auth.getUser();
+            if (sbUser) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', sbUser.id)
+                    .maybeSingle();
+
+                if (profile?.role === 'ADMIN') {
+                    navigate('/admin');
+                } else {
+                    navigate('/dashboard');
+                }
             } else {
                 navigate('/dashboard');
             }

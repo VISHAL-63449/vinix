@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../utils/api';
 import { supabase } from '../utils/supabase';
 
 import {
@@ -196,79 +195,214 @@ export const Dashboard: React.FC = () => {
             console.log("[Dashboard] Fetching user session from Supabase Auth...");
             const { data: { user: sbUser }, error: userError } = await supabase.auth.getUser();
 
-            const [enrollRes, projRes, certRes, offerRes, coursesRes] = await Promise.all([
-                api.get('/enrollments/my'),
-                api.get('/projects'),
-                api.get('/certificates/my'),
-                api.get('/offer-letters'),
-                api.get('/courses')
-            ]);
-
-            let finalEnrollments = enrollRes.data;
-
             if (userError) {
                 console.warn("[Dashboard] Error fetching Supabase user session:", userError);
-            } else if (sbUser) {
-                console.log("[Dashboard] Supabase active user UUID:", sbUser.id);
-                // Load applications from Supabase using user.id
-                const { data: appsData, error: appsError } = await supabase
-                    .from("internship_applications")
-                    .select("*")
-                    .eq("user_id", sbUser.id);
+                setLoading(false);
+                return;
+            }
 
-                if (appsError) {
-                    console.error("[Dashboard] Error querying internship_applications from Supabase:", appsError);
-                } else if (appsData && appsData.length > 0) {
-                    console.log("[Dashboard] Successfully loaded Supabase internship applications:", appsData);
-                    // Always store raw Supabase apps as fallback display data
-                    setSupabaseApps(appsData as Record<string, unknown>[]);
-
-                    // Cross-device synchronization loop:
-                    // If a student applied for an internship domain on one device (saved to Supabase),
-                    // but the local SQLite/Postgres DB does not show it enrolled for this user of this device/account yet,
-                    // we automatically enroll them in the local DB.
-                    const localCourseIds = new Set(enrollRes.data.map((e: Enrollment) => e.courseId));
-                    let localDiffFound = false;
-
-                    for (const app of appsData) {
-                        if (!localCourseIds.has(app.internship_id)) {
-                            console.log(`[Dashboard] Sync mismatch detected: Supabase application exists for domain ${app.internship_id} but local enrollment is missing. Enrolling locally...`);
-                            try {
-                                await api.post('/enrollments/enroll', {
-                                    courseId: app.internship_id,
-                                    duration: '3 Months',
-                                    phone: app.phone || '',
-                                    college: app.college || ''
-                                });
-                                localDiffFound = true;
-                            } catch (syncErr) {
-                                console.warn(`[Dashboard] Local API unreachable (likely mobile/deployed). Supabase app data used as display fallback for domain ${app.internship_id}.`, syncErr);
-                            }
-                        }
-                    }
-
-                    if (localDiffFound) {
-                        console.log("[Dashboard] Local sync-enrollments finished. Refreshing local enrollments...");
-                        const refreshEnrollRes = await api.get('/enrollments/my');
-                        finalEnrollments = refreshEnrollRes.data;
-                    }
-                } else {
-                    console.log("[Dashboard] No internship applications found in Supabase for user:", sbUser.id);
-                    setSupabaseApps([]);
-                }
-            } else {
+            if (!sbUser) {
                 console.log("[Dashboard] No active Supabase user session.");
+                setLoading(false);
+                return;
+            }
+
+            console.log("[Dashboard] Supabase active user UUID:", sbUser.id);
+
+            // Fetch profile
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', sbUser.id)
+                .maybeSingle();
+
+            // Fetch published internships for Explore tab
+            const { data: internshipsList } = await supabase
+                .from('internships')
+                .select('*')
+                .eq('status', 'published');
+
+            const coursesList: Course[] = (internshipsList || []).map(i => ({
+                id: i.id,
+                title: i.title,
+                category: i.domain,
+                description: i.description || '',
+                duration: i.duration || '3 Months',
+                type: 'INTERNSHIP',
+                skills: [i.domain],
+                lessons: [
+                    { title: 'Project Overview & Setup', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', duration: '10 mins' }
+                ],
+                assignments: [],
+                quizzes: []
+            }));
+            setAllCourses(coursesList);
+
+            // Fetch enrollments
+            const { data: enrollRes } = await supabase
+                .from('internship_enrollments')
+                .select('*')
+                .eq('user_id', sbUser.id);
+
+            // Fetch raw applications for validation/fallback
+            const { data: appsData } = await supabase
+                .from('internship_applications')
+                .select('*')
+                .eq('user_id', sbUser.id);
+
+            setSupabaseApps((appsData || []) as Record<string, unknown>[]);
+
+            // Sync/Recovery loop: If application exists but enrollment is missing
+            const enrolledIds = new Set((enrollRes || []).map(e => e.internship_id));
+            if (appsData && appsData.length > 0) {
+                for (const app of appsData) {
+                    const matchedInt = (internshipsList || []).find(i => i.domain === app.domain || i.id === app.internship_id);
+                    if (matchedInt && !enrolledIds.has(matchedInt.id)) {
+                        console.log(`[Dashboard] Sync recovering enrollment for ${matchedInt.title}`);
+                        await supabase
+                            .from('internship_enrollments')
+                            .insert({
+                                user_id: sbUser.id,
+                                internship_id: matchedInt.id,
+                                status: app.status === 'active' ? 'active' : 'pending',
+                                application_status: app.status
+                            });
+                    }
+                }
+            }
+
+            // Refetch enrollments to include recovered entries
+            const { data: refetchedEnrollRes } = await supabase
+                .from('internship_enrollments')
+                .select('*')
+                .eq('user_id', sbUser.id);
+
+            const finalEnrollments: Enrollment[] = [];
+            const allProjects: Project[] = [];
+
+            for (const enroll of (refetchedEnrollRes || [])) {
+                const internship = (internshipsList || []).find(i => i.id === enroll.internship_id);
+                if (!internship) continue;
+
+                // Load tasks
+                const { data: tasksRes } = await supabase
+                    .from('internship_tasks')
+                    .select('*')
+                    .eq('internship_id', internship.id)
+                    .order('task_number', { ascending: true });
+
+                const tasks = tasksRes || [];
+
+                // Load progress
+                const { data: progressRes } = await supabase
+                    .from('task_progress')
+                    .select('*')
+                    .eq('user_id', sbUser.id)
+                    .eq('internship_id', internship.id);
+
+                const progress = progressRes || [];
+
+                // Map progress to project/submissions structure
+                for (const prog of progress) {
+                    const task = tasks.find(t => t.id === prog.task_id);
+                    if (!task) continue;
+
+                    allProjects.push({
+                        id: prog.id,
+                        title: task.title,
+                        description: prog.student_note || '',
+                        githubLink: prog.github_url || '',
+                        fileUrl: prog.deployment_url || prog.linkedin_url || '',
+                        status: prog.status === 'submitted' ? 'PENDING' : prog.status.toUpperCase() as any,
+                        feedback: prog.admin_feedback || '',
+                        submittedAt: prog.submitted_at || prog.created_at
+                    });
+                }
+
+                // Check if LinkedIn task (task_number 1) is submitted
+                const linkedinProg = progress.find(p => {
+                    const task = tasks.find(t => t.id === p.task_id);
+                    return task?.task_number === 1;
+                });
+                if (linkedinProg && (linkedinProg.status === 'submitted' || linkedinProg.status === 'approved')) {
+                    setLinkedInSubmitted(true);
+                    setLinkedInUrlInput(linkedinProg.linkedin_url || '');
+                }
+
+                const courseObj: Course = {
+                    id: internship.id,
+                    title: internship.title,
+                    category: internship.domain,
+                    description: internship.description || '',
+                    duration: internship.duration || '3 Months',
+                    type: 'INTERNSHIP',
+                    skills: [internship.domain],
+                    lessons: [
+                        { title: 'Project Overview & Setup', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', duration: '10 mins' },
+                        { title: 'Milestone Implementation Walkthrough', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', duration: '15 mins' }
+                    ],
+                    assignments: tasks.filter(t => t.task_number > 1).map(t => ({
+                        id: t.id,
+                        title: t.title,
+                        desc: t.description || 'Milestone submission requirement.'
+                    })),
+                    quizzes: []
+                };
+
+                finalEnrollments.push({
+                    id: enroll.id,
+                    courseId: internship.id,
+                    progress: enroll.progress || 0,
+                    status: enroll.status,
+                    course: courseObj,
+                    linkedinUrl: enroll.linkedin_url || undefined
+                });
             }
 
             setEnrollments(finalEnrollments);
-            setProjects(projRes.data);
-            setCertificates(certRes.data);
-            setOfferLetters(offerRes.data);
-            setAllCourses(coursesRes.data);
+            setProjects(allProjects);
+
+            // Fetch certificates
+            const { data: certs } = await supabase
+                .from('certificates')
+                .select('*')
+                .eq('user_id', sbUser.id);
+
+            setCertificates((certs || []).map(c => ({
+                id: c.id,
+                courseName: c.course_name,
+                certificateNumber: c.certificate_number,
+                issueDate: c.issue_date,
+                verificationURL: `${window.location.origin}/verify/${c.certificate_number}`
+            })));
+
+            // Fetch offer letters
+            const { data: letters } = await supabase
+                .from('offer_letters')
+                .select('*')
+                .eq('user_id', sbUser.id);
+
+            setOfferLetters((letters || []).map(l => ({
+                id: l.id,
+                offerLetterId: l.offer_letter_id,
+                studentId: l.user_id,
+                studentName: l.student_name,
+                studentEmail: l.student_email,
+                internshipTitle: l.internship_title,
+                internshipDomain: l.internship_title.split(' ')[0],
+                startDate: l.issue_date,
+                endDate: l.issue_date,
+                duration: l.duration,
+                mentorName: 'Vishal R',
+                issueDate: l.issue_date,
+                status: l.status as any,
+                verificationToken: l.verification_token,
+                createdAt: l.created_at,
+                updatedAt: l.updated_at
+            })));
 
             if (finalEnrollments.length > 0 && !selectedEnrollment) {
-                // Prioritize setting selected enrollment to active internship if available
-                const internshipEnroll = finalEnrollments.find((e: Enrollment) => e.course.type === 'INTERNSHIP');
+                const internshipEnroll = finalEnrollments.find(e => e.course.type === 'INTERNSHIP');
                 const defaultEnroll = internshipEnroll || finalEnrollments[0];
                 setSelectedEnrollment(defaultEnroll);
                 if (defaultEnroll.course.lessons && defaultEnroll.course.lessons.length > 0) {
@@ -283,10 +417,14 @@ export const Dashboard: React.FC = () => {
         }
     };
 
-
     const handleAcceptOffer = async (id: string) => {
         try {
-            await api.post(`/offer-letters/${id}/accept`);
+            const { error } = await supabase
+                .from('offer_letters')
+                .update({ status: 'ACCEPTED' })
+                .eq('id', id);
+
+            if (error) throw error;
             alert('Congratulations! You have accepted the internship offer letter.');
             loadData();
         } catch (err) {
@@ -298,7 +436,12 @@ export const Dashboard: React.FC = () => {
     const handleDeclineOffer = async (id: string) => {
         if (!window.confirm('Are you sure you want to decline this internship offer?')) return;
         try {
-            await api.post(`/offer-letters/${id}/decline`);
+            const { error } = await supabase
+                .from('offer_letters')
+                .update({ status: 'DECLINED' })
+                .eq('id', id);
+
+            if (error) throw error;
             alert('Offer letter declined successfully.');
             loadData();
         } catch (err) {
@@ -309,6 +452,27 @@ export const Dashboard: React.FC = () => {
 
     useEffect(() => {
         loadData();
+
+        const progressSub = supabase
+            .channel('public:task_progress_dashboard')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'task_progress' }, () => {
+                console.log('[Dashboard] Realtime task_progress change detected, reloading...');
+                loadData();
+            })
+            .subscribe();
+
+        const enrollSub = supabase
+            .channel('public:internship_enrollments_dashboard')
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'internship_enrollments' }, () => {
+                console.log('[Dashboard] Realtime internship_enrollments change detected, reloading...');
+                loadData();
+            })
+            .subscribe();
+
+        return () => {
+            progressSub.unsubscribe();
+            enrollSub.unsubscribe();
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [user]);
 
@@ -329,21 +493,56 @@ export const Dashboard: React.FC = () => {
             alert('Please fill out all required fields.');
             return;
         }
+        if (!displayEnrollment) {
+            alert('No active enrollment found.');
+            return;
+        }
         setProjectLoading(true);
         try {
-            await api.post('/projects/submit', {
-                title: projectTitle,
-                description: projectDesc,
-                githubLink: projectGit
-            });
+            const { data: { user: sbUser } } = await supabase.auth.getUser();
+            if (!sbUser) {
+                alert('Session expired. Please log in.');
+                return;
+            }
+
+            // Find matching task
+            const { data: taskRes } = await supabase
+                .from('internship_tasks')
+                .select('*')
+                .eq('internship_id', displayEnrollment.courseId)
+                .eq('title', projectTitle)
+                .single();
+
+            if (!taskRes) {
+                alert('Task matching project title not found in catalog.');
+                return;
+            }
+
+            const { error } = await supabase
+                .from('task_progress')
+                .upsert({
+                    user_id: sbUser.id,
+                    internship_id: displayEnrollment.courseId,
+                    task_id: taskRes.id,
+                    status: 'submitted',
+                    github_url: projectGit,
+                    student_note: projectDesc,
+                    submitted_at: new Date().toISOString()
+                }, {
+                    onConflict: 'user_id,task_id'
+                });
+
+            if (error) throw error;
+
             alert('Project milestone submitted successfully! Evaluators will review it shortly.');
             setProjectTitle('');
             setProjectDesc('');
             setProjectGit('');
             setIsSubmitModalOpen(false);
             loadData();
-        } catch {
-            alert('Failed to submit project.');
+        } catch (err: any) {
+            console.error('Failed to submit milestone project:', err);
+            alert('Failed to submit project: ' + err.message);
         } finally {
             setProjectLoading(false);
         }
@@ -358,38 +557,142 @@ export const Dashboard: React.FC = () => {
         if (!displayEnrollment) return;
 
         try {
-            await api.put('/enrollments/linkedin', {
-                courseId: displayEnrollment.courseId,
-                linkedinUrl: linkedInUrlInput
-            });
+            const { data: { user: sbUser } } = await supabase.auth.getUser();
+            if (!sbUser) {
+                alert('Session expired. Please log in.');
+                return;
+            }
+
+            const { data: taskRes } = await supabase
+                .from('internship_tasks')
+                .select('*')
+                .eq('internship_id', displayEnrollment.courseId)
+                .eq('task_number', 1)
+                .single();
+
+            if (taskRes) {
+                await supabase
+                    .from('task_progress')
+                    .upsert({
+                        user_id: sbUser.id,
+                        internship_id: displayEnrollment.courseId,
+                        task_id: taskRes.id,
+                        status: 'approved',
+                        linkedin_url: linkedInUrlInput,
+                        submitted_at: new Date().toISOString()
+                    }, {
+                        onConflict: 'user_id,task_id'
+                    });
+            }
+
+            await supabase
+                .from('internship_enrollments')
+                .update({ linkedin_url: linkedInUrlInput })
+                .eq('user_id', sbUser.id)
+                .eq('internship_id', displayEnrollment.courseId);
+
             setLinkedInSubmitted(true);
             setIsLinkedInModalOpen(false);
             alert('LinkedIn URL submitted successfully! Offer post requirements verified.');
             loadData();
-        } catch (err) {
+        } catch (err: any) {
             console.error('LinkedIn URL submission error:', err);
-            alert('Failed to submit LinkedIn URL.');
+            alert('Failed to submit LinkedIn URL: ' + err.message);
         }
     };
 
     const handleEnrollDirect = async (courseId: string) => {
         try {
-            await api.post('/enrollments/enroll', { courseId });
+            const { data: { user: sbUser } } = await supabase.auth.getUser();
+            if (!sbUser) {
+                alert('Session expired. Please log in.');
+                return;
+            }
+
+            const { data: existing } = await supabase
+                .from('internship_enrollments')
+                .select('*')
+                .eq('user_id', sbUser.id)
+                .eq('internship_id', courseId);
+
+            if (existing && existing.length > 0) {
+                alert('Already enrolled in this track.');
+                return;
+            }
+
+            const { data: enrolledRecord, error: enrollErr } = await supabase
+                .from('internship_enrollments')
+                .insert({
+                    user_id: sbUser.id,
+                    internship_id: courseId,
+                    status: 'active',
+                    application_status: 'active'
+                })
+                .select()
+                .single();
+
+            if (enrollErr) throw enrollErr;
+
+            // Seed offer letter
+            const offerLetterNumber = `VINIX-OFFER-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', sbUser.id)
+                .single();
+
+            await supabase
+                .from('offer_letters')
+                .insert({
+                    enrollment_id: enrolledRecord.id,
+                    user_id: sbUser.id,
+                    offer_letter_id: offerLetterNumber,
+                    student_name: profile?.full_name || sbUser.email?.split('@')[0] || 'student',
+                    student_email: sbUser.email || '',
+                    internship_title: allCourses.find(c => c.id === courseId)?.title || 'Developer Internship',
+                    duration: '3 Months',
+                    status: 'GENERATED'
+                });
+
+            // Seed task_progress records
+            const { data: tasks } = await supabase
+                .from('internship_tasks')
+                .select('*')
+                .eq('internship_id', courseId)
+                .order('task_number', { ascending: true });
+
+            if (tasks && tasks.length > 0) {
+                const progressToInsert = tasks.map(t => ({
+                    user_id: sbUser.id,
+                    internship_id: courseId,
+                    task_id: t.id,
+                    status: t.task_number === 1 ? 'approved' : t.task_number === 2 ? 'available' : 'locked'
+                }));
+                await supabase
+                    .from('task_progress')
+                    .insert(progressToInsert);
+            }
+
             alert('Internship track launched! Load page domains configuration.');
             loadData();
             setActiveTab('overview');
-        } catch {
-            alert('Enrollment failed.');
+        } catch (err: any) {
+            console.error('Enrollment failed:', err);
+            alert('Enrollment failed: ' + err.message);
         }
     };
 
     const updateCourseProgress = async (enroll: Enrollment, bonus: number) => {
         try {
             const nextProgress = Math.min(100, enroll.progress + bonus);
-            await api.put('/enrollments/progress', {
-                courseId: enroll.courseId,
-                progress: nextProgress
-            });
+            const { data: { user: sbUser } } = await supabase.auth.getUser();
+            if (sbUser) {
+                await supabase
+                    .from('internship_enrollments')
+                    .update({ progress: nextProgress })
+                    .eq('user_id', sbUser.id)
+                    .eq('internship_id', enroll.courseId);
+            }
             loadData();
         } catch (err) {
             console.error('Failed to update progress:', err);
@@ -712,8 +1015,10 @@ export const Dashboard: React.FC = () => {
 
                                     const sub = getLatestTaskSubmission(as.title);
 
-                                    let isUnlocked = true;
-                                    if (index > 0 && displayEnrollment.course.assignments) {
+                                    let isUnlocked = false;
+                                    if (index === 0) {
+                                        isUnlocked = linkedInSubmitted;
+                                    } else if (displayEnrollment.course.assignments) {
                                         const prevTask = displayEnrollment.course.assignments[index - 1];
                                         const prevSub = getLatestTaskSubmission(prevTask.title);
                                         isUnlocked = !!prevSub && prevSub.status === 'APPROVED';

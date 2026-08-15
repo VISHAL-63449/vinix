@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import api from '../utils/api';
 import { supabase } from '../utils/supabase';
 import {
     CheckCircle2, Sparkles, MapPin, ChevronRight
@@ -87,8 +86,22 @@ export const Internship: React.FC = () => {
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const res = await api.get('/courses');
-                const internships = res.data.filter((c: { type: string }) => c.type === 'INTERNSHIP');
+                const { data, error } = await supabase
+                    .from('internships')
+                    .select('*')
+                    .eq('status', 'published');
+
+                if (error) throw error;
+
+                const internships: Course[] = (data || []).map(i => ({
+                    id: i.id,
+                    title: i.title,
+                    category: i.domain,
+                    description: i.description || '',
+                    duration: i.duration || '3 Months',
+                    type: 'INTERNSHIP'
+                }));
+
                 setCourses(internships);
 
                 // Read from query param if present
@@ -98,10 +111,10 @@ export const Internship: React.FC = () => {
                 if (queryCourseId && internships.some((c: { id: string }) => c.id === queryCourseId)) {
                     setSelectedDomainId(queryCourseId);
                 } else if (internships.length > 0) {
-                    setSelectedDomainId((internships[0] as Record<string, unknown>).id as string);
+                    setSelectedDomainId(internships[0].id);
                 }
             } catch (err) {
-                console.error('Failed to load courses:', err);
+                console.error('[Internship] Failed to fetch domains:', err);
             }
         };
         fetchCourses();
@@ -284,7 +297,6 @@ export const Internship: React.FC = () => {
                 .insert([appData]);
 
             if (insertError) {
-                // If it fails due to UNIQUE constraint, capture gracefully
                 if (insertError.code === '23505' || insertError.message?.includes('unique') || insertError.message?.includes('duplicate')) {
                     console.log("[handleApply] Unique constraint triggered. Record already exists.");
                     alert('You have already registered for this virtual internship.');
@@ -296,30 +308,61 @@ export const Internship: React.FC = () => {
                 throw new Error(`Database registration failed: ${insertError.message}`);
             }
 
-            console.log("[handleApply] Supabase insertion completed. Attempting local API sync for PDF generation...");
+            // Provision enrollment in internship_enrollments
+            const { data: enrolledRecord, error: enrollErr } = await supabase
+                .from('internship_enrollments')
+                .insert({
+                    user_id: sbUserId,
+                    internship_id: selectedDomainId,
+                    status: 'active',
+                    application_status: 'active'
+                })
+                .select()
+                .single();
 
-            // 5. Attempt local backend sync (non-blocking: will fail gracefully on mobile/deployed)
-            try {
-                await api.post('/enrollments/enroll', {
-                    courseId: selectedDomainId,
-                    duration: selectedDuration,
-                    phone,
-                    college
-                });
-                console.log("[handleApply] Local API synchronization succeeded. Offer letter PDF generated.");
-                alert('Successfully applied! Your internship offer letter has been generated. Check your dashboard!');
-            } catch (localApiErr) {
-                // Local server unreachable (mobile/deployed) — Supabase is already saved, this is non-fatal
-                console.warn("[handleApply] Local API unreachable (likely mobile/deployed). Supabase record saved successfully.", localApiErr);
-                alert('Successfully applied for the Vinix Virtual Internship! Your application has been recorded. The offer letter PDF will be available when you log in from the desktop portal.');
+            if (enrollErr) {
+                console.warn('[handleApply] Warning inserting enrollment:', enrollErr);
             }
+
+            // Generate offer letter record
+            const offerLetterNumber = `VINIX-OFFER-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+            await supabase
+                .from('offer_letters')
+                .insert({
+                    enrollment_id: enrolledRecord?.id,
+                    user_id: sbUserId,
+                    offer_letter_id: offerLetterNumber,
+                    student_name: sbUsername,
+                    student_email: sbUserEmail,
+                    internship_title: selectedDomain?.title || 'Developer Internship',
+                    duration: selectedDuration,
+                    status: 'GENERATED'
+                });
+
+            // Seed task progress
+            const { data: tasks } = await supabase
+                .from('internship_tasks')
+                .select('*')
+                .eq('internship_id', selectedDomainId)
+                .order('task_number', { ascending: true });
+
+            if (tasks && tasks.length > 0) {
+                const progressToInsert = tasks.map(t => ({
+                    user_id: sbUserId,
+                    internship_id: selectedDomainId,
+                    task_id: t.id,
+                    status: t.task_number === 1 ? 'approved' : t.task_number === 2 ? 'available' : 'locked'
+                }));
+                await supabase
+                    .from('task_progress')
+                    .insert(progressToInsert);
+            }
+
+            alert('Successfully applied! Your virtual internship workspace and offer letter have been generated.');
             navigate('/dashboard');
-        } catch (error) {
+        } catch (error: any) {
             console.error("[handleApply] Fatal error in application submission flow:", error);
-            const errObj = error as Record<string, unknown>;
-            const responseObj = errObj.response as Record<string, unknown> | undefined;
-            const dataObj = responseObj?.data as Record<string, unknown> | undefined;
-            alert((dataObj?.message as string) || (errObj.message as string) || 'Failed to register internship.');
+            alert(error.message || 'Failed to register internship.');
         } finally {
             setLoading(false);
         }
