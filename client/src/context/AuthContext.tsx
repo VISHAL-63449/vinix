@@ -129,10 +129,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLoading(true);
         console.log("[AuthContext] Initiating login for:", email);
         try {
-            const { data, error } = await supabase.auth.signInWithPassword({
+            let { data, error } = await supabase.auth.signInWithPassword({
                 email,
                 password,
             });
+
+            // Automatically provision/register demo accounts on-demand if they fail to login due to not existing
+            if (error && (error.message?.toLowerCase().includes('credentials') || error.message?.toLowerCase().includes('not found')) &&
+                ((email === 'student@vionix.com' && password === 'student123') ||
+                    (email === 'admin@vionix.com' && password === 'admin123'))) {
+                console.log("[AuthContext] Demo account not found. Auto-registering...", email);
+                const reqRole = email.includes('admin') ? 'admin' : 'student';
+                const reqName = email.includes('admin') ? 'Demo Admin' : 'Demo Student';
+
+                // Sign up demo user
+                const { error: signUpError } = await supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: {
+                            name: reqName,
+                            role: reqRole
+                        }
+                    }
+                });
+
+                if (!signUpError) {
+                    // Try to sign in again after auto-sign up
+                    const retry = await supabase.auth.signInWithPassword({
+                        email,
+                        password,
+                    });
+                    data = retry.data;
+                    error = retry.error;
+                }
+            }
 
             if (error) throw error;
 
