@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../utils/supabase';
+import { supabase, FALLBACK_INTERNSHIPS } from '../utils/supabase';
 import {
     CheckCircle2, Sparkles, MapPin, ChevronRight
 } from 'lucide-react';
@@ -85,6 +85,15 @@ export const Internship: React.FC = () => {
     // Fetch internship courses from database
     useEffect(() => {
         const fetchCourses = async () => {
+            const mappedFallback: Course[] = FALLBACK_INTERNSHIPS.map(i => ({
+                id: i.id,
+                title: i.title,
+                category: i.domain,
+                description: i.description || '',
+                duration: i.duration || '3 Months',
+                type: 'INTERNSHIP'
+            }));
+
             try {
                 const { data, error } = await supabase
                     .from('internships')
@@ -102,19 +111,31 @@ export const Internship: React.FC = () => {
                     type: 'INTERNSHIP'
                 }));
 
-                setCourses(internships);
+                const finalCourses = internships.length > 0 ? internships : mappedFallback;
+                setCourses(finalCourses);
 
                 // Read from query param if present
                 const params = new URLSearchParams(window.location.search);
                 const queryCourseId = params.get('courseId');
 
-                if (queryCourseId && internships.some((c: { id: string }) => c.id === queryCourseId)) {
+                if (queryCourseId && finalCourses.some((c: { id: string }) => c.id === queryCourseId)) {
                     setSelectedDomainId(queryCourseId);
-                } else if (internships.length > 0) {
-                    setSelectedDomainId(internships[0].id);
+                } else if (finalCourses.length > 0) {
+                    setSelectedDomainId(finalCourses[0].id);
                 }
             } catch (err) {
-                console.error('[Internship] Failed to fetch domains:', err);
+                console.error('[Internship] Failed to fetch domains, using static fallbacks:', err);
+                setCourses(mappedFallback);
+
+                // Read from query param if present
+                const params = new URLSearchParams(window.location.search);
+                const queryCourseId = params.get('courseId');
+
+                if (queryCourseId && mappedFallback.some((c: { id: string }) => c.id === queryCourseId)) {
+                    setSelectedDomainId(queryCourseId);
+                } else if (mappedFallback.length > 0) {
+                    setSelectedDomainId(mappedFallback[0].id);
+                }
             }
         };
         fetchCourses();

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { supabase } from '../utils/supabase';
+import { supabase, FALLBACK_INTERNSHIPS } from '../utils/supabase';
 
 import {
     LayoutDashboard, BookOpen, Layers, FileCode, Award, MailOpen, User,
@@ -217,12 +217,24 @@ export const Dashboard: React.FC = () => {
                 .maybeSingle();
 
             // Fetch published internships for Explore tab
-            const { data: internshipsList } = await supabase
-                .from('internships')
-                .select('*')
-                .eq('status', 'published');
+            let activeInternships: any[] = [];
+            try {
+                const { data: internshipsList, error: internshipsError } = await supabase
+                    .from('internships')
+                    .select('*')
+                    .eq('status', 'published');
 
-            const coursesList: Course[] = (internshipsList || []).map(i => ({
+                if (!internshipsError && internshipsList && internshipsList.length > 0) {
+                    activeInternships = internshipsList;
+                } else {
+                    activeInternships = FALLBACK_INTERNSHIPS;
+                }
+            } catch (err) {
+                console.warn("[Dashboard] Failed to fetch internships list, using static fallbacks:", err);
+                activeInternships = FALLBACK_INTERNSHIPS;
+            }
+
+            const coursesList: Course[] = activeInternships.map(i => ({
                 id: i.id,
                 title: i.title,
                 category: i.domain,
@@ -256,7 +268,7 @@ export const Dashboard: React.FC = () => {
             const enrolledIds = new Set((enrollRes || []).map(e => e.internship_id));
             if (appsData && appsData.length > 0) {
                 for (const app of appsData) {
-                    const matchedInt = (internshipsList || []).find(i => i.domain === app.domain || i.id === app.internship_id);
+                    const matchedInt = activeInternships.find(i => i.domain === app.domain || i.id === app.internship_id);
                     if (matchedInt && !enrolledIds.has(matchedInt.id)) {
                         console.log(`[Dashboard] Sync recovering enrollment for ${matchedInt.title}`);
                         await supabase
@@ -281,7 +293,7 @@ export const Dashboard: React.FC = () => {
             const allProjects: Project[] = [];
 
             for (const enroll of (refetchedEnrollRes || [])) {
-                const internship = (internshipsList || []).find(i => i.id === enroll.internship_id);
+                const internship = activeInternships.find(i => i.id === enroll.internship_id);
                 if (!internship) continue;
 
                 // Load tasks
