@@ -265,7 +265,7 @@ export const Login: React.FC = () => {
                     <div className="pt-6 border-t border-slate-100 dark:border-slate-800/80 text-[10px] text-slate-400 font-semibold space-y-1">
                         <p>💡 Demo Credentials:</p>
                         <p>Student: student@vionix.com | PW: student123</p>
-                        <p>Admin: admin@vionix.com | PW: admin123</p>
+                        <p>Admin: vishal@vinix.com | PW: vis@2007</p>
                     </div>
 
                 </div>

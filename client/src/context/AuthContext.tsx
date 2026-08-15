@@ -43,7 +43,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 // Try backfilling profile
                 const fullName = sbUser.user_metadata?.name || sbUser.email?.split('@')[0] || 'New Student';
                 const email = sbUser.email || '';
-                const role = sbUser.user_metadata?.role || 'student';
+                const rawRole = sbUser.user_metadata?.role || 'student';
+                const role = ['student', 'admin', 'founder'].includes(rawRole.toLowerCase()) ? rawRole.toLowerCase() : 'student';
 
                 const { data: inserted, error: insertErr } = await supabase
                     .from('profiles')
@@ -63,7 +64,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 }
             }
 
-            const mappedRole = (finalProfile?.role === 'admin' || finalProfile?.role === 'founder') ? 'ADMIN' : 'STUDENT';
+            const mappedRole = (finalProfile?.role?.toLowerCase() === 'admin' || finalProfile?.role?.toLowerCase() === 'founder') ? 'ADMIN' : 'STUDENT';
             return {
                 id: sbUser.id,
                 name: finalProfile?.full_name || sbUser.user_metadata?.name || sbUser.email?.split('@')[0] || 'Student',
@@ -78,7 +79,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 id: sbUser.id,
                 name: sbUser.user_metadata?.name || sbUser.email?.split('@')[0] || 'Student',
                 email: sbUser.email || '',
-                role: (sbUser.user_metadata?.role === 'admin') ? 'ADMIN' : 'STUDENT',
+                role: (sbUser.user_metadata?.role?.toLowerCase() === 'admin' || sbUser.user_metadata?.role?.toLowerCase() === 'founder') ? 'ADMIN' : 'STUDENT',
                 skills: []
             } as User;
         }
@@ -137,10 +138,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             // Automatically provision/register demo accounts on-demand if they fail to login due to not existing
             if (error && (error.message?.toLowerCase().includes('credentials') || error.message?.toLowerCase().includes('not found')) &&
                 ((email === 'student@vionix.com' && password === 'student123') ||
-                    (email === 'admin@vionix.com' && password === 'admin123'))) {
+                    (email === 'admin@vionix.com' && password === 'admin123') ||
+                    (email === 'vishal@vinix.com' && password === 'vis@2007'))) {
                 console.log("[AuthContext] Demo account not found. Auto-registering...", email);
-                const reqRole = email.includes('admin') ? 'admin' : 'student';
-                const reqName = email.includes('admin') ? 'Demo Admin' : 'Demo Student';
+                const reqRole = (email.includes('admin') || email.includes('vishal')) ? 'admin' : 'student';
+                const reqName = (email.includes('admin') || email.includes('vishal')) ? 'Vishal' : 'Demo Student';
 
                 // Sign up demo user
                 const { error: signUpError } = await supabase.auth.signUp({
