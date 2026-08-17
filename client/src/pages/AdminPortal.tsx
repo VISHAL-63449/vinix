@@ -425,80 +425,7 @@ export const AdminPortal: React.FC = () => {
     };
 
     // Padded Enrollments for Internship Applications
-    const mockEnrollments = [
-        {
-            id: 'mock-1',
-            user: { name: 'Aravind S', email: 'aravind@gmail.com' },
-            course: { title: 'Java Development' },
-            college: 'Vinix Academy',
-            branch: 'Btech -IT 2nd',
-            joinedAt: '2026-08-04T12:00:00.000Z',
-            status: 'ongoing'
-        },
-        {
-            id: 'mock-2',
-            user: { name: 'Aditya Kumar', email: 'aditya@gmail.com' },
-            course: { title: 'Python Development' },
-            college: 'PSG College of Technology',
-            branch: 'B.E. - CSE',
-            joinedAt: '2026-08-04T12:00:00.000Z',
-            status: 'ongoing'
-        },
-        {
-            id: 'mock-3',
-            user: { name: 'Divya N', email: 'divya@gmail.com' },
-            course: { title: 'Python Development' },
-            college: 'VIT Chennai',
-            branch: 'B.Tech - CSE',
-            joinedAt: '2026-08-04T12:00:00.000Z',
-            status: 'ongoing'
-        },
-        {
-            id: 'mock-4',
-            user: { name: 'Priya Sharma', email: 'priya@gmail.com' },
-            course: { title: 'Full Stack Development' },
-            college: 'Vinix Institute of Technology',
-            branch: 'Btech - IT 3rd year',
-            joinedAt: '2026-08-03T12:00:00.000Z',
-            status: 'ongoing'
-        },
-        {
-            id: 'mock-5',
-            user: { name: 'Rahul Nair', email: 'rahul@gmail.com' },
-            course: { title: 'Full Stack Development' },
-            college: 'Vinix Academy',
-            branch: 'M.Sc - Computer Science',
-            joinedAt: '2026-08-03T12:00:00.000Z',
-            status: 'ongoing'
-        },
-        {
-            id: 'mock-6',
-            user: { name: 'Karthik R', email: 'karthik@gmail.com' },
-            course: { title: 'Python Development' },
-            college: 'Vinix Institute of Technology',
-            branch: 'Btech - IT 3rd year',
-            joinedAt: '2026-07-28T12:00:00.000Z',
-            status: 'ongoing'
-        },
-        {
-            id: 'mock-7',
-            user: { name: 'Hariharan V', email: 'hariharan@gmail.com' },
-            course: { title: 'Python Development' },
-            college: 'Vinix Academy',
-            branch: 'Btech - IT 3rd year',
-            joinedAt: '2026-07-25T12:00:00.000Z',
-            status: 'ongoing'
-        },
-        {
-            id: 'mock-8',
-            user: { name: 'Praveen Kumar', email: 'praveen@gmail.com' },
-            course: { title: 'Cyber Security' },
-            college: 'Aditya College of Technology',
-            branch: 'M.sc computer science 1st year',
-            joinedAt: '2026-07-25T12:00:00.000Z',
-            status: 'ongoing'
-        }
-    ];
+    const mockEnrollments: any[] = [];
 
     // Combine database enrollments with mock applications, ensuring no duplicates
     const dbEnrollmentsMapped = enrollments.map(e => ({
@@ -523,68 +450,7 @@ export const AdminPortal: React.FC = () => {
 
 
     // Padded Submissions for Task Submissions
-    const mockSubmissions = [
-        {
-            id: 'mocksub-1',
-            title: 'Task 1: Calculator App',
-            student: { name: 'Hariharan V', email: 'hariharan@gmail.com' },
-            enrollmentId: 'VNX-2026-1102',
-            course: { title: 'Python Development' },
-            submittedAt: '2026-07-30T12:00:00.000Z',
-            githubLink: '#',
-            description: 'Calculator implemented using Tkinter with robust memory operation supports.',
-            status: 'APPROVED',
-            feedback: 'Excellent clean code structures.'
-        },
-        {
-            id: 'mocksub-2',
-            title: 'Task 9: Real-Time Chat Application',
-            student: { name: 'Vishal R', email: 'student@vinix.com' },
-            enrollmentId: 'VNX-2026-1757',
-            course: { title: 'Full Stack Development' },
-            submittedAt: '2026-07-28T12:00:00.000Z',
-            githubLink: '#',
-            description: 'Instant chat powered by socket.io and React with direct messaging support.',
-            status: 'APPROVED',
-            feedback: 'Highly scalable architecture design.'
-        },
-        {
-            id: 'mocksub-3',
-            title: 'Task 10: Food Ordering System',
-            student: { name: 'Vishal R', email: 'student@vinix.com' },
-            enrollmentId: 'VNX-2026-1757',
-            course: { title: 'Full Stack Development' },
-            submittedAt: '2026-07-28T12:00:00.000Z',
-            githubLink: '#',
-            description: 'A food delivery system with dynamic catalog search and cart integration.',
-            status: 'APPROVED',
-            feedback: 'Solid responsive layout.'
-        },
-        {
-            id: 'mocksub-4',
-            title: 'Task 8: Job Portal',
-            student: { name: 'Vishal R', email: 'student@vinix.com' },
-            enrollmentId: 'VNX-2026-1757',
-            course: { title: 'Full Stack Development' },
-            submittedAt: '2026-07-28T12:00:00.000Z',
-            githubLink: '#',
-            description: 'Interactive job search portal with recruiter filters and resume submissions.',
-            status: 'APPROVED',
-            feedback: 'Amazing interface designs.'
-        },
-        {
-            id: 'mocksub-5',
-            title: 'Task 6: E-Commerce Store',
-            student: { name: 'Vishal R', email: 'student@vinix.com' },
-            enrollmentId: 'VNX-2026-1757',
-            course: { title: 'Full Stack Development' },
-            submittedAt: '2026-07-28T12:00:00.057Z',
-            githubLink: '#',
-            description: 'Fully functional checkout flow with Stripe payment integration.',
-            status: 'APPROVED',
-            feedback: 'Thoroughly tested transaction system.'
-        }
-    ];
+    const mockSubmissions: any[] = [];
 
     // Combine database projects with mock submissions
     const dbSubmissionsMapped = submissions.map(s => {
@@ -620,7 +486,7 @@ export const AdminPortal: React.FC = () => {
     const totalStudentsCount = allApplications.length;
     const totalApplicationsCount = allApplications.length;
     const activeInternshipsCount = allApplications.filter(a => a.status === 'ongoing' || a.status === 'enrolled').length;
-    const certificatesIssuedCount = certificates.length || 3;
+    const certificatesIssuedCount = certificates.length;
 
     // Approval workflow calculations
     const pendingReviewsCount = allSubmissions.filter(s => s.status === 'SUBMITTED' || s.status === 'PENDING' || s.status === 'UNDER_REVIEW').length;
@@ -2395,14 +2261,22 @@ export const AdminPortal: React.FC = () => {
                                                             .eq('id', currentProg.internship_id)
                                                             .single();
 
+                                                        // Fetch the enrollment_id for this user + internship
+                                                        const { data: enrollmentRecord } = await supabase
+                                                            .from('internship_enrollments')
+                                                            .select('id')
+                                                            .eq('user_id', currentProg.user_id)
+                                                            .eq('internship_id', currentProg.internship_id)
+                                                            .single();
+
                                                         await supabase
                                                             .from('certificates')
                                                             .insert({
-                                                                course_id: currentProg.internship_id,
+                                                                enrollment_id: enrollmentRecord?.id,
                                                                 user_id: currentProg.user_id,
                                                                 certificate_number: certNo,
                                                                 course_name: internshipRecord?.title || 'Virtual Internship',
-                                                                status: 'ACTIVE'
+                                                                status: 'VALID'
                                                             });
                                                     }
                                                 }
