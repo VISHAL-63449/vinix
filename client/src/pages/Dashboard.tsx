@@ -495,6 +495,103 @@ export const Dashboard: React.FC = () => {
             setEnrollments(finalEnrollments);
             setProjects(allProjects);
 
+            // --- ENROLLMENT SELF-REPAIR ---
+            // If user has an application (any layer) but finalEnrollments is empty,
+            // it means the enrollment insert failed during apply (FK violation, network error, etc.)
+            // Self-repair: upsert the enrollment row + build a synthetic enrollment for the UI
+            const resolvedApplication = (appData as any);
+            if (finalEnrollments.length === 0 && resolvedApplication) {
+                console.log('[Dashboard] Enrollment missing but application found. Auto-repairing enrollment...');
+
+                // Find the internship by name or pick the first published one
+                const appInternshipName = resolvedApplication.internship_name || '';
+                const appDomain = resolvedApplication.domain || '';
+                let targetInternship = allKnownInternships.find((i: any) =>
+                    i.title === appInternshipName ||
+                    i.domain === appDomain ||
+                    appInternshipName.toLowerCase().includes(i.domain?.toLowerCase())
+                ) || allKnownInternships[0];
+
+                if (targetInternship) {
+                    // Upsert enrollment in DB so future loads work from DB directly
+                    const { error: repairErr } = await supabase
+                        .from('internship_enrollments')
+                        .upsert({
+                            user_id: sbUser.id,
+                            internship_id: targetInternship.id,
+                            status: 'active',
+                            application_status: 'active'
+                        }, { onConflict: 'user_id,internship_id', ignoreDuplicates: false });
+
+                    if (repairErr) {
+                        console.warn('[Dashboard] Enrollment self-repair upsert failed:', repairErr);
+                    } else {
+                        console.log('[Dashboard] Enrollment self-repair upsert SUCCESS for internship:', targetInternship.id);
+                    }
+
+                    // Build synthetic enrollment immediately so UI shows workspace without page refresh
+                    const { data: repairTasks } = await supabase
+                        .from('internship_tasks')
+                        .select('*')
+                        .eq('internship_id', targetInternship.id)
+                        .order('task_number', { ascending: true });
+
+                    const repairTaskList = repairTasks && repairTasks.length > 0 ? repairTasks : (() => {
+                        const mock = [];
+                        for (let i = 1; i <= 12; i++) {
+                            mock.push({
+                                id: `mock-task-${i}`,
+                                internship_id: targetInternship.id,
+                                task_number: i,
+                                title: i === 1 ? 'LinkedIn Offer Post Requirement' :
+                                    i === 2 ? 'Milestone 1 — Repository Initialization' :
+                                        i === 3 ? 'Milestone 2 — Core Operations Architecture' :
+                                            i === 4 ? 'Milestone 3 — Interactive UI Integration' :
+                                                i === 5 ? 'Milestone 4 — Security & Validation' :
+                                                    `Milestone ${i - 1} — Advanced Integration`,
+                                description: 'Complete this milestone to progress through the internship.'
+                            });
+                        }
+                        return mock;
+                    })();
+
+                    const syntheticCourse: Course = {
+                        id: targetInternship.id,
+                        title: targetInternship.title,
+                        category: targetInternship.domain,
+                        description: targetInternship.description || '',
+                        duration: targetInternship.duration || '3 Months',
+                        type: 'INTERNSHIP',
+                        skills: [targetInternship.domain],
+                        lessons: [
+                            { title: 'Project Overview & Setup', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', duration: '10 mins' },
+                            { title: 'Milestone Implementation Walkthrough', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4', duration: '15 mins' }
+                        ],
+                        assignments: repairTaskList.filter((t: any) => t.task_number > 1).map((t: any) => ({
+                            id: t.id,
+                            task_number: t.task_number,
+                            title: t.title,
+                            desc: t.description || 'Milestone submission requirement.'
+                        })),
+                        quizzes: []
+                    };
+
+                    const syntheticEnrollment: Enrollment = {
+                        id: `repair-${targetInternship.id}`,
+                        courseId: targetInternship.id,
+                        progress: 0,
+                        status: 'active',
+                        course: syntheticCourse,
+                        linkedinUrl: undefined
+                    };
+
+                    finalEnrollments.push(syntheticEnrollment);
+                    setEnrollments([...finalEnrollments]);
+                    setSelectedEnrollment(syntheticEnrollment);
+                    console.log('[Dashboard] Synthetic enrollment created for immediate UI access.');
+                }
+            }
+
             // Fetch certificates
             const { data: certs } = await supabase
                 .from('certificates')

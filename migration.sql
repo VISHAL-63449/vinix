@@ -538,3 +538,67 @@ EXCEPTION WHEN OTHERS THEN
   -- Handle gracefully if publication doesn't exist yet
   NULL;
 END $$;
+
+-- ====================================================================
+-- 16. INTERNSHIP APPLICATIONS TABLE & RLS POLICIES
+-- (Merged from auth_policies.sql - run this to fix "Apply shown after applying" bug)
+-- ====================================================================
+
+CREATE TABLE IF NOT EXISTS public.internship_applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+    internship_id TEXT,
+    status TEXT DEFAULT 'active',
+    applied_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now(),
+    student_name TEXT,
+    email TEXT,
+    phone TEXT,
+    college TEXT,
+    domain TEXT,
+    internship_name TEXT,
+    start_date TIMESTAMPTZ,
+    end_date TIMESTAMPTZ,
+    certificate_status TEXT DEFAULT 'pending',
+    offer_letter_status TEXT DEFAULT 'pending',
+    progress INTEGER DEFAULT 0,
+    mentor_id UUID,
+    CONSTRAINT unique_user_internship_app UNIQUE (user_id, internship_id)
+);
+
+ALTER TABLE public.internship_applications ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Users can view own applications" ON public.internship_applications;
+DROP POLICY IF EXISTS "Users can insert own applications" ON public.internship_applications;
+DROP POLICY IF EXISTS "Users can update own applications" ON public.internship_applications;
+DROP POLICY IF EXISTS "Admins can manage all applications" ON public.internship_applications;
+
+-- Users can view their OWN applications
+CREATE POLICY "Users can view own applications" ON public.internship_applications
+    FOR SELECT TO authenticated
+    USING (auth.uid() = user_id OR email = auth.email());
+
+-- Users can insert their own applications
+CREATE POLICY "Users can insert own applications" ON public.internship_applications
+    FOR INSERT TO authenticated
+    WITH CHECK (auth.uid() = user_id);
+
+-- Users can update their own applications
+CREATE POLICY "Users can update own applications" ON public.internship_applications
+    FOR UPDATE TO authenticated
+    USING (auth.uid() = user_id)
+    WITH CHECK (auth.uid() = user_id);
+
+-- Admins can do everything
+CREATE POLICY "Admins can manage all applications" ON public.internship_applications
+    FOR ALL TO authenticated
+    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'founder')));
+
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.internship_applications TO authenticated, anon;
+GRANT ALL ON public.internship_applications TO service_role;
+
+-- Backfill user_id from auth.users by matching email (fixes legacy records with no user_id)
+UPDATE public.internship_applications ia
+SET user_id = au.id
+FROM auth.users au
+WHERE ia.email = au.email AND ia.user_id IS NULL;
