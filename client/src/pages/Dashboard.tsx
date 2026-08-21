@@ -256,6 +256,24 @@ export const Dashboard: React.FC = () => {
             }
 
             console.log('[Dashboard] Final resolved application data:', appData);
+
+            // Fallback 3: localStorage cache (handles case where internship_applications table
+            // doesn't exist yet or RLS blocks the query — e.g. auth_policies.sql not run)
+            if (!appData) {
+                const cached = localStorage.getItem(`vinix_app_status_${sbUser.id}`);
+                if (cached) {
+                    try {
+                        appData = JSON.parse(cached);
+                        console.log('[Dashboard] Application restored from localStorage cache:', appData);
+                    } catch (_) { /* ignore parse errors */ }
+                }
+            }
+
+            // Write resolved data back to localStorage so future loads are fast even if DB is unavailable
+            if (appData) {
+                localStorage.setItem(`vinix_app_status_${sbUser.id}`, JSON.stringify(appData));
+            }
+
             setInternshipApplication(appData ? {
                 id: appData.id,
                 status: appData.status || 'active',

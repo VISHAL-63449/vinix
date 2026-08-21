@@ -379,6 +379,19 @@ export const Internship: React.FC = () => {
                     .insert(progressToInsert);
             }
 
+            // Cache application status in localStorage so Dashboard can detect it
+            // even if internship_applications DB query fails (RLS block or table not yet created)
+            const appCacheData = {
+                id: 'local-' + Date.now(),
+                status: 'active',
+                internship_name: selectedDomain?.title || 'Developer Internship',
+                domain: selectedDomain?.category || 'Virtual Internship',
+                applied_at: new Date().toISOString(),
+                email: sbUserEmail
+            };
+            localStorage.setItem(`vinix_app_status_${sbUserId}`, JSON.stringify(appCacheData));
+            console.log('[Internship] Application status cached to localStorage:', appCacheData);
+
             alert('Successfully applied! Your virtual internship workspace and offer letter have been generated.');
             navigate('/dashboard');
         } catch (error: any) {
