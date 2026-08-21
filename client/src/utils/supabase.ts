@@ -50,3 +50,6 @@ export const FALLBACK_INTERNSHIPS: FallbackInternship[] = [
     { id: 'fc6b7e28-3e4e-4f5a-8b6b-127c35448978', title: '3D Design', domain: 'threeddesign', description: 'Assemble 3D meshes and rendering.', duration: '3 Months', status: 'published' }
 ];
 
+// Trigger GitHub Actions deploy trigger. Schema cache mapping synchronized.
+
+
