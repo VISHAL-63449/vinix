@@ -106,6 +106,7 @@ export const Dashboard: React.FC = () => {
 
     // Submit project forms state
     const [projectTitle, setProjectTitle] = useState('');
+    const [projectTaskNumber, setProjectTaskNumber] = useState<number | null>(null);
     const [projectDesc, setProjectDesc] = useState('');
     const [projectGit, setProjectGit] = useState('');
     const [projectLoading, setProjectLoading] = useState(false);
@@ -305,21 +306,25 @@ export const Dashboard: React.FC = () => {
                     tasks = mockTasksList;
                 }
 
-                // Load progress
+                // Load progress — join with internship_tasks to guarantee task metadata
                 const { data: progressRes } = await supabase
                     .from('task_progress')
-                    .select('*')
+                    .select('*, internship_tasks(id, task_number, title, description)')
                     .eq('user_id', sbUser.id)
                     .eq('internship_id', internship.id);
 
                 const progressArray = progressRes || [];
 
-
-
                 // Map progress to project/submissions structure
                 for (const prog of progressArray) {
-                    const task = tasks.find(t => t.id === prog.task_id);
+                    // Use joined task data first, fallback to local tasks array
+                    const joinedTask = (prog as any).internship_tasks;
+                    const task = joinedTask || tasks.find((t: any) => t.id === prog.task_id);
                     if (!task) continue;
+                    // Skip the LinkedIn task (task_number 1) — it's shown in the Quest Log, not as a project submission
+                    if ((task.task_number ?? joinedTask?.task_number) === 1) continue;
+                    // Only show tasks that have been submitted/approved/rejected
+                    if (!['submitted', 'approved', 'rejected'].includes(prog.status)) continue;
 
                     allProjects.push({
                         id: prog.id,
@@ -396,25 +401,31 @@ export const Dashboard: React.FC = () => {
                 .select('*')
                 .eq('user_id', sbUser.id);
 
-            const mappedLetters = (letters || []).map(l => ({
-                id: l.id,
-                offerLetterId: l.offer_letter_id,
-                studentId: l.user_id,
-                studentName: l.student_name,
-                studentEmail: l.student_email,
-                internshipTitle: l.internship_title,
-                internshipDomain: l.internship_title.split(' ')[0],
-                startDate: l.issue_date,
-                endDate: l.issue_date,
-                duration: l.duration,
-                mentorName: 'Vishal R',
-                issueDate: l.issue_date,
-                status: l.status as any,
-                pdfUrl: l.pdf_url,
-                verificationToken: l.verification_token,
-                createdAt: l.created_at,
-                updatedAt: l.updated_at
-            }));
+            const mappedLetters = (letters || []).map(l => {
+                // Calculate proper end date: issue_date + 90 days (3 months)
+                const issueDate = new Date(l.issue_date);
+                const endDate = new Date(issueDate);
+                endDate.setDate(endDate.getDate() + 90);
+                return {
+                    id: l.id,
+                    offerLetterId: l.offer_letter_id,
+                    studentId: l.user_id,
+                    studentName: l.student_name,
+                    studentEmail: l.student_email,
+                    internshipTitle: l.internship_title,
+                    internshipDomain: l.internship_title.split(' ')[0],
+                    startDate: issueDate.toISOString(),
+                    endDate: endDate.toISOString(),
+                    duration: l.duration || '3 Months',
+                    mentorName: 'Vishal R',
+                    issueDate: l.issue_date,
+                    status: l.status as any,
+                    pdfUrl: undefined,
+                    verificationToken: l.verification_token,
+                    createdAt: l.created_at,
+                    updatedAt: l.updated_at
+                };
+            });
 
             setOfferLetters(mappedLetters);
 
@@ -522,16 +533,31 @@ export const Dashboard: React.FC = () => {
                 return;
             }
 
-            // Find matching task in database
-            const { data: taskRes } = await supabase
-                .from('internship_tasks')
-                .select('*')
-                .eq('internship_id', displayEnrollment.courseId)
-                .eq('title', projectTitle)
-                .single();
+            // Find matching task by task_number (reliable) or title fallback
+            let taskRes: any = null;
+            if (projectTaskNumber !== null) {
+                const { data } = await supabase
+                    .from('internship_tasks')
+                    .select('*')
+                    .eq('internship_id', displayEnrollment.courseId)
+                    .eq('task_number', projectTaskNumber)
+                    .maybeSingle();
+                taskRes = data;
+            }
+
+            // Fallback: match by title (trimmed, case-insensitive)
+            if (!taskRes && projectTitle) {
+                const { data: allTasks } = await supabase
+                    .from('internship_tasks')
+                    .select('*')
+                    .eq('internship_id', displayEnrollment.courseId);
+                taskRes = (allTasks || []).find((t: any) =>
+                    t.title.toLowerCase().trim() === projectTitle.toLowerCase().trim()
+                ) || null;
+            }
 
             if (!taskRes) {
-                throw new Error('Task not found in the database. Please contact support.');
+                throw new Error(`Task "${projectTitle}" not found in the database. Please contact support.`);
             }
 
             const { error } = await supabase
@@ -1111,6 +1137,7 @@ export const Dashboard: React.FC = () => {
                                                         <button
                                                             onClick={() => {
                                                                 setProjectTitle(as.title);
+                                                                setProjectTaskNumber((as as any).task_number ?? null);
                                                                 setIsSubmitModalOpen(true);
                                                             }}
                                                             className="w-full py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl transition duration-150 shadow-sm"
@@ -1127,6 +1154,7 @@ export const Dashboard: React.FC = () => {
                                                     <button
                                                         onClick={() => {
                                                             setProjectTitle(as.title);
+                                                            setProjectTaskNumber((as as any).task_number ?? null);
                                                             setIsSubmitModalOpen(true);
                                                         }}
                                                         className="w-full flex items-center justify-center py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition duration-150 shadow-sm"
@@ -1447,102 +1475,180 @@ export const Dashboard: React.FC = () => {
                     </div>
                 )}
 
-                {/* Tab 6: Offer Letters */}
+                {/* Tab 6: Offer Letters + Student ID Card */}
                 {activeTab === 'letters' && (
-                    <div className="space-y-6">
+                    <div className="space-y-8">
                         <h2 className="text-2xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                             <MailOpen className="text-blue-600" />
-                            <span>My Offer Letters</span>
+                            <span>My Offer Letters & ID Card</span>
                         </h2>
-                        {offerLetters.length === 0 ? (
-                            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-12 rounded-3xl text-center space-y-3">
-                                <MailOpen size={48} className="mx-auto text-slate-400" />
-                                <h3 className="font-bold text-slate-700 dark:text-slate-200">No offer letters issued</h3>
-                                <p className="text-xs text-slate-450 dark:text-slate-400">Once your application setup and evaluation are processed, your virtual internship offer letter will register here.</p>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {offerLetters.map((l) => (
-                                    <div key={l.id} className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-md flex flex-col justify-between space-y-6">
 
-                                        <div className="space-y-3">
-                                            <div className="flex justify-between items-start">
-                                                <div>
-                                                    <span className="text-[9px] uppercase font-bold tracking-widest bg-blue-50 text-blue-600 dark:bg-blue-955 dark:text-blue-400 px-2 py-0.5 rounded">
-                                                        VIONIX OFFICIAL
-                                                    </span>
-                                                    <h3 className="font-bold text-lg mt-1 text-slate-900 dark:text-white capitalize">{l.internshipTitle}</h3>
+                        {/* Student Internship ID Card */}
+                        {displayEnrollment && (
+                            <div className="space-y-3">
+                                <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Student Internship ID Card</h3>
+                                <div className="max-w-sm">
+                                    {/* ID Card */}
+                                    <div className="relative w-full rounded-2xl overflow-hidden shadow-2xl" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%)', aspectRatio: '1.586/1' }}>
+                                        {/* Background grid pattern */}
+                                        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle, #60a5fa 1px, transparent 1px)', backgroundSize: '18px 18px' }} />
+                                        {/* Gold accent bar */}
+                                        <div className="absolute top-0 left-0 right-0 h-1" style={{ background: 'linear-gradient(90deg, #f59e0b, #fbbf24, #f59e0b)' }} />
+                                        {/* Left colored strip */}
+                                        <div className="absolute left-0 top-0 bottom-0 w-1.5" style={{ background: 'linear-gradient(180deg, #3b82f6, #1d4ed8)' }} />
+
+                                        <div className="relative z-10 flex h-full p-4 gap-4">
+                                            {/* Left: Logo + Photo placeholder */}
+                                            <div className="flex flex-col items-center justify-between w-16 shrink-0">
+                                                <div className="flex flex-col items-center gap-0.5">
+                                                    <div className="flex items-center gap-1">
+                                                        <GraduationCap className="text-blue-400" size={12} />
+                                                        <span className="text-[10px] font-black text-white tracking-tight">VINIX</span>
+                                                    </div>
+                                                    <span className="text-[5.5px] font-bold text-blue-300 tracking-[0.15em] uppercase">Technologies</span>
                                                 </div>
-                                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${l.status === 'ACCEPTED' ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300' :
-                                                    l.status === 'DECLINED' ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300' :
-                                                        l.status === 'EXPIRED' ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' :
-                                                            'bg-blue-100 text-blue-700 dark:bg-blue-955 dark:text-blue-300'
-                                                    }`}>
-                                                    {l.status}
-                                                </span>
+                                                {/* Avatar circle */}
+                                                <div className="w-12 h-12 rounded-full border-2 border-blue-400 bg-gradient-to-br from-blue-600 to-indigo-700 flex items-center justify-center shadow-lg">
+                                                    <span className="text-white font-black text-lg uppercase">{(user?.name || 'S')[0]}</span>
+                                                </div>
+                                                <div className="w-10 h-1.5 bg-blue-500/40 rounded-full" />
                                             </div>
 
-                                            <div className="text-xs text-slate-500 space-y-1">
-                                                <p><span className="font-semibold text-slate-400">Offer Code:</span> <span className="font-mono">{l.offerLetterId}</span></p>
-                                                <p><span className="font-semibold text-slate-400">Duration:</span> {l.duration}</p>
-                                                <p><span className="font-semibold text-slate-400">Mentor:</span> {l.mentorName}</p>
-                                                <p><span className="font-semibold text-slate-400">Issue Date:</span> {new Date(l.issueDate).toLocaleDateString()}</p>
+                                            {/* Right: Details */}
+                                            <div className="flex flex-col justify-between flex-1 min-w-0">
+                                                <div className="space-y-0.5">
+                                                    <span className="text-[7px] font-bold text-blue-300 uppercase tracking-widest block">Virtual Intern</span>
+                                                    <h3 className="text-sm font-black text-white uppercase truncate leading-tight tracking-wide">{user?.name || 'Intern'}</h3>
+                                                    <p className="text-[8px] text-slate-300 truncate">{user?.email || ''}</p>
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
+                                                        <div>
+                                                            <span className="text-[6px] text-slate-400 uppercase font-bold block">Domain</span>
+                                                            <span className="text-[8px] text-blue-300 font-bold truncate block">{displayEnrollment.course.title}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[6px] text-slate-400 uppercase font-bold block">Duration</span>
+                                                            <span className="text-[8px] text-white font-bold">{displayEnrollment.course.duration}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[6px] text-slate-400 uppercase font-bold block">Status</span>
+                                                            <span className="text-[8px] text-green-400 font-bold uppercase">{displayEnrollment.status}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[6px] text-slate-400 uppercase font-bold block">Progress</span>
+                                                            <span className="text-[8px] text-amber-400 font-bold">{progress}%</span>
+                                                        </div>
+                                                    </div>
+
+                                                    {offerLetters.length > 0 && (
+                                                        <div>
+                                                            <span className="text-[6px] text-slate-400 uppercase font-bold block">Intern ID</span>
+                                                            <span className="text-[7px] text-white font-mono font-bold truncate block">{offerLetters[0].offerLetterId}</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {/* Barcode lines */}
+                                                <div className="flex items-end gap-px mt-1">
+                                                    {Array.from({ length: 28 }).map((_, i) => (
+                                                        <div key={i} className="bg-blue-400 rounded-px" style={{ width: '1.5px', height: `${4 + (i % 3) * 3}px`, opacity: 0.6 + (i % 2) * 0.4 }} />
+                                                    ))}
+                                                    <span className="text-[5px] text-slate-400 font-mono ml-1 self-end leading-none">{(user?.id || '').slice(0, 10).toUpperCase()}</span>
+                                                </div>
                                             </div>
-
-                                            {l.status === 'ACCEPTED' && (
-                                                <div className="p-3 bg-green-500/10 border border-green-500/20 text-green-750 dark:text-green-305 rounded-xl text-xs font-bold text-center">
-                                                    ✓ Internship Offer Accepted
-                                                </div>
-                                            )}
-
-                                            {l.status === 'DECLINED' && (
-                                                <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-305 rounded-xl text-xs font-bold text-center">
-                                                    ✗ Offer Letter Declined
-                                                </div>
-                                            )}
                                         </div>
 
-                                        <div className="space-y-2 pt-3 border-t border-slate-105 dark:border-slate-800">
-                                            {/* Action triggers */}
-                                            <div className="flex gap-2">
-                                                <button
-                                                    onClick={() => setSelectedOfferLetterPreview(l)}
-                                                    className="flex-1 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition"
-                                                >
-                                                    View Letter
-                                                </button>
-
-                                                <button
-                                                    onClick={() => { setSelectedOfferLetterPreview(l); }}
-                                                    className="flex-1 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 flex items-center justify-center gap-1"
-                                                >
-                                                    <Printer size={12} />
-                                                    <span>Print / Save PDF</span>
-                                                </button>
-                                            </div>
-
-                                            {(l.status === 'GENERATED' || l.status === 'SENT') && (
-                                                <div className="flex gap-2 pt-2 border-t border-slate-50 dark:border-slate-850">
-                                                    <button
-                                                        onClick={() => handleAcceptOffer(l.id)}
-                                                        className="flex-1 py-2 text-xs font-bold text-white bg-green-600 hover:bg-green-700 rounded-xl transition"
-                                                    >
-                                                        Accept Offer
-                                                    </button>
-                                                    <button
-                                                        onClick={() => handleDeclineOffer(l.id)}
-                                                        className="flex-1 py-2 text-xs font-bold text-white bg-red-650 hover:bg-red-700 rounded-xl transition"
-                                                    >
-                                                        Decline
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-
+                                        {/* Bottom accent */}
+                                        <div className="absolute bottom-0 left-0 right-0 h-0.5" style={{ background: 'linear-gradient(90deg, #3b82f6, #6366f1, #3b82f6)' }} />
                                     </div>
-                                ))}
+                                    <p className="text-[10px] text-slate-400 text-center mt-2">Official Vinix Technologies Virtual Internship Card</p>
+                                </div>
                             </div>
                         )}
+
+                        {/* Offer Letters */}
+                        <div className="space-y-3">
+                            <h3 className="text-sm font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Offer Letters</h3>
+                            {offerLetters.length === 0 ? (
+                                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-12 rounded-3xl text-center space-y-3">
+                                    <MailOpen size={48} className="mx-auto text-slate-400" />
+                                    <h3 className="font-bold text-slate-700 dark:text-slate-200">No offer letters issued</h3>
+                                    <p className="text-xs text-slate-450 dark:text-slate-400">Once your application is processed, your offer letter will appear here.</p>
+                                </div>
+                            ) : (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    {offerLetters.map((l) => (
+                                        <div key={l.id} className="p-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-md flex flex-col justify-between space-y-6">
+
+                                            <div className="space-y-3">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <span className="text-[9px] uppercase font-bold tracking-widest bg-blue-50 text-blue-600 dark:bg-blue-955 dark:text-blue-400 px-2 py-0.5 rounded">
+                                                            VINIX OFFICIAL
+                                                        </span>
+                                                        <h3 className="font-bold text-lg mt-1 text-slate-900 dark:text-white capitalize">{l.internshipTitle}</h3>
+                                                    </div>
+                                                    <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${l.status === 'ACCEPTED' ? 'bg-green-100 text-green-700 dark:bg-green-950 dark:text-green-300' :
+                                                        l.status === 'DECLINED' ? 'bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300' :
+                                                            l.status === 'EXPIRED' ? 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400' :
+                                                                'bg-blue-100 text-blue-700 dark:bg-blue-955 dark:text-blue-300'
+                                                        }`}>
+                                                        {l.status}
+                                                    </span>
+                                                </div>
+
+                                                <div className="text-xs text-slate-500 space-y-1">
+                                                    <p><span className="font-semibold text-slate-400">Offer Code:</span> <span className="font-mono">{l.offerLetterId}</span></p>
+                                                    <p><span className="font-semibold text-slate-400">Duration:</span> {l.duration}</p>
+                                                    <p><span className="font-semibold text-slate-400">Mentor:</span> {l.mentorName}</p>
+                                                    <p><span className="font-semibold text-slate-400">Issue Date:</span> {new Date(l.issueDate).toLocaleDateString()}</p>
+                                                    <p><span className="font-semibold text-slate-400">Internship Period:</span> {new Date(l.startDate).toLocaleDateString()} – {new Date(l.endDate).toLocaleDateString()}</p>
+                                                </div>
+
+                                                {l.status === 'ACCEPTED' && (
+                                                    <div className="p-3 bg-green-500/10 border border-green-500/20 text-green-750 dark:text-green-305 rounded-xl text-xs font-bold text-center">
+                                                        ✓ Internship Offer Accepted
+                                                    </div>
+                                                )}
+
+                                                {l.status === 'DECLINED' && (
+                                                    <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-700 dark:text-red-305 rounded-xl text-xs font-bold text-center">
+                                                        ✗ Offer Letter Declined
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            <div className="space-y-2 pt-3 border-t border-slate-105 dark:border-slate-800">
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        onClick={() => setSelectedOfferLetterPreview(l)}
+                                                        className="flex-1 py-2 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition"
+                                                    >
+                                                        View Letter
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setSelectedOfferLetterPreview(l); setTimeout(() => window.print(), 400); }}
+                                                        className="flex-1 py-2 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition dark:text-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 flex items-center justify-center gap-1"
+                                                    >
+                                                        <Printer size={12} />
+                                                        <span>Print / Save PDF</span>
+                                                    </button>
+                                                </div>
+
+                                                {(l.status === 'GENERATED' || l.status === 'SENT') && (
+                                                    <div className="flex gap-2 pt-2 border-t border-slate-50 dark:border-slate-850">
+                                                        <button onClick={() => handleAcceptOffer(l.id)} className="flex-1 py-2 text-xs font-bold text-white bg-green-600 hover:bg-green-700 rounded-xl transition">Accept Offer</button>
+                                                        <button onClick={() => handleDeclineOffer(l.id)} className="flex-1 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl transition">Decline</button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 )}
 
