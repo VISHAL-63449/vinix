@@ -242,6 +242,7 @@ export const Dashboard: React.FC = () => {
                     ],
                     assignments: mockTasksList.filter(t => t.task_number > 1).map(t => ({
                         id: t.id,
+                        task_number: t.task_number,
                         title: t.title,
                         desc: t.description || 'Milestone submission requirement.'
                     })),
@@ -317,14 +318,15 @@ export const Dashboard: React.FC = () => {
 
                 // Map progress to project/submissions structure
                 for (const prog of progressArray) {
-                    // Use joined task data first, fallback to local tasks array
+                    // Use joined task data first, fallback to local tasks array by task_id
                     const joinedTask = (prog as any).internship_tasks;
                     const task = joinedTask || tasks.find((t: any) => t.id === prog.task_id);
                     if (!task) continue;
+                    const taskNum = task.task_number ?? joinedTask?.task_number;
                     // Skip the LinkedIn task (task_number 1) — it's shown in the Quest Log, not as a project submission
-                    if ((task.task_number ?? joinedTask?.task_number) === 1) continue;
-                    // Only show tasks that have been submitted/approved/rejected
-                    if (!['submitted', 'approved', 'rejected'].includes(prog.status)) continue;
+                    if (taskNum === 1) continue;
+                    // Only show tasks that have been submitted/approved/rejected/resubmission_required
+                    if (!['submitted', 'approved', 'rejected', 'resubmission_required'].includes(prog.status)) continue;
 
                     allProjects.push({
                         id: prog.id,
@@ -332,16 +334,21 @@ export const Dashboard: React.FC = () => {
                         description: prog.student_note || '',
                         githubLink: prog.github_url || '',
                         fileUrl: prog.deployment_url || prog.linkedin_url || '',
-                        status: prog.status === 'submitted' ? 'PENDING' : prog.status.toUpperCase() as any,
+                        status: prog.status === 'submitted' ? 'PENDING'
+                            : prog.status === 'resubmission_required' ? 'RESUBMISSION_REQUIRED'
+                                : prog.status.toUpperCase() as any,
                         feedback: prog.admin_feedback || '',
                         submittedAt: prog.submitted_at || prog.created_at
                     });
                 }
 
-                // Check if LinkedIn task (task_number 1) is submitted
+                // Check if LinkedIn task (task_number 1) is submitted/approved
+                // Use JOINED internship_tasks data (not local mock tasks) to avoid ID mismatches
                 const linkedinProg = progressArray.find(p => {
-                    const task = tasks.find(t => t.id === p.task_id);
-                    return task?.task_number === 1;
+                    const joinedT = (p as any).internship_tasks;
+                    const localT = tasks.find((t: any) => t.id === p.task_id);
+                    const tNum = (joinedT?.task_number) ?? (localT?.task_number);
+                    return tNum === 1;
                 });
                 if (linkedinProg && (linkedinProg.status === 'submitted' || linkedinProg.status === 'approved')) {
                     setLinkedInSubmitted(true);
@@ -362,6 +369,7 @@ export const Dashboard: React.FC = () => {
                     ],
                     assignments: tasks.filter(t => t.task_number > 1).map(t => ({
                         id: t.id,
+                        task_number: t.task_number,
                         title: t.title,
                         desc: t.description || 'Milestone submission requirement.'
                     })),
@@ -1059,11 +1067,17 @@ export const Dashboard: React.FC = () => {
 
                                     let isUnlocked = false;
                                     if (index === 0) {
+                                        // First milestone unlocks when LinkedIn is submitted locally OR
+                                        // when the task_progress DB shows it as 'available' or 'approved'
                                         isUnlocked = linkedInSubmitted;
                                     } else if (displayEnrollment.course.assignments) {
                                         const prevTask = displayEnrollment.course.assignments[index - 1];
                                         const prevSub = getLatestTaskSubmission(prevTask.title);
-                                        isUnlocked = !!prevSub && prevSub.status === 'APPROVED';
+                                        // Unlocked if previous task is approved, OR if this task was explicitly
+                                        // marked available/submitted/approved in task_progress
+                                        const thisSub = getLatestTaskSubmission(as.title);
+                                        isUnlocked = (!!prevSub && prevSub.status === 'APPROVED') ||
+                                            (!!thisSub && ['PENDING', 'APPROVED', 'REJECTED', 'RESUBMISSION_REQUIRED'].includes(thisSub.status));
                                     }
 
                                     return (
