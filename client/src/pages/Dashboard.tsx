@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { supabase, FALLBACK_INTERNSHIPS } from '../utils/supabase';
+import { supabase } from '../utils/supabase';
 
 import {
     LayoutDashboard, BookOpen, Layers, FileCode, Award, MailOpen, User,
@@ -92,8 +92,6 @@ export const Dashboard: React.FC = () => {
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [offerLetters, setOfferLetters] = useState<OfferLetter[]>([]);
     const [allCourses, setAllCourses] = useState<Course[]>([]);
-    // Raw Supabase applications (used as fallback on mobile/deployed where localhost is unreachable)
-    const [supabaseApps, setSupabaseApps] = useState<Record<string, unknown>[]>([]);
 
     const [loading, setLoading] = useState(true);
 
@@ -126,35 +124,7 @@ export const Dashboard: React.FC = () => {
 
     const activeInternship = enrollments.find(e => e.course.type === 'INTERNSHIP');
 
-    // Fallback synthetic enrollment built directly from Supabase data
-    // This is used when the local backend (localhost:5000) is unreachable (mobile/deployed)
-    const syntheticEnrollment: Enrollment | null = (() => {
-        if (enrollments.length > 0 || supabaseApps.length === 0) return null;
-        const app = supabaseApps[0] as Record<string, unknown>;
-        const matchedCourse = allCourses.find((c: Course) => c.id === (app.internship_id as string));
-        const courseTitle = (app.internship_name as string) || (matchedCourse?.title) || 'Virtual Internship';
-        const fakeCourse: Course = matchedCourse || {
-            id: (app.internship_id as string) || 'unknown',
-            title: courseTitle,
-            category: (app.domain as string) || 'Virtual Internship',
-            description: 'Vinix Virtual Internship Program',
-            duration: '3 Months',
-            type: 'INTERNSHIP',
-            skills: [],
-            lessons: [],
-            assignments: [],
-            quizzes: []
-        };
-        return {
-            id: (app.id as string) || 'supabase-app',
-            courseId: (app.internship_id as string) || '',
-            progress: (app.progress as number) || 0,
-            status: (app.status as string) || 'active',
-            course: fakeCourse,
-        };
-    })();
-
-    const displayEnrollment = selectedEnrollment || activeInternship || syntheticEnrollment;
+    const displayEnrollment = selectedEnrollment || activeInternship || null;
     const hasLinkedIn = !!(linkedInSubmitted || displayEnrollment?.linkedinUrl);
 
     // Dynamically calculate progress metrics for tasks indicator
@@ -217,22 +187,12 @@ export const Dashboard: React.FC = () => {
                 .maybeSingle();
 
             // Fetch published internships for Explore tab
-            let activeInternships: any[] = [];
-            try {
-                const { data: internshipsList, error: internshipsError } = await supabase
-                    .from('internships')
-                    .select('*')
-                    .eq('status', 'published');
+            const { data: internshipsList } = await supabase
+                .from('internships')
+                .select('*')
+                .eq('status', 'published');
 
-                if (!internshipsError && internshipsList && internshipsList.length > 0) {
-                    activeInternships = internshipsList;
-                } else {
-                    activeInternships = FALLBACK_INTERNSHIPS;
-                }
-            } catch (err) {
-                console.warn("[Dashboard] Failed to fetch internships list, using static fallbacks:", err);
-                activeInternships = FALLBACK_INTERNSHIPS;
-            }
+            const activeInternships: any[] = internshipsList || [];
 
             const coursesList: Course[] = activeInternships.map(i => {
                 const mockTasksList = [];
@@ -295,43 +255,10 @@ export const Dashboard: React.FC = () => {
                 .select('*')
                 .eq('user_id', sbUser.id);
 
-            // Fetch raw applications for validation/fallback
-            const { data: appsData } = await supabase
-                .from('internship_applications')
-                .select('*')
-                .eq('user_id', sbUser.id);
-
-            setSupabaseApps((appsData || []) as Record<string, unknown>[]);
-
-            // Sync/Recovery loop: If application exists but enrollment is missing
-            const enrolledIds = new Set((enrollRes || []).map(e => e.internship_id));
-            if (appsData && appsData.length > 0) {
-                for (const app of appsData) {
-                    const matchedInt = activeInternships.find(i => i.domain === app.domain || i.id === app.internship_id);
-                    if (matchedInt && !enrolledIds.has(matchedInt.id)) {
-                        console.log(`[Dashboard] Sync recovering enrollment for ${matchedInt.title}`);
-                        await supabase
-                            .from('internship_enrollments')
-                            .insert({
-                                user_id: sbUser.id,
-                                internship_id: matchedInt.id,
-                                status: app.status === 'active' ? 'active' : 'pending',
-                                application_status: app.status
-                            });
-                    }
-                }
-            }
-
-            // Refetch enrollments to include recovered entries
-            const { data: refetchedEnrollRes } = await supabase
-                .from('internship_enrollments')
-                .select('*')
-                .eq('user_id', sbUser.id);
-
             const finalEnrollments: Enrollment[] = [];
             const allProjects: Project[] = [];
 
-            for (const enroll of (refetchedEnrollRes || [])) {
+            for (const enroll of (enrollRes || [])) {
                 const internship = activeInternships.find(i => i.id === enroll.internship_id);
                 if (!internship) continue;
 
@@ -387,30 +314,7 @@ export const Dashboard: React.FC = () => {
 
                 const progressArray = progressRes || [];
 
-                // Load local progress fallback if database table doesn't exist/is empty
-                const localProgressKey = `vinix_local_progress_${sbUser.id}_${internship.id}`;
-                const existingLocalStr = localStorage.getItem(localProgressKey);
-                if (existingLocalStr) {
-                    const localProgressArray = JSON.parse(existingLocalStr);
-                    for (const localProg of localProgressArray) {
-                        const matchingTaskObj = tasks.find(t => t.title === localProg.task_title);
-                        if (matchingTaskObj) {
-                            const dbHasTask = progressArray.some(p => p.task_id === matchingTaskObj.id);
-                            if (!dbHasTask) {
-                                progressArray.push({
-                                    id: localProg.id,
-                                    user_id: localProg.user_id,
-                                    internship_id: localProg.internship_id,
-                                    task_id: matchingTaskObj.id,
-                                    status: localProg.status,
-                                    github_url: localProg.github_url,
-                                    student_note: localProg.student_note,
-                                    submitted_at: localProg.submitted_at
-                                });
-                            }
-                        }
-                    }
-                }
+
 
                 // Map progress to project/submissions structure
                 for (const prog of progressArray) {
@@ -469,67 +373,6 @@ export const Dashboard: React.FC = () => {
                 });
             }
 
-            // Fallback synthetic enrollment checking
-            const activeInternship = finalEnrollments.find(e => e.course.type === 'INTERNSHIP');
-            const syntheticEnrollmentLocal: Enrollment | null = (() => {
-                if (finalEnrollments.length > 0 || !appsData || appsData.length === 0) return null;
-                const app = appsData[0] as Record<string, unknown>;
-                const matchedCourse = coursesList.find((c: Course) => c.id === (app.internship_id as string));
-                const courseTitle = (app.internship_name as string) || (matchedCourse?.title) || 'Virtual Internship';
-                const fakeCourse: Course = matchedCourse || {
-                    id: (app.internship_id as string) || 'unknown',
-                    title: courseTitle,
-                    category: (app.domain as string) || 'Virtual Internship',
-                    description: 'Vinix Virtual Internship Program',
-                    duration: '3 Months',
-                    type: 'INTERNSHIP',
-                    skills: [],
-                    lessons: [],
-                    assignments: [],
-                    quizzes: []
-                };
-                return {
-                    id: (app.id as string) || 'supabase-app',
-                    courseId: (app.internship_id as string) || '',
-                    progress: (app.progress as number) || 0,
-                    status: (app.status as string) || 'active',
-                    course: fakeCourse,
-                };
-            })();
-
-            const displayEnrollmentLocal = activeInternship || syntheticEnrollmentLocal;
-
-            // Load local projects if we have a synthetic/offline enrollment & no database projects loaded
-            if (allProjects.length === 0 && displayEnrollmentLocal) {
-                const localProgressKey = `vinix_local_progress_${sbUser.id}_${displayEnrollmentLocal.courseId}`;
-                const existingLocalStr = localStorage.getItem(localProgressKey);
-                if (existingLocalStr) {
-                    const localProgressArray = JSON.parse(existingLocalStr);
-                    for (const localProg of localProgressArray) {
-                        allProjects.push({
-                            id: localProg.id,
-                            title: localProg.task_title,
-                            description: localProg.student_note || '',
-                            githubLink: localProg.github_url || '',
-                            fileUrl: localProg.linkedin_url || '',
-                            status: localProg.status === 'submitted' ? 'PENDING' : localProg.status.toUpperCase() as any,
-                            feedback: '',
-                            submittedAt: localProg.submitted_at
-                        });
-                    }
-                }
-            }
-
-            // Local LinkedIn checking
-            if (displayEnrollmentLocal) {
-                const localLinkedInKey = `vinix_local_linkedin_${sbUser.id}_${displayEnrollmentLocal.courseId}`;
-                const localLinkedInUrl = localStorage.getItem(localLinkedInKey);
-                if (localLinkedInUrl) {
-                    setLinkedInSubmitted(true);
-                    setLinkedInUrlInput(localLinkedInUrl);
-                }
-            }
-
             setEnrollments(finalEnrollments);
             setProjects(allProjects);
 
@@ -573,38 +416,13 @@ export const Dashboard: React.FC = () => {
                 updatedAt: l.updated_at
             }));
 
-            if (mappedLetters.length > 0) {
-                setOfferLetters(mappedLetters);
-            } else if (displayEnrollmentLocal) {
-                const syntheticLetter: OfferLetter = {
-                    id: 'synthetic-offer-letter-id',
-                    offerLetterId: `VINIX-OFFER-${new Date().getFullYear()}-OFFLINE`,
-                    studentId: sbUser.id,
-                    studentName: profile?.name || sbUser.email?.split('@')[0] || 'Intern',
-                    studentEmail: sbUser.email || '',
-                    internshipTitle: displayEnrollmentLocal.course.title,
-                    internshipDomain: displayEnrollmentLocal.course.category || 'Virtual Internship',
-                    startDate: new Date().toISOString(),
-                    endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000).toISOString(),
-                    duration: '3 Months',
-                    mentorName: 'Vishal R',
-                    issueDate: new Date().toISOString(),
-                    status: 'ACCEPTED',
-                    pdfUrl: '',
-                    verificationToken: 'synthetic-token',
-                    createdAt: new Date().toISOString(),
-                    updatedAt: new Date().toISOString()
-                };
-                setOfferLetters([syntheticLetter]);
-            } else {
-                setOfferLetters([]);
-            }
+            setOfferLetters(mappedLetters);
 
             if (finalEnrollments.length > 0 && !selectedEnrollment) {
                 const internshipEnroll = finalEnrollments.find(e => e.course.type === 'INTERNSHIP');
                 const defaultEnroll = internshipEnroll || finalEnrollments[0];
                 setSelectedEnrollment(defaultEnroll);
-                if (defaultEnroll.course.lessons && defaultEnroll.course.lessons.length > 0) {
+                if (defaultEnroll.course.lessons?.length > 0) {
                     setCurrentVideoUrl(defaultEnroll.course.lessons[0].videoUrl);
                     setActiveVideoTitle(defaultEnroll.course.lessons[0].title);
                 }
@@ -704,63 +522,33 @@ export const Dashboard: React.FC = () => {
                 return;
             }
 
-            try {
-                // Find matching task
-                const { data: taskRes } = await supabase
-                    .from('internship_tasks')
-                    .select('*')
-                    .eq('internship_id', displayEnrollment.courseId)
-                    .eq('title', projectTitle)
-                    .single();
+            // Find matching task in database
+            const { data: taskRes } = await supabase
+                .from('internship_tasks')
+                .select('*')
+                .eq('internship_id', displayEnrollment.courseId)
+                .eq('title', projectTitle)
+                .single();
 
-                if (taskRes) {
-                    const { error } = await supabase
-                        .from('task_progress')
-                        .upsert({
-                            user_id: sbUser.id,
-                            internship_id: displayEnrollment.courseId,
-                            task_id: taskRes.id,
-                            status: 'submitted',
-                            github_url: projectGit,
-                            student_note: projectDesc,
-                            submitted_at: new Date().toISOString()
-                        }, {
-                            onConflict: 'user_id,task_id'
-                        });
+            if (!taskRes) {
+                throw new Error('Task not found in the database. Please contact support.');
+            }
 
-                    if (error) throw error;
-                } else {
-                    throw new Error("Task target not found in database catalog");
-                }
-            } catch (dbErr) {
-                console.warn('[Dashboard] Database submission failed, storing in localStorage fallback:', dbErr);
-
-                // Fallback to localStorage
-                const localProgressKey = `vinix_local_progress_${sbUser.id}_${displayEnrollment.courseId}`;
-                const existingLocalStr = localStorage.getItem(localProgressKey);
-                const localProgressArray = existingLocalStr ? JSON.parse(existingLocalStr) : [];
-
-                // Check if this task was already submitted
-                const existingIdx = localProgressArray.findIndex((p: any) => p.task_title === projectTitle);
-                const payload = {
-                    id: `local-progress-${Date.now()}`,
+            const { error } = await supabase
+                .from('task_progress')
+                .upsert({
                     user_id: sbUser.id,
                     internship_id: displayEnrollment.courseId,
-                    task_title: projectTitle,
+                    task_id: taskRes.id,
                     status: 'submitted',
                     github_url: projectGit,
                     student_note: projectDesc,
                     submitted_at: new Date().toISOString()
-                };
+                }, {
+                    onConflict: 'user_id,task_id'
+                });
 
-                if (existingIdx > -1) {
-                    localProgressArray[existingIdx] = payload;
-                } else {
-                    localProgressArray.push(payload);
-                }
-
-                localStorage.setItem(localProgressKey, JSON.stringify(localProgressArray));
-            }
+            if (error) throw error;
 
             alert('Project milestone submitted successfully! Evaluators will review it shortly.');
             setProjectTitle('');
@@ -820,12 +608,8 @@ export const Dashboard: React.FC = () => {
                     .eq('user_id', sbUser.id)
                     .eq('internship_id', displayEnrollment.courseId);
             } catch (dbErr) {
-                console.warn('[Dashboard] Database call failed for LinkedIn, updating local storage:', dbErr);
+                console.warn('[Dashboard] Database call failed for LinkedIn URL submission:', dbErr);
             }
-
-            // Always update local storage for robustness
-            const localLinkedInKey = `vinix_local_linkedin_${sbUser.id}_${displayEnrollment.courseId}`;
-            localStorage.setItem(localLinkedInKey, linkedInUrlInput);
 
             setLinkedInSubmitted(true);
             setIsLinkedInModalOpen(false);
