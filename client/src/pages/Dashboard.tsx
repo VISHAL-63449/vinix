@@ -92,6 +92,15 @@ export const Dashboard: React.FC = () => {
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [offerLetters, setOfferLetters] = useState<OfferLetter[]>([]);
     const [allCourses, setAllCourses] = useState<Course[]>([]);
+    // Internship application status (from internship_applications table)
+    const [internshipApplication, setInternshipApplication] = useState<{
+        id: string;
+        status: string;
+        internship_name?: string;
+        domain?: string;
+        applied_at?: string;
+    } | null>(null);
+    const [applicationLoading, setApplicationLoading] = useState(true);
 
     const [loading, setLoading] = useState(true);
 
@@ -187,13 +196,32 @@ export const Dashboard: React.FC = () => {
                 .eq('id', sbUser.id)
                 .maybeSingle();
 
-            // Fetch published internships for Explore tab
+            // Fetch published internships for Explore domains tab
             const { data: internshipsList } = await supabase
                 .from('internships')
                 .select('*')
                 .eq('status', 'published');
 
             const activeInternships: any[] = internshipsList || [];
+
+            // --- INTERNSHIP APPLICATION STATUS CHECK ---
+            // Check internship_applications table (can have status: pending, active, approved, rejected)
+            const { data: appData } = await supabase
+                .from('internship_applications')
+                .select('id, status, internship_name, domain, applied_at')
+                .eq('user_id', sbUser.id)
+                .order('applied_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
+
+            setInternshipApplication(appData ? {
+                id: appData.id,
+                status: appData.status || 'pending',
+                internship_name: appData.internship_name,
+                domain: appData.domain,
+                applied_at: appData.applied_at
+            } : null);
+
 
             const coursesList: Course[] = activeInternships.map(i => {
                 const mockTasksList = [];
@@ -260,8 +288,26 @@ export const Dashboard: React.FC = () => {
             const finalEnrollments: Enrollment[] = [];
             const allProjects: Project[] = [];
 
+            // Also fetch ALL internships (not just published) that the user is enrolled in,
+            // to handle cases where admin un-published an internship after enrollment.
+            const enrolledInternshipIds = (enrollRes || []).map((e: any) => e.internship_id);
+            let allKnownInternships = [...activeInternships];
+            if (enrolledInternshipIds.length > 0) {
+                // Fetch any enrolled internships that may not be in the published list
+                const missingIds = enrolledInternshipIds.filter(
+                    (id: string) => !activeInternships.find((i: any) => i.id === id)
+                );
+                if (missingIds.length > 0) {
+                    const { data: extraInternships } = await supabase
+                        .from('internships')
+                        .select('*')
+                        .in('id', missingIds);
+                    allKnownInternships = [...activeInternships, ...(extraInternships || [])];
+                }
+            }
+
             for (const enroll of (enrollRes || [])) {
-                const internship = activeInternships.find(i => i.id === enroll.internship_id);
+                const internship = allKnownInternships.find((i: any) => i.id === enroll.internship_id);
                 if (!internship) continue;
 
                 // Load tasks
@@ -450,6 +496,7 @@ export const Dashboard: React.FC = () => {
             console.error('Failed to load dashboard data:', err);
         } finally {
             setLoading(false);
+            setApplicationLoading(false);
         }
     };
 
@@ -895,11 +942,74 @@ export const Dashboard: React.FC = () => {
                                 </div>
                             </div>
                         ) : (
-                            <div className="p-8 bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 text-center rounded-3xl shadow-sm space-y-4">
-                                <h3 className="font-extrabold text-lg text-slate-850 dark:text-slate-100">Launch an Internship Track</h3>
-                                <p className="text-xs text-slate-400">You are not registered in any active learning / internship domains.</p>
-                                <button onClick={() => navigate('/internship')} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-bold text-xs transition">Apply Internship</button>
-                            </div>
+                            /* --- APPLICATION-STATUS-AWARE BANNER --- */
+                            applicationLoading ? (
+                                <div className="p-8 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl shadow-sm flex items-center justify-center gap-3">
+                                    <div className="h-5 w-5 animate-spin rounded-full border-2 border-blue-600 border-t-transparent" />
+                                    <span className="text-xs font-semibold text-slate-400">Checking application status...</span>
+                                </div>
+                            ) : internshipApplication && ['pending', 'active', 'approved', 'under_review', 'processing'].includes(internshipApplication.status) ? (
+                                /* PENDING / UNDER REVIEW STATE */
+                                <div className="relative p-7 bg-gradient-to-br from-amber-950/60 via-slate-900 to-orange-950/40 border border-amber-500/20 text-white rounded-3xl shadow-lg overflow-hidden">
+                                    <div className="absolute -top-8 -right-8 w-48 h-48 rounded-full bg-amber-500/5 blur-3xl pointer-events-none" />
+                                    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
+                                        <div className="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-2xl">⏳</span>
+                                        </div>
+                                        <div className="text-center sm:text-left flex-1 space-y-1">
+                                            <span className="inline-block px-2 py-0.5 bg-amber-500/10 border border-amber-400/20 text-amber-300 text-[10px] font-black uppercase tracking-widest rounded-md mb-1">Application Under Review</span>
+                                            <h3 className="text-lg font-extrabold text-white">
+                                                {internshipApplication.internship_name || internshipApplication.domain || 'Internship Application'}
+                                            </h3>
+                                            <p className="text-xs text-slate-400 font-medium">
+                                                Your application has been received and is being reviewed by the Vinix team. You will be notified once a decision is made.
+                                            </p>
+                                            {internshipApplication.applied_at && (
+                                                <p className="text-[10px] text-slate-500 font-mono">
+                                                    Applied: {new Date(internshipApplication.applied_at).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                                </p>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-col items-center gap-2 flex-shrink-0">
+                                            <div className="px-4 py-2 bg-amber-500/10 border border-amber-500/20 rounded-xl text-amber-300 text-xs font-bold text-center">
+                                                ⏳ Pending Review
+                                            </div>
+                                            <button
+                                                onClick={() => navigate('/internship')}
+                                                className="text-[10px] text-slate-500 hover:text-slate-300 underline transition"
+                                            >View Internship Details</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : internshipApplication && internshipApplication.status === 'rejected' ? (
+                                /* REJECTED STATE */
+                                <div className="relative p-7 bg-gradient-to-br from-red-950/50 via-slate-900 to-red-950/30 border border-red-500/20 text-white rounded-3xl shadow-lg overflow-hidden">
+                                    <div className="absolute -top-8 -right-8 w-48 h-48 rounded-full bg-red-500/5 blur-3xl pointer-events-none" />
+                                    <div className="relative z-10 flex flex-col sm:flex-row items-center gap-6">
+                                        <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center flex-shrink-0">
+                                            <span className="text-2xl">❌</span>
+                                        </div>
+                                        <div className="text-center sm:text-left flex-1 space-y-1">
+                                            <span className="inline-block px-2 py-0.5 bg-red-500/10 border border-red-400/20 text-red-300 text-[10px] font-black uppercase tracking-widest rounded-md mb-1">Application Not Selected</span>
+                                            <h3 className="text-lg font-extrabold text-white">Application Rejected</h3>
+                                            <p className="text-xs text-slate-400 font-medium">
+                                                Unfortunately your application was not approved this time. You may reapply for a different internship track.
+                                            </p>
+                                        </div>
+                                        <button
+                                            onClick={() => navigate('/internship')}
+                                            className="px-5 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-bold text-xs transition flex-shrink-0"
+                                        >Reapply Now</button>
+                                    </div>
+                                </div>
+                            ) : (
+                                /* NO APPLICATION STATE */
+                                <div className="p-8 bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-800 text-center rounded-3xl shadow-sm space-y-4">
+                                    <h3 className="font-extrabold text-lg text-slate-850 dark:text-slate-100">Launch an Internship Track</h3>
+                                    <p className="text-xs text-slate-400">You are not registered in any active learning / internship domains.</p>
+                                    <button onClick={() => navigate('/internship')} className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 rounded-xl text-white font-bold text-xs transition">Apply Internship</button>
+                                </div>
+                            )
                         )}
 
                         {/* Dynamic Stats Grid Card Row */}
