@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase, FALLBACK_INTERNSHIPS } from '../utils/supabase';
+import { applyToInternship, hasApplied } from '../services/internshipService';
 import {
     CheckCircle2, Sparkles, MapPin, ChevronRight
 } from 'lucide-react';
@@ -271,126 +272,18 @@ export const Internship: React.FC = () => {
 
             console.log(`[handleApply] Authenticated Supabase User ID: ${sbUserId}, Email: ${sbUserEmail}`);
 
-            // 3. Prevent duplicate applications by checking if mapping already exists in database
-            console.log("[handleApply] Checking for existing application record in database...");
-            const { data: existingApps, error: checkError } = await supabase
-                .from('internship_applications')
-                .select('*')
-                .eq('user_id', sbUserId)
-                .eq('internship_id', selectedDomainId);
-
-            if (checkError) {
-                console.warn("[handleApply] Supabase check query error (proceeding with caution):", checkError);
-            } else if (existingApps && existingApps.length > 0) {
-                console.log("[handleApply] Existing application found. Redirecting to dashboard.");
-                alert('You have already applied and enrolled in this internship domain. Check your dashboard!');
-                navigate('/dashboard');
-                setLoading(false);
-                return;
-            }
-
-            // 4. Save application data to Supabase database (with constraint checks)
-            const durationMonths = selectedDuration.includes('1') ? 1 : selectedDuration.includes('2') ? 2 : selectedDuration.includes('6') ? 6 : 3;
-            const startDate = new Date();
-            const endDate = new Date(startDate.getTime() + durationMonths * 30 * 24 * 60 * 60 * 1000);
-
-            const appData = {
-                user_id: sbUserId,
-                internship_id: selectedDomainId,
-                status: 'active',
-                student_name: sbUsername,
+            // Apply using centralized service
+            await applyToInternship({
+                userId: sbUserId,
                 email: sbUserEmail,
+                username: sbUsername,
+                domainId: selectedDomainId,
+                domainTitle: selectedDomain?.title || 'Developer Internship',
+                domainCategory: selectedDomain?.category || 'Virtual Internship',
+                duration: selectedDuration,
                 phone: phone || '',
-                college: college || '',
-                domain: selectedDomain?.category || 'Virtual Internship',
-                internship_name: selectedDomain?.title || 'Developer Internship',
-                start_date: startDate.toISOString(),
-                end_date: endDate.toISOString(),
-                certificate_status: 'pending',
-                offer_letter_status: 'pending',
-                progress: 0,
-                mentor_id: null
-            };
-
-            console.log("[handleApply] Inserting application to public.internship_applications:", appData);
-            const { error: insertError } = await supabase
-                .from('internship_applications')
-                .insert([appData]);
-
-            if (insertError) {
-                if (insertError.code === '23505' || insertError.message?.includes('unique') || insertError.message?.includes('duplicate')) {
-                    console.log("[handleApply] Unique constraint triggered. Record already exists.");
-                    alert('You have already registered for this virtual internship.');
-                    navigate('/dashboard');
-                    setLoading(false);
-                    return;
-                }
-                console.error("[handleApply] Database application insertion failed:", insertError);
-                throw new Error(`Database registration failed: ${insertError.message}`);
-            }
-
-            // Provision enrollment in internship_enrollments
-            const { data: enrolledRecord, error: enrollErr } = await supabase
-                .from('internship_enrollments')
-                .insert({
-                    user_id: sbUserId,
-                    internship_id: selectedDomainId,
-                    status: 'active',
-                    application_status: 'active'
-                })
-                .select()
-                .single();
-
-            if (enrollErr) {
-                console.warn('[handleApply] Warning inserting enrollment:', enrollErr);
-            }
-
-            // Generate offer letter record
-            const offerLetterNumber = `VINIX-OFFER-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
-            await supabase
-                .from('offer_letters')
-                .insert({
-                    enrollment_id: enrolledRecord?.id,
-                    user_id: sbUserId,
-                    offer_letter_id: offerLetterNumber,
-                    student_name: sbUsername,
-                    student_email: sbUserEmail,
-                    internship_title: selectedDomain?.title || 'Developer Internship',
-                    duration: selectedDuration,
-                    status: 'GENERATED'
-                });
-
-            // Seed task progress
-            const { data: tasks } = await supabase
-                .from('internship_tasks')
-                .select('*')
-                .eq('internship_id', selectedDomainId)
-                .order('task_number', { ascending: true });
-
-            if (tasks && tasks.length > 0) {
-                const progressToInsert = tasks.map(t => ({
-                    user_id: sbUserId,
-                    internship_id: selectedDomainId,
-                    task_id: t.id,
-                    status: t.task_number === 1 ? 'approved' : t.task_number === 2 ? 'available' : 'locked'
-                }));
-                await supabase
-                    .from('task_progress')
-                    .insert(progressToInsert);
-            }
-
-            // Cache application status in localStorage so Dashboard can detect it
-            // even if internship_applications DB query fails (RLS block or table not yet created)
-            const appCacheData = {
-                id: 'local-' + Date.now(),
-                status: 'active',
-                internship_name: selectedDomain?.title || 'Developer Internship',
-                domain: selectedDomain?.category || 'Virtual Internship',
-                applied_at: new Date().toISOString(),
-                email: sbUserEmail
-            };
-            localStorage.setItem(`vinix_app_status_${sbUserId}`, JSON.stringify(appCacheData));
-            console.log('[Internship] Application status cached to localStorage:', appCacheData);
+                college: college || ''
+            });
 
             alert('Successfully applied! Your virtual internship workspace and offer letter have been generated.');
             navigate('/dashboard');

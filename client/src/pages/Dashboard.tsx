@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../utils/supabase';
+import { getUserApplications } from '../services/internshipService';
 
 import {
     LayoutDashboard, BookOpen, Layers, FileCode, Award, MailOpen, User,
@@ -205,74 +206,20 @@ export const Dashboard: React.FC = () => {
             const activeInternships: any[] = internshipsList || [];
 
             // --- INTERNSHIP APPLICATION STATUS CHECK ---
-            // Strategy: 1) query by user_id UUID, 2) fallback by email, 3) fallback via enrollments table
-            console.log('[Dashboard] Checking internship_applications for user_id:', sbUser.id, 'email:', sbUser.email);
+            console.log('[Dashboard] Checking internship applications using centralized service for user_id:', sbUser.id);
+            const userApps = await getUserApplications(sbUser.id);
+            const activeApp = userApps.find(app => ['active', 'enrolled', 'approved', 'pending', 'under_review', 'processing'].includes(app.status));
 
-            const { data: appByUid, error: appUidErr } = await supabase
-                .from('internship_applications')
-                .select('id, status, internship_name, domain, applied_at, email')
-                .eq('user_id', sbUser.id)
-                .order('applied_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
-
-            console.log('[Dashboard] Application by user_id:', appByUid, 'error:', appUidErr);
-
-            let appData = appByUid;
-
-            // Fallback 1: query by email (handles legacy records where user_id was not set)
-            if (!appData && sbUser.email) {
-                const { data: appByEmail, error: appEmailErr } = await supabase
-                    .from('internship_applications')
-                    .select('id, status, internship_name, domain, applied_at, email')
-                    .eq('email', sbUser.email)
-                    .order('applied_at', { ascending: false })
-                    .limit(1)
-                    .maybeSingle();
-                console.log('[Dashboard] Application by email fallback:', appByEmail, 'error:', appEmailErr);
-                appData = appByEmail;
-            }
-
-            // Fallback 2: if still nothing, check internship_enrollments (enrollment = application approved)
-            if (!appData) {
-                const { data: enrollCheck } = await supabase
-                    .from('internship_enrollments')
-                    .select('id, status, internship_id, created_at')
-                    .eq('user_id', sbUser.id)
-                    .limit(1)
-                    .maybeSingle();
-                console.log('[Dashboard] Enrollment fallback check:', enrollCheck);
-                if (enrollCheck) {
-                    // Treat existing enrollment as an approved application
-                    appData = {
-                        id: enrollCheck.id,
-                        status: 'active',
-                        internship_name: null,
-                        domain: null,
-                        applied_at: enrollCheck.created_at,
-                        email: sbUser.email
-                    };
-                }
-            }
+            const appData = activeApp ? {
+                id: activeApp.id,
+                status: activeApp.status === 'enrolled' ? 'active' : activeApp.status,
+                internship_name: activeApp.internshipName,
+                domain: activeApp.domainName,
+                applied_at: activeApp.appliedAt,
+                email: sbUser.email
+            } : null;
 
             console.log('[Dashboard] Final resolved application data:', appData);
-
-            // Fallback 3: localStorage cache (handles case where internship_applications table
-            // doesn't exist yet or RLS blocks the query — e.g. auth_policies.sql not run)
-            if (!appData) {
-                const cached = localStorage.getItem(`vinix_app_status_${sbUser.id}`);
-                if (cached) {
-                    try {
-                        appData = JSON.parse(cached);
-                        console.log('[Dashboard] Application restored from localStorage cache:', appData);
-                    } catch (_) { /* ignore parse errors */ }
-                }
-            }
-
-            // Write resolved data back to localStorage so future loads are fast even if DB is unavailable
-            if (appData) {
-                localStorage.setItem(`vinix_app_status_${sbUser.id}`, JSON.stringify(appData));
-            }
 
             setInternshipApplication(appData ? {
                 id: appData.id,
