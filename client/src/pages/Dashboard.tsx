@@ -205,18 +205,60 @@ export const Dashboard: React.FC = () => {
             const activeInternships: any[] = internshipsList || [];
 
             // --- INTERNSHIP APPLICATION STATUS CHECK ---
-            // Check internship_applications table (can have status: pending, active, approved, rejected)
-            const { data: appData } = await supabase
+            // Strategy: 1) query by user_id UUID, 2) fallback by email, 3) fallback via enrollments table
+            console.log('[Dashboard] Checking internship_applications for user_id:', sbUser.id, 'email:', sbUser.email);
+
+            const { data: appByUid, error: appUidErr } = await supabase
                 .from('internship_applications')
-                .select('id, status, internship_name, domain, applied_at')
+                .select('id, status, internship_name, domain, applied_at, email')
                 .eq('user_id', sbUser.id)
                 .order('applied_at', { ascending: false })
                 .limit(1)
                 .maybeSingle();
 
+            console.log('[Dashboard] Application by user_id:', appByUid, 'error:', appUidErr);
+
+            let appData = appByUid;
+
+            // Fallback 1: query by email (handles legacy records where user_id was not set)
+            if (!appData && sbUser.email) {
+                const { data: appByEmail, error: appEmailErr } = await supabase
+                    .from('internship_applications')
+                    .select('id, status, internship_name, domain, applied_at, email')
+                    .eq('email', sbUser.email)
+                    .order('applied_at', { ascending: false })
+                    .limit(1)
+                    .maybeSingle();
+                console.log('[Dashboard] Application by email fallback:', appByEmail, 'error:', appEmailErr);
+                appData = appByEmail;
+            }
+
+            // Fallback 2: if still nothing, check internship_enrollments (enrollment = application approved)
+            if (!appData) {
+                const { data: enrollCheck } = await supabase
+                    .from('internship_enrollments')
+                    .select('id, status, internship_id, created_at')
+                    .eq('user_id', sbUser.id)
+                    .limit(1)
+                    .maybeSingle();
+                console.log('[Dashboard] Enrollment fallback check:', enrollCheck);
+                if (enrollCheck) {
+                    // Treat existing enrollment as an approved application
+                    appData = {
+                        id: enrollCheck.id,
+                        status: 'active',
+                        internship_name: null,
+                        domain: null,
+                        applied_at: enrollCheck.created_at,
+                        email: sbUser.email
+                    };
+                }
+            }
+
+            console.log('[Dashboard] Final resolved application data:', appData);
             setInternshipApplication(appData ? {
                 id: appData.id,
-                status: appData.status || 'pending',
+                status: appData.status || 'active',
                 internship_name: appData.internship_name,
                 domain: appData.domain,
                 applied_at: appData.applied_at
