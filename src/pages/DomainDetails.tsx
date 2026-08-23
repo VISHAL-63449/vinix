@@ -207,6 +207,63 @@ export default function DomainDetails() {
                     status: 'active'
                 });
 
+            // Generate offer letter if one doesn't already exist
+            const { data: existingOffer } = await supabaseAdmin
+                .from('offer_letters')
+                .select('id')
+                .eq('user_id', user.id)
+                .maybeSingle();
+
+            if (!existingOffer) {
+                const offerLetterId = `VINIX-OFFER-${Math.floor(1000 + Math.random() * 9000)}`;
+                const verificationToken = `tok_offer_${Math.floor(100000 + Math.random() * 900000)}`;
+                await supabaseAdmin.from('offer_letters').insert({
+                    user_id: user.id,
+                    student_id: user.id,
+                    offer_letter_id: offerLetterId,
+                    student_name: appForm.name,
+                    student_email: appForm.email,
+                    internship_title: selectedInternship.title,
+                    internship_id: selectedInternship.id,
+                    duration: selectedInternship.duration || '1 Month',
+                    status: 'ACCEPTED',
+                    verification_token: verificationToken,
+                    issue_date: new Date().toISOString()
+                });
+            }
+
+            // Seed task_progress rows so the dashboard shows correct tasks
+            const { data: dbTasks } = await supabaseAdmin
+                .from('internship_tasks')
+                .select('id, task_number')
+                .eq('internship_id', selectedInternship.id)
+                .order('task_number');
+
+            if (dbTasks && dbTasks.length > 0) {
+                const { data: existingProgress } = await supabaseAdmin
+                    .from('task_progress')
+                    .select('task_id')
+                    .eq('user_id', user.id)
+                    .eq('internship_id', selectedInternship.id);
+
+                const existingTaskIds = new Set((existingProgress || []).map(p => p.task_id));
+                const progressInserts = dbTasks
+                    .filter(t => !existingTaskIds.has(t.id))
+                    .map(t => ({
+                        user_id: user.id,
+                        student_id: user.id,
+                        internship_id: selectedInternship.id,
+                        task_id: t.id,
+                        status: t.task_number === 1 ? 'not_submitted' : 'locked',
+                        github_url: null, linkedin_url: null,
+                        student_note: null, admin_feedback: null,
+                        submitted_at: null, reviewed_at: null
+                    }));
+                if (progressInserts.length > 0) {
+                    await supabaseAdmin.from('task_progress').insert(progressInserts);
+                }
+            }
+
             setAppSuccess(true);
             setUserApps(prev => ({
                 ...prev,
