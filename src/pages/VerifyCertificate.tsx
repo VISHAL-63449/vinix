@@ -97,7 +97,7 @@ const VerifyCertificate: React.FC = () => {
                 const canvas = await html2canvas(element, {
                     scale: 2,
                     useCORS: true,
-                    backgroundColor: '#0b1a30',
+                    backgroundColor: '#ffffff',
                     logging: false,
                     scrollY: 0,
                     scrollX: 0
@@ -234,10 +234,10 @@ const VerifyCertificate: React.FC = () => {
                         {/* Visual template mimic (printable style) */}
                         <div
                             id="certificate-print-area"
-                            className="w-full aspect-[1.414/1] bg-white relative flex flex-col justify-between overflow-hidden shadow-2xl rounded-2xl border-[12px] border-[#0b1a30] p-8 select-text"
+                            className="w-full aspect-[1.414/1] bg-white relative flex flex-col justify-between overflow-hidden shadow-2xl border-[12px] border-[#0b1a30] p-8 select-text"
                         >
                             {/* Inner thin border */}
-                            <div className="absolute inset-[8px] border border-[#0b1a30] pointer-events-none rounded-md z-10"></div>
+                            <div className="absolute inset-[8px] border border-[#0b1a30] pointer-events-none z-10"></div>
 
                             {/* Authority header */}
                             <div className="relative flex justify-between items-center z-20 px-10 pt-6 w-full">
