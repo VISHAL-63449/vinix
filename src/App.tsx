@@ -38,7 +38,7 @@ function App() {
   }, [darkMode]);
 
   return (
-    <Router>
+    <Router basename={import.meta.env.BASE_URL}>
       <AuthProvider>
         <div className="flex flex-col min-h-screen bg-brand-bgLight dark:bg-brand-bgDark text-slate-800 dark:text-slate-100 transition-colors duration-300">
           <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
