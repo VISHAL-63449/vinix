@@ -28,6 +28,25 @@ CREATE TABLE IF NOT EXISTS public.profiles (
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 
+-- Security Definer functions to check roles without recursion
+CREATE OR REPLACE FUNCTION public.is_admin(user_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles WHERE id = user_id AND role = 'admin'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.is_admin_or_mentor(user_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles WHERE id = user_id AND role IN ('admin', 'mentor')
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'profiles' AND policyname = 'Users can view own profile') THEN
         CREATE POLICY "Users can view own profile" ON public.profiles
@@ -103,7 +122,7 @@ DO $$ BEGIN
         SELECT 1 FROM pg_policies WHERE tablename = 'domains' AND policyname = 'Anyone can select active domains'
     ) THEN
         CREATE POLICY "Anyone can select active domains" ON public.domains
-            FOR SELECT USING (is_active = true OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR SELECT USING (is_active = true OR public.is_admin(auth.uid()));
     END IF;
 END $$;
 
@@ -112,7 +131,7 @@ DO $$ BEGIN
         SELECT 1 FROM pg_policies WHERE tablename = 'domains' AND policyname = 'Admins can manage domains'
     ) THEN
         CREATE POLICY "Admins can manage domains" ON public.domains
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR ALL TO authenticated USING (public.is_admin(auth.uid()));
     END IF;
 END $$;
 
@@ -195,14 +214,14 @@ ALTER TABLE public.internships ENABLE ROW LEVEL SECURITY;
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'internships' AND policyname = 'Anyone can view active internships') THEN
         CREATE POLICY "Anyone can view active internships" ON public.internships
-            FOR SELECT USING (is_active = true OR status = 'active' OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR SELECT USING (is_active = true OR status = 'active' OR public.is_admin(auth.uid()));
     END IF;
 END $$;
 
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'internships' AND policyname = 'Admins can manage internships') THEN
         CREATE POLICY "Admins can manage internships" ON public.internships
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR ALL TO authenticated USING (public.is_admin(auth.uid()));
     END IF;
 END $$;
 
@@ -233,7 +252,7 @@ END $$;
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'internship_tasks' AND policyname = 'Admins can manage internship tasks') THEN
         CREATE POLICY "Admins can manage internship tasks" ON public.internship_tasks
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR ALL TO authenticated USING (public.is_admin(auth.uid()));
     END IF;
 END $$;
 
@@ -292,7 +311,7 @@ END $$;
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'enrollments' AND policyname = 'Admins can manage enrollments') THEN
         CREATE POLICY "Admins can manage enrollments" ON public.enrollments
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR ALL TO authenticated USING (public.is_admin(auth.uid()));
     END IF;
 END $$;
 
@@ -313,7 +332,7 @@ END $$;
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'internship_enrollments' AND policyname = 'Admins can manage internship_enrollments') THEN
         CREATE POLICY "Admins can manage internship_enrollments" ON public.internship_enrollments
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR ALL TO authenticated USING (public.is_admin(auth.uid()));
     END IF;
 END $$;
 
@@ -389,7 +408,7 @@ DO $$ BEGIN
         CREATE POLICY "Students can insert own submissions" ON public.submissions
             FOR INSERT TO authenticated WITH CHECK (student_id = auth.uid() OR user_id = auth.uid());
         CREATE POLICY "Admins can manage submissions" ON public.submissions
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR ALL TO authenticated USING (public.is_admin(auth.uid()));
     END IF;
 END $$;
 
@@ -399,7 +418,7 @@ DO $$ BEGIN
             FOR ALL TO authenticated USING (student_id = auth.uid() OR user_id = auth.uid())
             WITH CHECK (student_id = auth.uid() OR user_id = auth.uid());
         CREATE POLICY "Admins can manage task progress" ON public.task_progress
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR ALL TO authenticated USING (public.is_admin(auth.uid()));
     END IF;
 END $$;
 
@@ -451,7 +470,7 @@ DO $$ BEGIN
         CREATE POLICY "Authenticated users can create reviews" ON public.reviews
             FOR INSERT TO authenticated WITH CHECK (student_id = auth.uid() OR user_id = auth.uid());
         CREATE POLICY "Admins can manage reviews" ON public.reviews
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR ALL TO authenticated USING (public.is_admin(auth.uid()));
     END IF;
 END $$;
 
@@ -509,7 +528,7 @@ DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'certificates' AND policyname = 'Anyone can select certificates for verification') THEN
         CREATE POLICY "Anyone can select certificates for verification" ON public.certificates FOR SELECT USING (true);
         CREATE POLICY "Admins can manage certificates" ON public.certificates
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR ALL TO authenticated USING (public.is_admin(auth.uid()));
     END IF;
 END $$;
 
@@ -576,7 +595,7 @@ DO $$ BEGIN
         CREATE POLICY "Students can insert own offer letters" ON public.offer_letters
             FOR INSERT TO authenticated WITH CHECK (user_id = auth.uid() OR student_id = auth.uid());
         CREATE POLICY "Admins can manage offer letters" ON public.offer_letters
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+            FOR ALL TO authenticated USING (public.is_admin(auth.uid()));
     END IF;
 END $$;
 
@@ -667,7 +686,7 @@ DO $$ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'internship_applications' AND policyname = 'Admins/Mentors can manage applications') THEN
         CREATE POLICY "Admins/Mentors can manage applications" ON public.internship_applications 
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+            FOR ALL TO authenticated USING (public.is_admin_or_mentor(auth.uid()));
     END IF;
 END $$;
 
@@ -697,7 +716,7 @@ DO $$ BEGIN
 
     IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE tablename = 'student_profiles' AND policyname = 'Admins can manage student profiles') THEN
         CREATE POLICY "Admins can manage student profiles" ON public.student_profiles 
-            FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+            FOR ALL TO authenticated USING (public.is_admin_or_mentor(auth.uid()));
     END IF;
 END $$;
 

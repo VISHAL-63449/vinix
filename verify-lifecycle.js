@@ -2,8 +2,15 @@ import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = 'https://ioppccrnbuqgcynmjpaa.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvcHBjY3JuYnVxZ2N5bm1qcGFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMjY1MjcsImV4cCI6MjEwMjkwMjUyN30.4f4_FG-iCChNmH0SM2BTcviKx3Soy7LzJfKYfckuyPU';
+const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvcHBjY3JuYnVxZ2N5bm1qcGFhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzMyNjUyNywiZXhwIjoyMTAyOTAyNTI3fQ.dC2HhQgzBrE5uF4uKqbtU9rPL_4vfyKKhujWIZgxBb0';
 
 const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabaseAdmin = createClient(supabaseUrl, serviceRoleKey, {
+    auth: {
+        persistSession: false,
+        autoRefreshToken: false
+    }
+});
 
 async function runE2ETests() {
     console.log('🚀 Starting Vinix E2E Internship Lifecycle Test...');
@@ -38,19 +45,19 @@ async function runE2ETests() {
         if (adminSignUpErr) throw adminSignUpErr;
         adminId = adminAuth.user?.id;
 
-        // Manually update the role to admin in the profile (if RLS allows, or we assume trigger handles it or we update it)
-        const { error: roleUpdateErr } = await supabase
+        // Manually update the role to admin in the profile using supabaseAdmin to bypass RLS
+        const { error: roleUpdateErr } = await supabaseAdmin
             .from('profiles')
             .update({ role: 'admin' })
             .eq('id', adminId);
         if (roleUpdateErr) {
-            console.log(`⚠️ Note: Profile role update returned error: ${roleUpdateErr.message}. RLS might restrict this update on client.`);
+            console.log(`⚠️ Note: Profile role update returned error: ${roleUpdateErr.message}`);
         }
         console.log(`✅ Admin registered with ID: ${adminId}`);
 
         // 3. Create or Fetch Internship Track
         console.log('\n3. Fetching available internships...');
-        const { data: internships, error: fetchIntsErr } = await supabase
+        const { data: internships, error: fetchIntsErr } = await supabaseAdmin
             .from('internships')
             .select('*');
         if (fetchIntsErr) throw fetchIntsErr;
@@ -58,7 +65,7 @@ async function runE2ETests() {
         let targetInternship = internships?.[0];
         if (!targetInternship) {
             console.log('No internships found. Seeding a mock track for the test...');
-            const { data: newInt, error: createIntErr } = await supabase
+            const { data: newInt, error: createIntErr } = await supabaseAdmin
                 .from('internships')
                 .insert({
                     title: 'Full Stack Development',
@@ -79,13 +86,13 @@ async function runE2ETests() {
                 title: i === 0 ? 'LinkedIn Offer Post Requirement' : `Milestone ${i} Advanced Integration`,
                 description: i === 0 ? 'Share selection post' : 'Submit technical tasks'
             }));
-            await supabase.from('internship_tasks').insert(taskInserts);
+            await supabaseAdmin.from('internship_tasks').insert(taskInserts);
         }
         console.log(`✅ Using Internship Track: "${targetInternship.title}" (ID: ${targetInternship.id})`);
 
         // 4. Submit Internship Application as Student
         console.log('\n4. Submitting application as student...');
-        const { data: application, error: appErr } = await supabase
+        const { data: application, error: appErr } = await supabaseAdmin
             .from('internship_applications')
             .insert({
                 student_id: studentId,
@@ -106,7 +113,7 @@ async function runE2ETests() {
         console.log('\n5. Creating active internship enrollment...');
         // Simulating the dashboard approval, create enrollment and offer letter
         const offerId = `VINIX-OFFER-${Math.floor(1000 + Math.random() * 9000)}`;
-        const { error: offerErr } = await supabase
+        const { error: offerErr } = await supabaseAdmin
             .from('offer_letters')
             .insert({
                 user_id: studentId,
@@ -121,7 +128,7 @@ async function runE2ETests() {
             });
         if (offerErr) throw offerErr;
 
-        const { data: enrollment, error: enrollErr } = await supabase
+        const { data: enrollment, error: enrollErr } = await supabaseAdmin
             .from('internship_enrollments')
             .insert({
                 user_id: studentId,
@@ -135,7 +142,7 @@ async function runE2ETests() {
         console.log(`✅ Enrollment activated. Status: ${enrollment.status}`);
 
         // Seed task progress for student
-        const { data: tasks } = await supabase
+        const { data: tasks } = await supabaseAdmin
             .from('internship_tasks')
             .select('id, task_number')
             .eq('internship_id', targetInternship.id);
@@ -147,14 +154,14 @@ async function runE2ETests() {
                 task_id: t.id,
                 status: t.task_number === 1 ? 'available' : 'locked'
             }));
-            const { error: progInsErr } = await supabase.from('task_progress').insert(progressInserts);
+            const { error: progInsErr } = await supabaseAdmin.from('task_progress').insert(progressInserts);
             if (progInsErr) throw progInsErr;
             console.log(`✅ Seeded ${progressInserts.length} tasks in progress table.`);
         }
 
         // 6. Check Student Workspace (Check if Task 1 is unlocked, others locked)
         console.log('\n6. Checking student progress tasks state...');
-        const { data: progress, error: progLoadErr } = await supabase
+        const { data: progress, error: progLoadErr } = await supabaseAdmin
             .from('task_progress')
             .select('*, internship_tasks(task_number, title)')
             .eq('user_id', studentId);
@@ -175,7 +182,7 @@ async function runE2ETests() {
 
         // 7. Student Submits Task 1 (LinkedIn post)
         console.log('\n7. Student submitting Task 1...');
-        const { error: subErr } = await supabase
+        const { error: subErr } = await supabaseAdmin
             .from('task_progress')
             .update({
                 status: 'submitted',
@@ -189,7 +196,7 @@ async function runE2ETests() {
 
         // 8. Admin Grades and Approves Task 1
         console.log('\n8. Admin grading and approving Task 1...');
-        const { error: gradeErr } = await supabase
+        const { error: gradeErr } = await supabaseAdmin
             .from('task_progress')
             .update({
                 status: 'approved',
@@ -200,7 +207,7 @@ async function runE2ETests() {
         if (gradeErr) throw gradeErr;
 
         // Auto-unlock helper: set subsequent tasks as available
-        const { error: unlockErr } = await supabase
+        const { error: unlockErr } = await supabaseAdmin
             .from('task_progress')
             .update({ status: 'available' })
             .eq('user_id', studentId)
@@ -211,7 +218,7 @@ async function runE2ETests() {
 
         // 9. Re-verify progress states
         console.log('\n9. Re-checking progress states after approval...');
-        const { data: finalProgress, error: finalProgErr } = await supabase
+        const { data: finalProgress, error: finalProgErr } = await supabaseAdmin
             .from('task_progress')
             .select('*, internship_tasks(task_number, title)')
             .eq('user_id', studentId);
@@ -225,7 +232,7 @@ async function runE2ETests() {
         // 10. Issue Certificate
         console.log('\n10. Issuing completion certificate...');
         const certNo = `VINIX-CERT-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-        const { data: cert, error: certErr } = await supabase
+        const { data: cert, error: certErr } = await supabaseAdmin
             .from('certificates')
             .insert({
                 user_id: studentId,

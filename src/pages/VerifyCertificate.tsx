@@ -83,9 +83,16 @@ const VerifyCertificate: React.FC = () => {
             const html2canvas = (await import('html2canvas')).default;
             const element = document.getElementById('certificate-print-area');
             if (element) {
+                // Save current scroll position
+                const scrollY = window.scrollY;
+                const scrollX = window.scrollX;
+
+                // Scroll to top-left to avoid html2canvas viewport offset/cropping bugs
+                window.scrollTo(0, 0);
+
                 element.classList.add('cert-pdf-download-mode');
                 // Give a microtask delay for DOM and style updates
-                await new Promise(resolve => setTimeout(resolve, 150));
+                await new Promise(resolve => setTimeout(resolve, 250));
 
                 const canvas = await html2canvas(element, {
                     scale: 2,
@@ -95,6 +102,9 @@ const VerifyCertificate: React.FC = () => {
                     scrollY: 0,
                     scrollX: 0
                 });
+
+                // Restore scroll positions immediately
+                window.scrollTo(scrollX, scrollY);
 
                 const pdf = new jsPDF({
                     orientation: 'landscape',
@@ -263,7 +273,7 @@ const VerifyCertificate: React.FC = () => {
                             </div>
 
                             {/* Certificate content body */}
-                            <div className="text-center my-auto space-y-3 z-20 px-10">
+                            <div className="relative text-center my-auto space-y-3 z-20 px-10">
                                 <p className="text-[10px] text-amber-600 font-extrabold uppercase tracking-widest">
                                     Certificate of Virtual Internship Completion
                                 </p>
@@ -284,7 +294,7 @@ const VerifyCertificate: React.FC = () => {
                             </div>
 
                             {/* Verification Info Bar */}
-                            <div className="z-20 px-8">
+                            <div className="relative z-20 px-8">
                                 <div className="grid grid-cols-4 border-y border-slate-200/80 py-2 text-left">
                                     <div>
                                         <span className="text-[6.5px] font-bold text-slate-400 block tracking-widest uppercase">Pathway</span>
@@ -308,7 +318,7 @@ const VerifyCertificate: React.FC = () => {
                             </div>
 
                             {/* QR and CEO footer area */}
-                            <div className="flex justify-between items-end z-20 px-10 pb-6">
+                            <div className="relative flex justify-between items-end z-20 px-10 pb-6">
                                 <div className="flex items-center space-x-2 border border-slate-100 bg-white rounded-lg p-1 w-32 shadow-sm">
                                     <img
                                         src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(verificationURL)}`}

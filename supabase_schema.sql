@@ -418,6 +418,25 @@ CREATE TRIGGER update_profiles_updated_at
     BEFORE UPDATE ON public.profiles
     FOR EACH ROW EXECUTE FUNCTION public.touch_updated_at();
 
+-- Security Definer functions to check roles without recursion
+CREATE OR REPLACE FUNCTION public.is_admin(user_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles WHERE id = user_id AND role = 'admin'
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.is_admin_or_mentor(user_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles WHERE id = user_id AND role IN ('admin', 'mentor')
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- ==========================================
 -- 12. ENABLE ROW LEVEL SECURITY (RLS) FOR ALL PUBLIC TABLES
 -- ==========================================
@@ -455,48 +474,48 @@ ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can select profiles" ON public.profiles FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Users can update own profile" ON public.profiles FOR UPDATE TO authenticated USING (auth.uid() = id);
 CREATE POLICY "Admins can manage profiles" ON public.profiles FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+    USING (public.is_admin(auth.uid()));
 
 -- Student Profiles
 CREATE POLICY "Users can select student profiles" ON public.student_profiles FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Students can update own profile" ON public.student_profiles FOR UPDATE TO authenticated USING (auth.uid() = id);
 CREATE POLICY "Admins can manage student profiles" ON public.student_profiles FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+    USING (public.is_admin(auth.uid()));
 
 -- Academic System: Anyone can view, Admins/Mentors can manage
 CREATE POLICY "Anyone can view departments" ON public.departments FOR SELECT TO authenticated, anon USING (true);
 CREATE POLICY "Admins can manage departments" ON public.departments FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+    USING (public.is_admin(auth.uid()));
 
 CREATE POLICY "Anyone can view academic_years" ON public.academic_years FOR SELECT TO authenticated, anon USING (true);
 CREATE POLICY "Admins can manage academic_years" ON public.academic_years FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+    USING (public.is_admin(auth.uid()));
 
 CREATE POLICY "Anyone can view semesters" ON public.semesters FOR SELECT TO authenticated, anon USING (true);
 CREATE POLICY "Admins can manage semesters" ON public.semesters FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+    USING (public.is_admin(auth.uid()));
 
 CREATE POLICY "Anyone can view courses" ON public.courses FOR SELECT TO authenticated, anon USING (true);
 CREATE POLICY "Admins can manage courses" ON public.courses FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+    USING (public.is_admin(auth.uid()));
 
 CREATE POLICY "Anyone can view subjects" ON public.subjects FOR SELECT TO authenticated, anon USING (true);
 CREATE POLICY "Admins can manage subjects" ON public.subjects FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+    USING (public.is_admin(auth.uid()));
 
 -- Internships, Modules, Lessons: Published/active internships readable by all, Admin/Mentor can do everything
 CREATE POLICY "Anyone can select active internships" ON public.internships FOR SELECT TO authenticated, anon 
-    USING (status = 'active' OR EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (status = 'active' OR public.is_admin_or_mentor(auth.uid()));
 CREATE POLICY "Admins can manage internships" ON public.internships FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
 CREATE POLICY "Anyone can select modules" ON public.internship_modules FOR SELECT TO authenticated, anon USING (true);
 CREATE POLICY "Admins can manage modules" ON public.internship_modules FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
 CREATE POLICY "Anyone can select lessons" ON public.lessons FOR SELECT TO authenticated, anon USING (true);
 CREATE POLICY "Admins can manage lessons" ON public.lessons FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
 CREATE POLICY "Students can view and manage own lesson progress" ON public.lesson_progress FOR ALL TO authenticated 
     USING (student_id = auth.uid()) WITH CHECK (student_id = auth.uid());
@@ -509,51 +528,53 @@ CREATE POLICY "Students can create own applications" ON public.internship_applic
 CREATE POLICY "Students can update own applications" ON public.internship_applications FOR UPDATE TO authenticated 
     USING (student_id = auth.uid()) WITH CHECK (student_id = auth.uid());
 CREATE POLICY "Admins/Mentors can manage applications" ON public.internship_applications FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
 -- Enrollments
 CREATE POLICY "Students can view own enrollments" ON public.enrollments FOR SELECT TO authenticated 
     USING (student_id = auth.uid());
 CREATE POLICY "Admins/Mentors can manage enrollments" ON public.enrollments FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
 -- Tasks and Submissions
 CREATE POLICY "Students can view tasks" ON public.tasks FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Admins/Mentors can manage tasks" ON public.tasks FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
 CREATE POLICY "Students can view and manage own submissions" ON public.task_submissions FOR ALL TO authenticated 
     USING (student_id = auth.uid()) WITH CHECK (student_id = auth.uid());
 CREATE POLICY "Admins/Mentors can view and review submissions" ON public.task_submissions FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
 -- Projects
 CREATE POLICY "Students can view projects" ON public.projects FOR SELECT TO authenticated USING (true);
 CREATE POLICY "Admins/Mentors can manage projects" ON public.projects FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
 CREATE POLICY "Students can view and manage own project submissions" ON public.project_submissions FOR ALL TO authenticated 
     USING (student_id = auth.uid()) WITH CHECK (student_id = auth.uid());
 CREATE POLICY "Admins/Mentors can view and review project submissions" ON public.project_submissions FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
 -- Evaluations
 CREATE POLICY "Students can view own evaluations" ON public.evaluations FOR SELECT TO authenticated USING (student_id = auth.uid());
 CREATE POLICY "Admins/Mentors can manage evaluations" ON public.evaluations FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
 -- Offer Letters, ID cards, Certificates: Publicly verifiable by anonymous users, owned by student
 CREATE POLICY "Anyone can select certificates for verification" ON public.certificates FOR SELECT USING (true);
 CREATE POLICY "Admins can manage certificates" ON public.certificates FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
+-- Offer Letters
 CREATE POLICY "Anyone can select offer_letters for verification" ON public.offer_letters FOR SELECT USING (true);
 CREATE POLICY "Admins can manage offer_letters" ON public.offer_letters FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
+-- ID Cards
 CREATE POLICY "Anyone can verify ID cards" ON public.internship_id_cards FOR SELECT USING (true);
 CREATE POLICY "Admins can manage ID cards" ON public.internship_id_cards FOR ALL TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role IN ('admin', 'mentor')));
+    USING (public.is_admin_or_mentor(auth.uid()));
 
 -- Notifications
 CREATE POLICY "Students can view and manage own notifications" ON public.notifications FOR ALL TO authenticated 
@@ -572,7 +593,7 @@ CREATE POLICY "Students can manage own portfolio projects" ON public.portfolio_p
 
 -- Audit logs
 CREATE POLICY "Only admins can view audit logs" ON public.audit_logs FOR SELECT TO authenticated 
-    USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin'));
+    USING (public.is_admin(auth.uid()));
 CREATE POLICY "Anyone authenticated can insert audit logs" ON public.audit_logs FOR INSERT TO authenticated 
     WITH CHECK (auth.uid() IS NOT NULL);
 

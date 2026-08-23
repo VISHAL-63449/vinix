@@ -96,9 +96,16 @@ const VerifyOffer: React.FC = () => {
             const html2canvas = (await import('html2canvas')).default;
             const element = document.getElementById('offer-letter-print-area');
             if (element) {
+                // Save current scroll position
+                const scrollY = window.scrollY;
+                const scrollX = window.scrollX;
+
+                // Scroll to top-left to avoid html2canvas viewport offset/cropping bugs
+                window.scrollTo(0, 0);
+
                 element.classList.add('pdf-download-mode');
                 // Give a microtask delay for DOM and style updates
-                await new Promise(resolve => setTimeout(resolve, 150));
+                await new Promise(resolve => setTimeout(resolve, 250));
 
                 const canvas = await html2canvas(element, {
                     scale: 2,
@@ -108,6 +115,9 @@ const VerifyOffer: React.FC = () => {
                     scrollY: 0,
                     scrollX: 0
                 });
+
+                // Restore scroll positions immediately
+                window.scrollTo(scrollX, scrollY);
 
                 const pdf = new jsPDF({
                     orientation: 'portrait',
