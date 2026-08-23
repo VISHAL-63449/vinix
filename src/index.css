@@ -1,0 +1,496 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Great+Vibes&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    color-scheme: light dark;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(156, 163, 175, 0.5);
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(156, 163, 175, 0.8);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+    background: rgba(75, 85, 99, 0.5);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+    background: rgba(75, 85, 99, 0.8);
+}
+
+/* Glassmorphism Classes */
+.glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass {
+    background: rgba(19, 21, 29, 0.7);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Neon glow hints */
+.glow-primary {
+    box-shadow: 0 0 20px rgba(37, 99, 235, 0.15);
+}
+
+.glow-secondary {
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.15);
+}
+
+.glow-accent {
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+}
+
+/* Animations */
+@keyframes pulseGlow {
+
+    0%,
+    100% {
+        opacity: 0.5;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+.animate-pulse-glow {
+    animation: pulseGlow 3s infinite ease-in-out;
+}
+
+/* Code Editor Specifics */
+.code-editor {
+    font-family: 'Courier New', Courier, monospace;
+}
+
+/* Print Page Setup */
+@page {
+    size: A4;
+    margin: 0 !important;
+}
+
+.offer-letter {
+    width: 210mm;
+    height: 297mm;
+    min-width: 210mm;
+    max-width: 210mm;
+    min-height: 297mm;
+    max-height: 297mm;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+/* Print Custom Styles for Offer Letter, ID Card & Certificates */
+@media print {
+
+    /* Hide Navbar, Footer, and all non-printable elements */
+    nav,
+    footer,
+    .no-print,
+    .no-print * {
+        display: none !important;
+    }
+
+    /* Reset outer layout wrappers to avoid page overflows and extra margins */
+    html,
+    body {
+        width: 210mm !important;
+        height: 297mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        background-color: white !important;
+    }
+
+    #root,
+    #root>div,
+    main {
+        width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .min-h-screen {
+        min-height: 0 !important;
+        height: 297mm !important;
+    }
+
+    /* Remove padding from page parent wrappers when printing */
+    div.min-h-screen.py-16.px-4,
+    div.min-h-screen.bg-brand-bgLight {
+        padding: 0 !important;
+        margin: 0 !important;
+        height: 297mm !important;
+        max-height: 297mm !important;
+    }
+
+    .max-w-4xl,
+    .max-w-7xl {
+        max-width: 210mm !important;
+        width: 210mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* Target exact print containers */
+    .offer-letter {
+        width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        box-sizing: border-box !important;
+        page-break-after: avoid !important;
+        break-after: avoid !important;
+        page-break-inside: avoid !important;
+        break-inside: avoid !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+        padding: 12mm !important;
+        /* Standard padding */
+        border: none !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: white !important;
+        color: black !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+    }
+
+    .offer-letter * {
+        break-inside: avoid !important;
+    }
+
+    .signature-section,
+    .footer-section,
+    .company-seal {
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
+    }
+
+    /* Compact spacing overrides to fit A4 sheet height without splitting */
+    .offer-letter .mt-6 {
+        margin-top: 0.4rem !important;
+    }
+
+    .offer-letter .space-y-6> :not([hidden])~ :not([hidden]) {
+        margin-top: 0.4rem !important;
+    }
+
+    .offer-letter .space-y-3\.5> :not([hidden])~ :not([hidden]) {
+        margin-top: 0.3rem !important;
+    }
+
+    .offer-letter .space-y-3> :not([hidden])~ :not([hidden]) {
+        margin-top: 0.25rem !important;
+    }
+
+    .offer-letter .space-y-2\.5> :not([hidden])~ :not([hidden]) {
+        margin-top: 0.2rem !important;
+    }
+
+    .offer-letter .space-y-2> :not([hidden])~ :not([hidden]) {
+        margin-top: 0.15rem !important;
+    }
+
+    .offer-letter .space-y-1\.5> :not([hidden])~ :not([hidden]) {
+        margin-top: 0.125rem !important;
+    }
+
+    .offer-letter .space-y-1> :not([hidden])~ :not([hidden]) {
+        margin-top: 0.1rem !important;
+    }
+
+    .offer-letter .space-y-0.5> :not([hidden])~ :not([hidden]) {
+        margin-top: 0.05rem !important;
+    }
+
+    .offer-letter .p-2.5 {
+        padding: 0.35rem !important;
+    }
+
+    /* Table padding and borders */
+    .offer-letter .py-1.5 {
+        padding-top: 0.2rem !important;
+        padding-bottom: 0.2rem !important;
+    }
+
+    .offer-letter .py-2 {
+        padding-top: 0.3rem !important;
+        padding-bottom: 0.3rem !important;
+    }
+
+    .offer-letter .pt-3.5 {
+        padding-top: 0.4rem !important;
+    }
+
+    /* Specific typography scaling overrides */
+    .offer-letter .text-\[20px\] {
+        font-size: 15px !important;
+    }
+
+    .offer-letter .text-\[11px\] {
+        font-size: 9.5px !important;
+    }
+
+    .offer-letter .text-\[10px\] {
+        font-size: 8.5px !important;
+    }
+
+    .offer-letter .text-\[9.5px\] {
+        font-size: 8.5px !important;
+    }
+
+    .offer-letter .text-\[9px\] {
+        font-size: 8px !important;
+    }
+
+    .offer-letter .text-\[7.5px\] {
+        font-size: 7px !important;
+    }
+
+    .offer-letter .text-\[7px\] {
+        font-size: 6.5px !important;
+    }
+
+    .offer-letter .text-2xl {
+        font-size: 16px !important;
+    }
+
+    .offer-letter .text-\[130px\] {
+        font-size: 120px !important;
+        /* Retain watermark dimensions */
+    }
+
+    /* General Line-height adjustments */
+    .offer-letter p,
+    .offer-letter li,
+    .offer-letter span,
+    .offer-letter td,
+    .offer-letter div {
+        line-height: 1.25 !important;
+    }
+
+    .offer-letter .leading-relaxed {
+        line-height: 1.3 !important;
+    }
+
+    #certificate-print-area {
+        border: none !important;
+        box-shadow: none !important;
+        background-color: #0b1a30 !important;
+        box-sizing: border-box !important;
+        page-break-inside: avoid !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        height: 100vh !important;
+        max-height: 210mm !important;
+    }
+
+    #id-card-print-area {
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+        margin: 2rem auto !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+}
+
+/* Custom Autofill Styles to override browser defaults */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #f8fafc inset !important;
+    /* bg-slate-50 */
+    -webkit-text-fill-color: #0f172a !important;
+    /* text-slate-900 */
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+.dark input:-webkit-autofill,
+.dark input:-webkit-autofill:hover,
+.dark input:-webkit-autofill:focus,
+.dark input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 1000px #0D0E12 inset !important;
+    /* bg-slate-950 */
+    -webkit-text-fill-color: #f1f5f9 !important;
+    /* text-slate-100 */
+    transition: background-color 5000s ease-in-out 0s;
+}
+
+/* PDF Download Mode (simulates print style for html2pdf.js capture) */
+.pdf-download-mode {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    background: white !important;
+    color: black !important;
+    padding: 12mm !important;
+    /* Match A4 padding */
+    width: 210mm !important;
+    height: 297mm !important;
+    max-width: 210mm !important;
+    max-height: 297mm !important;
+    box-sizing: border-box !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    overflow: hidden !important;
+}
+
+.pdf-download-mode * {
+    break-inside: avoid !important;
+}
+
+.pdf-download-mode .mt-6 {
+    margin-top: 0.4rem !important;
+}
+
+.pdf-download-mode .space-y-6> :not([hidden])~ :not([hidden]) {
+    margin-top: 0.4rem !important;
+}
+
+.pdf-download-mode .space-y-3.5> :not([hidden])~ :not([hidden]) {
+    margin-top: 0.3rem !important;
+}
+
+.pdf-download-mode .space-y-3> :not([hidden])~ :not([hidden]) {
+    margin-top: 0.25rem !important;
+}
+
+.pdf-download-mode .space-y-2.5> :not([hidden])~ :not([hidden]) {
+    margin-top: 0.2rem !important;
+}
+
+.pdf-download-mode .space-y-2> :not([hidden])~ :not([hidden]) {
+    margin-top: 0.15rem !important;
+}
+
+.pdf-download-mode .space-y-1.5> :not([hidden])~ :not([hidden]) {
+    margin-top: 0.125rem !important;
+}
+
+.pdf-download-mode .space-y-1> :not([hidden])~ :not([hidden]) {
+    margin-top: 0.1rem !important;
+}
+
+.pdf-download-mode .space-y-0.5> :not([hidden])~ :not([hidden]) {
+    margin-top: 0.05rem !important;
+}
+
+.pdf-download-mode .p-2.5 {
+    padding: 0.35rem !important;
+}
+
+.pdf-download-mode .py-1.5 {
+    padding-top: 0.2rem !important;
+    padding-bottom: 0.2rem !important;
+}
+
+.pdf-download-mode .py-2 {
+    padding-top: 0.3rem !important;
+    padding-bottom: 0.3rem !important;
+}
+
+.pdf-download-mode .pt-3.5 {
+    padding-top: 0.4rem !important;
+}
+
+/* Typography scaling for PDF Mode */
+.pdf-download-mode .text-\[20px\] {
+    font-size: 15px !important;
+}
+
+.pdf-download-mode .text-\[11px\] {
+    font-size: 9.5px !important;
+}
+
+.pdf-download-mode .text-\[10px\] {
+    font-size: 8.5px !important;
+}
+
+.pdf-download-mode .text-\[9.5px\] {
+    font-size: 8.5px !important;
+}
+
+.pdf-download-mode .text-\[9px\] {
+    font-size: 8px !important;
+}
+
+.pdf-download-mode .text-\[7.5px\] {
+    font-size: 7px !important;
+}
+
+.pdf-download-mode .text-\[7px\] {
+    font-size: 6.5px !important;
+}
+
+.pdf-download-mode .text-2xl {
+    font-size: 16px !important;
+}
+
+.pdf-download-mode .text-\[130px\] {
+    font-size: 120px !important;
+}
+
+.pdf-download-mode p,
+.pdf-download-mode li,
+.pdf-download-mode span,
+.pdf-download-mode td,
+.pdf-download-mode div {
+    line-height: 1.25 !important;
+}
+
+.pdf-download-mode .leading-relaxed {
+    line-height: 1.3 !important;
+}
+
+.cert-pdf-download-mode {
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    box-sizing: border-box !important;
+    width: 297mm !important;
+    height: 210mm !important;
+    max-width: 297mm !important;
+    max-height: 210mm !important;
+}

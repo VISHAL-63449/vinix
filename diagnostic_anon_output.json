@@ -1,0 +1,8 @@
+{
+  "loginError": {
+    "name": "AuthApiError",
+    "message": "Invalid login credentials",
+    "status": 400,
+    "code": "invalid_credentials"
+  }
+}

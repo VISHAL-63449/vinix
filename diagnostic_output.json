@@ -1,0 +1,187 @@
+{
+  "users": [
+    {
+      "id": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564",
+      "email": "vishal@vinix.com",
+      "metadata": {
+        "email": "vishal@vinix.com",
+        "email_verified": true,
+        "full_name": "Vishal R",
+        "name": "Vishal R",
+        "phone_verified": false,
+        "role": "admin",
+        "sub": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564"
+      }
+    },
+    {
+      "id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "email": "vr271028@gmail.com",
+      "metadata": {
+        "college": "mzcet",
+        "email": "vr271028@gmail.com",
+        "email_verified": true,
+        "name": "vishal",
+        "phone_verified": false,
+        "role": "student",
+        "sub": "4d564805-ebf3-4208-8059-602b75eb3ee9"
+      }
+    }
+  ],
+  "profiles": [
+    {
+      "id": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564",
+      "email": "vishal@vinix.com",
+      "full_name": "Vishal R",
+      "name": "Vishal R",
+      "avatar_url": null,
+      "role": "admin",
+      "college": "VINIX Technologies",
+      "branch": null,
+      "year": null,
+      "phone": null,
+      "bio": null,
+      "linkedin_url": null,
+      "github_url": null,
+      "created_at": "2026-08-22T08:16:06.637729+00:00",
+      "updated_at": "2026-08-22T08:16:06.637729+00:00"
+    },
+    {
+      "id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "email": "vr271028@gmail.com",
+      "full_name": "vishal",
+      "name": "vishal",
+      "avatar_url": null,
+      "role": "student",
+      "college": "mzcet",
+      "branch": null,
+      "year": null,
+      "phone": "1234567890",
+      "bio": null,
+      "linkedin_url": null,
+      "github_url": null,
+      "created_at": "2026-08-22T08:13:50.714363+00:00",
+      "updated_at": "2026-08-22T08:13:50.714363+00:00"
+    }
+  ],
+  "studentProfiles": {
+    "error": {
+      "code": "PGRST205",
+      "details": null,
+      "hint": null,
+      "message": "Could not find the table 'public.student_profiles' in the schema cache"
+    }
+  },
+  "enrollments": [
+    {
+      "id": "b79fe6e0-ac28-4cc7-959b-bd36b9e32c37",
+      "student_id": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564",
+      "user_id": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564",
+      "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+      "status": "active",
+      "progress": 100,
+      "enrolled_at": "2026-07-21T00:00:00+00:00",
+      "completed_at": null,
+      "joined_at": "2026-08-22T08:57:39.584374+00:00",
+      "created_at": "2026-08-22T08:57:39.584374+00:00",
+      "updated_at": "2026-08-22T08:57:39.584374+00:00"
+    },
+    {
+      "id": "5f5422b7-a888-42c3-83dd-5f9f21cfce1c",
+      "student_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "user_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+      "status": "active",
+      "progress": 0,
+      "enrolled_at": "2026-08-22T11:24:50.438197+00:00",
+      "completed_at": null,
+      "joined_at": "2026-08-22T11:24:50.438197+00:00",
+      "created_at": "2026-08-22T11:24:50.438197+00:00",
+      "updated_at": "2026-08-22T11:24:50.438197+00:00"
+    }
+  ],
+  "intEnrollments": [
+    {
+      "id": "9783497d-43d3-4d25-a719-6e0274fa8df1",
+      "student_id": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564",
+      "user_id": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564",
+      "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+      "status": "active",
+      "application_status": "approved",
+      "progress": 100,
+      "enrolled_at": "2026-07-21T00:00:00+00:00",
+      "completed_at": null,
+      "joined_at": "2026-08-22T08:57:39.721131+00:00",
+      "created_at": "2026-08-22T08:57:39.721131+00:00",
+      "updated_at": "2026-08-22T08:57:39.721131+00:00"
+    },
+    {
+      "id": "ff20b720-f535-499d-a35a-ec3b5b56b69d",
+      "student_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "user_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+      "status": "active",
+      "application_status": "approved",
+      "progress": 0,
+      "enrolled_at": "2026-08-22T11:24:51.235437+00:00",
+      "completed_at": null,
+      "joined_at": "2026-08-22T11:24:51.235437+00:00",
+      "created_at": "2026-08-22T11:24:51.235437+00:00",
+      "updated_at": "2026-08-22T11:24:51.235437+00:00"
+    }
+  ],
+  "offers": [
+    {
+      "id": "1a14772b-0016-4686-9902-8c3c3915be9a",
+      "user_id": null,
+      "student_id": null,
+      "offer_letter_id": "TEST-123",
+      "student_name": "Test",
+      "student_email": null,
+      "internship_title": null,
+      "internship_id": null,
+      "duration": null,
+      "status": "SENT",
+      "verification_token": null,
+      "issue_date": "2026-08-22T08:19:23.321984+00:00",
+      "created_at": "2026-08-22T08:19:23.321984+00:00"
+    },
+    {
+      "id": "566e57b0-993a-4084-96ce-4be6c0ed1ca6",
+      "user_id": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564",
+      "student_id": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564",
+      "offer_letter_id": "SKX-2026-1757",
+      "student_name": "Vishal R",
+      "student_email": "vishal@vinix.com",
+      "internship_title": "Full Stack Development",
+      "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+      "duration": "3 Months",
+      "status": "ACCEPTED",
+      "verification_token": "tok_offer_SKX-2026-1757",
+      "issue_date": "2026-07-21T00:00:00+00:00",
+      "created_at": "2026-08-22T08:57:40.668132+00:00"
+    },
+    {
+      "id": "ebb2ac7e-4783-47c6-83fd-95386606bcc2",
+      "user_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "student_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "offer_letter_id": "VINIX-OFFER-6391",
+      "student_name": "vishal rajesh",
+      "student_email": "vr271028@gmail.com",
+      "internship_title": "Full Stack Development",
+      "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+      "duration": "1 Month",
+      "status": "ACCEPTED",
+      "verification_token": "tok_offer_182237",
+      "issue_date": "2026-08-22T09:51:57.304+00:00",
+      "created_at": "2026-08-22T09:51:57.700906+00:00"
+    }
+  ],
+  "apps": {
+    "error": {
+      "code": "PGRST205",
+      "details": null,
+      "hint": null,
+      "message": "Could not find the table 'public.internship_applications' in the schema cache"
+    }
+  }
+}

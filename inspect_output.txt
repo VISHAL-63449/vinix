@@ -1,0 +1,31 @@
+Inspecting tables on target Supabase URL...
+Table 'User': FAILED - PGRST205 - Could not find the table 'public.User' in the schema cache
+Table 'profiles': SUCCESS - 0 rows loaded
+Table 'student_profiles': FAILED - PGRST205 - Could not find the table 'public.student_profiles' in the schema cache
+Table 'departments': FAILED - PGRST205 - Could not find the table 'public.departments' in the schema cache
+Table 'courses': FAILED - PGRST205 - Could not find the table 'public.courses' in the schema cache
+Table 'academic_years': FAILED - PGRST205 - Could not find the table 'public.academic_years' in the schema cache
+Table 'semesters': FAILED - PGRST205 - Could not find the table 'public.semesters' in the schema cache
+Table 'subjects': FAILED - PGRST205 - Could not find the table 'public.subjects' in the schema cache
+Table 'internships': SUCCESS - 1 rows loaded
+Table 'internship_eligibility': FAILED - PGRST205 - Could not find the table 'public.internship_eligibility' in the schema cache
+Table 'internship_modules': FAILED - PGRST205 - Could not find the table 'public.internship_modules' in the schema cache
+Table 'lessons': FAILED - PGRST205 - Could not find the table 'public.lessons' in the schema cache
+Table 'lesson_progress': FAILED - PGRST205 - Could not find the table 'public.lesson_progress' in the schema cache
+Table 'applications': FAILED - PGRST205 - Could not find the table 'public.applications' in the schema cache
+Table 'enrollments': SUCCESS - 0 rows loaded
+Table 'internship_enrollments': SUCCESS - 0 rows loaded
+Table 'tasks': FAILED - PGRST205 - Could not find the table 'public.tasks' in the schema cache
+Table 'task_submissions': FAILED - PGRST205 - Could not find the table 'public.task_submissions' in the schema cache
+Table 'projects': FAILED - PGRST205 - Could not find the table 'public.projects' in the schema cache
+Table 'project_submissions': FAILED - PGRST205 - Could not find the table 'public.project_submissions' in the schema cache
+Table 'evaluations': FAILED - PGRST205 - Could not find the table 'public.evaluations' in the schema cache
+Table 'offer_letters': SUCCESS - 0 rows loaded
+Table 'internship_id_cards': FAILED - PGRST205 - Could not find the table 'public.internship_id_cards' in the schema cache
+Table 'certificates': SUCCESS - 1 rows loaded
+Table 'notifications': FAILED - PGRST205 - Could not find the table 'public.notifications' in the schema cache
+Table 'portfolio_profiles': FAILED - PGRST205 - Could not find the table 'public.portfolio_profiles' in the schema cache
+Table 'portfolio_projects': FAILED - PGRST205 - Could not find the table 'public.portfolio_projects' in the schema cache
+Table 'audit_logs': FAILED - PGRST205 - Could not find the table 'public.audit_logs' in the schema cache
+Table 'internship_applications': FAILED - PGRST205 - Could not find the table 'public.internship_applications' in the schema cache
+Inspection complete.

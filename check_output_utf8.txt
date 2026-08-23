@@ -1,0 +1,16 @@
+--- PROFILES --- null
+ID: 7cef3fb3-4f69-42dc-ae1b-faf0fb86c564 | Email: vishal@vinix.com | Role: admin | Name: Vishal R
+ID: 4d564805-ebf3-4208-8059-602b75eb3ee9 | Email: vr271028@gmail.com | Role: student | Name: Test Student Name 123
+
+--- APPLICATIONS --- {"code":"PGRST205","details":null,"hint":null,"message":"Could not find the table 'public.internship_applications' in the schema cache"}
+
+--- ENROLLMENTS --- null
+ID: b79fe6e0-ac28-4cc7-959b-bd36b9e32c37 | UserID: 7cef3fb3-4f69-42dc-ae1b-faf0fb86c564 | StudentID: 7cef3fb3-4f69-42dc-ae1b-faf0fb86c564 | ID_Int: c37a2171-7412-488b-9ab1-ccf01f0fb90e | Status: active
+
+--- INTERNSHIP ENROLLMENTS --- null
+ID: 9783497d-43d3-4d25-a719-6e0274fa8df1 | UserID: 7cef3fb3-4f69-42dc-ae1b-faf0fb86c564 | StudentID: 7cef3fb3-4f69-42dc-ae1b-faf0fb86c564 | ID_Int: c37a2171-7412-488b-9ab1-ccf01f0fb90e | Status: active
+
+--- OFFER LETTERS --- null
+ID: 1a14772b-0016-4686-9902-8c3c3915be9a | UserID: null | StudentID: null | ID_Int: null | Status: SENT | Email: null
+ID: 566e57b0-993a-4084-96ce-4be6c0ed1ca6 | UserID: 7cef3fb3-4f69-42dc-ae1b-faf0fb86c564 | StudentID: 7cef3fb3-4f69-42dc-ae1b-faf0fb86c564 | ID_Int: c37a2171-7412-488b-9ab1-ccf01f0fb90e | Status: ACCEPTED | Email: vishal@vinix.com
+ID: ebb2ac7e-4783-47c6-83fd-95386606bcc2 | UserID: 4d564805-ebf3-4208-8059-602b75eb3ee9 | StudentID: 4d564805-ebf3-4208-8059-602b75eb3ee9 | ID_Int: c37a2171-7412-488b-9ab1-ccf01f0fb90e | Status: ACCEPTED | Email: vr271028@gmail.com
