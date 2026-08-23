@@ -342,7 +342,7 @@ export const Home: React.FC = () => {
                         {/* ── RIGHT Side Image ── */}
                         <div className="flex-1 flex justify-center items-center z-10 w-full min-w-[320px] max-w-[550px] lg:max-w-none">
                             <img
-                                src="/home-image.png"
+                                src={`${import.meta.env.BASE_URL}home-image.png`}
                                 alt="Vinix Logo and Stats"
                                 className="w-full h-auto object-contain select-none filter drop-shadow-xl hover:scale-[1.02] transition-transform duration-500"
                             />

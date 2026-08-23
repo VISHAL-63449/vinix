@@ -252,7 +252,7 @@ const VerifyOffer: React.FC = () => {
                                         <div className="flex items-center space-x-3.5">
                                             {/* Square logo container */}
                                             <div className="w-11 h-11 bg-[#0b2545] rounded-xl flex items-center justify-center p-1.5 flex-shrink-0 shadow-sm">
-                                                <img src="/vinix-logo.jpeg" alt="Vinix Logo" className="w-full h-full object-contain rounded-lg" />
+                                                <img src={`${import.meta.env.BASE_URL}vinix-logo.jpeg`} alt="Vinix Logo" className="w-full h-full object-contain rounded-lg" />
                                             </div>
                                             <div className="text-left font-sans flex flex-col justify-center">
                                                 <h1 className="text-[20px] font-black text-[#0b2545] tracking-tight leading-none uppercase">VINIX</h1>
@@ -379,7 +379,7 @@ const VerifyOffer: React.FC = () => {
                                     <div className="flex flex-col items-center justify-center text-center">
                                         <div style={{ width: '24mm', height: '24mm' }} className="flex items-center justify-center mb-1">
                                             <img
-                                                src="/certificate-stamp.jpeg"
+                                                src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
                                                 alt="Official Stamp"
                                                 className="w-full h-full object-contain opacity-90 mix-blend-multiply filter contrast-125 rotate-[4deg]"
                                             />
@@ -405,7 +405,7 @@ const VerifyOffer: React.FC = () => {
                                     <div className="flex justify-between items-center text-[7.5px] text-slate-450 font-bold font-sans px-1 select-none">
                                         {/* MSME details */}
                                         <div className="flex items-center space-x-1.5 flex-shrink-0">
-                                            <img src="/msme-logo.png" alt="MSME Logo" style={{ height: '14.5px', width: 'auto' }} className="object-contain filter grayscale opacity-80 bg-transparent" />
+                                            <img src={`${import.meta.env.BASE_URL}msme-logo.png`} alt="MSME Logo" style={{ height: '14.5px', width: 'auto' }} className="object-contain filter grayscale opacity-80 bg-transparent" />
                                             <span className="font-mono text-slate-400">MSME: UDYAM-TN-17-0076606</span>
                                         </div>
                                         {/* academic@vinix.com | www.vinixtech.com */}

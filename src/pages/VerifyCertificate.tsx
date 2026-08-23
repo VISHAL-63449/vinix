@@ -235,7 +235,7 @@ const VerifyCertificate: React.FC = () => {
                             <div className="relative flex justify-between items-center z-20 px-10 pt-8 w-full">
                                 {/* Left side: MSME Logo */}
                                 <div className="flex items-center space-x-2">
-                                    <img src="/msme-logo.png" alt="MSME Certified" className="h-9 object-contain" />
+                                    <img src={`${import.meta.env.BASE_URL}msme-logo.png`} alt="MSME Certified" className="h-9 object-contain" />
                                     <div className="text-left leading-none">
                                         <p className="text-[5.5px] font-black text-rose-700 tracking-wider">REG. NO: UDYAM-TN-02-XXXX</p>
                                         <p className="text-[4.5px] text-slate-400 font-semibold">Govt. of India Enterprise</p>
@@ -324,7 +324,7 @@ const VerifyCertificate: React.FC = () => {
                                 {/* Seal / Stamp */}
                                 <div className="relative w-16 h-16 flex items-center justify-center -mb-2">
                                     <img
-                                        src="/certificate-stamp.jpeg"
+                                        src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
                                         alt="Official Stamp"
                                         className="w-14 h-14 object-contain opacity-85 mix-blend-multiply filter contrast-125 saturate-150 rotate-6"
                                     />
