@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '../utils/supabase';
+import { supabase, supabaseAdmin } from '../utils/supabase';
 import { Search, ShieldCheck, Calendar, User, Award, ShieldAlert, FileDown, Printer, GraduationCap, Briefcase, FileCode, CalendarDays } from 'lucide-react';
 
 interface VerificationResult {
@@ -29,7 +29,7 @@ const VerifyCertificate: React.FC = () => {
         setResult(null);
 
         try {
-            const { data, error: fetchError } = await supabase
+            const { data, error: fetchError } = await supabaseAdmin
                 .from('certificates')
                 .select('*')
                 .eq('certificate_number', idToVerify.trim())
@@ -39,7 +39,7 @@ const VerifyCertificate: React.FC = () => {
                 throw new Error('Certificate ID not found. Verify spelling.');
             }
 
-            const { data: profile } = await supabase
+            const { data: profile } = await supabaseAdmin
                 .from('profiles')
                 .select('full_name')
                 .eq('id', data.user_id)
