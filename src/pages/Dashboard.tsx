@@ -1060,11 +1060,11 @@ const Dashboard: React.FC = () => {
                                                                 </span>
 
                                                                 <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ${task.status === 'approved' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' :
-                                                                    task.status === 'submitted' ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/20 dark:text-blue-400' :
-                                                                        task.status === 'resubmission_required' ? 'bg-rose-100 text-rose-700 dark:bg-rose-950/20 dark:text-rose-450' :
+                                                                    task.status === 'submitted' ? 'bg-amber-100 text-amber-700 dark:bg-amber-955/20 dark:text-amber-400' :
+                                                                        task.status === 'resubmission_required' ? 'bg-rose-100 text-rose-700 dark:bg-rose-955/20 dark:text-rose-450' :
                                                                             'bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400'
                                                                     }`}>
-                                                                    {task.status}
+                                                                    {task.status === 'submitted' ? 'pending' : task.status === 'approved' ? 'successful' : task.status}
                                                                 </span>
                                                             </div>
 
@@ -1086,42 +1086,43 @@ const Dashboard: React.FC = () => {
                                                             {isLocked ? (
                                                                 <span className="text-xs text-slate-400 font-bold block select-none">🔒 Locked</span>
                                                             ) : isTaskApproved ? (
-                                                                <span className="inline-flex items-center space-x-1 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-705 text-xs font-bold rounded-lg shadow-sm">
+                                                                <span className="inline-flex items-center space-x-1 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-lg shadow-sm">
                                                                     <CheckCheck className="w-3.5 h-3.5" />
-                                                                    <span>Complete</span>
+                                                                    <span>Successful</span>
+                                                                </span>
+                                                            ) : task.status === 'submitted' ? (
+                                                                <span className="inline-flex items-center space-x-1 px-3 py-1 bg-amber-55 border border-amber-200 text-amber-700 text-xs font-bold rounded-lg shadow-sm">
+                                                                    <Clock className="w-3.5 h-3.5" />
+                                                                    <span>Pending</span>
                                                                 </span>
                                                             ) : isLinkedInTask ? (
                                                                 <div className="flex flex-col items-stretch space-y-2">
-                                                                    {task.status === 'submitted' ? (
-                                                                        <span className="text-xs text-slate-400 font-medium italic block">Submitted, pending check.</span>
-                                                                    ) : (
-                                                                        <form
-                                                                            onSubmit={(e) => handleLinkedInVerificationSubmit(e, task.id)}
-                                                                            className="flex gap-1"
+                                                                    <form
+                                                                        onSubmit={(e) => handleLinkedInVerificationSubmit(e, task.id)}
+                                                                        className="flex gap-1"
+                                                                    >
+                                                                        <input
+                                                                            type="url"
+                                                                            required
+                                                                            value={linkedinUrl}
+                                                                            onChange={(e) => setLinkedinUrl(e.target.value)}
+                                                                            placeholder="Paste Link..."
+                                                                            className="px-2 py-1 text-xs border border-slate-200 bg-slate-50 dark:bg-slate-950 rounded-lg outline-none w-32 focus:border-brand-primary"
+                                                                        />
+                                                                        <button
+                                                                            type="submit"
+                                                                            className="px-2.5 py-1 bg-brand-primary text-white rounded-lg text-xs font-bold tracking-wide"
                                                                         >
-                                                                            <input
-                                                                                type="url"
-                                                                                required
-                                                                                value={linkedinUrl}
-                                                                                onChange={(e) => setLinkedinUrl(e.target.value)}
-                                                                                placeholder="Paste Link..."
-                                                                                className="px-2 py-1 text-xs border border-slate-200 bg-slate-50 dark:bg-slate-950 rounded-lg outline-none w-32 focus:border-brand-primary"
-                                                                            />
-                                                                            <button
-                                                                                type="submit"
-                                                                                className="px-2.5 py-1 bg-brand-primary text-white rounded-lg text-xs font-bold tracking-wide"
-                                                                            >
-                                                                                Submit Link
-                                                                            </button>
-                                                                        </form>
-                                                                    )}
+                                                                            Submit Link
+                                                                        </button>
+                                                                    </form>
                                                                 </div>
                                                             ) : (
                                                                 <button
                                                                     onClick={() => setSelectedTaskForSubmission(task)}
                                                                     className="w-full sm:w-auto px-4 py-2 bg-brand-primary hover:bg-brand-primary/95 text-white text-xs font-bold rounded-xl shadow transition"
                                                                 >
-                                                                    {task.status === 'resubmission_required' ? 'Redubmit' : 'Submit Milestone'}
+                                                                    {task.status === 'resubmission_required' ? 'Resubmit' : 'Submit Milestone'}
                                                                 </button>
                                                             )}
                                                         </div>
