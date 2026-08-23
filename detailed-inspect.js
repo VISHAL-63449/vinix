@@ -1,57 +1,43 @@
 import { createClient } from '@supabase/supabase-js';
+import fs from 'fs';
 
 const supabaseUrl = 'https://ioppccrnbuqgcynmjpaa.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvcHBjY3JuYnVxZ2N5bm1qcGFhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODczMjY1MjcsImV4cCI6MjEwMjkwMjUyN30.4f4_FG-iCChNmH0SM2BTcviKx3Soy7LzJfKYfckuyPU';
+const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvcHBjY3JuYnVxZ2N5bm1qcGFhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzMyNjUyNywiZXhwIjoyMTAyOTAyNTI3fQ.dC2HhQgzBrE5uF4uKqbtU9rPL_4vfyKKhujWIZgxBb0';
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+const supabase = createClient(supabaseUrl, serviceRoleKey);
 
-async function inspectTable(tableName) {
-    const { data, error } = await supabase.from(tableName).select('*').limit(1);
-    if (error) {
-        console.log(`Table '${tableName}': FAILED - ${error.code} - ${error.message}`);
-    } else {
-        console.log(`Table '${tableName}': SUCCESS - ${data.length} rows loaded`);
-    }
+// Student user ID for vr271028@gmail.com
+const studentUserId = '4d564805-ebf3-4208-8059-602b75eb3ee9';
+
+async function check() {
+    console.log('Fetching enrollments for student:', studentUserId);
+    const { data: enrollData, error: enrollErr } = await supabase
+        .from('internship_enrollments')
+        .select('*, internship:internships(title, category, description, duration)')
+        .eq('user_id', studentUserId);
+
+    console.log('Enroll Data:', enrollData);
+    console.log('Enroll Err:', enrollErr);
+
+    console.log('Fetching offer letters...');
+    const { data: offerData, error: offerErr } = await supabase
+        .from('offer_letters')
+        .select('*')
+        .eq('user_id', studentUserId);
+
+    console.log('Offer Data:', offerData);
+    console.log('Offer Err:', offerErr);
+
+    console.log('Fetching certificates...');
+    const { data: certsData, error: certErr } = await supabase
+        .from('certificates')
+        .select('*')
+        .eq('user_id', studentUserId);
+
+    console.log('Certs Data:', certsData);
+    console.log('Certs Err:', certErr);
+
+    fs.writeFileSync('detailed-inspect.txt', JSON.stringify({ enrollData, enrollErr, offerData, offerErr, certsData, certErr }, null, 2));
 }
 
-async function run() {
-    const tables = [
-        'User',
-        'profiles',
-        'student_profiles',
-        'departments',
-        'courses',
-        'academic_years',
-        'semesters',
-        'subjects',
-        'internships',
-        'internship_eligibility',
-        'internship_modules',
-        'lessons',
-        'lesson_progress',
-        'applications',
-        'enrollments',
-        'internship_enrollments',
-        'tasks',
-        'task_submissions',
-        'projects',
-        'project_submissions',
-        'evaluations',
-        'offer_letters',
-        'internship_id_cards',
-        'certificates',
-        'notifications',
-        'portfolio_profiles',
-        'portfolio_projects',
-        'audit_logs',
-        'internship_applications'
-    ];
-
-    console.log('Inspecting tables on target Supabase URL...');
-    for (const t of tables) {
-        await inspectTable(t);
-    }
-    console.log('Inspection complete.');
-}
-
-run();
+check();

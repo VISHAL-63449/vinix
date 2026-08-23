@@ -1,31 +1,63 @@
-Inspecting tables on target Supabase URL...
-Table 'User': FAILED - PGRST205 - Could not find the table 'public.User' in the schema cache
-Table 'profiles': FAILED - PGRST205 - Could not find the table 'public.profiles' in the schema cache
-Table 'student_profiles': FAILED - PGRST205 - Could not find the table 'public.student_profiles' in the schema cache
-Table 'departments': FAILED - PGRST205 - Could not find the table 'public.departments' in the schema cache
-Table 'courses': FAILED - PGRST205 - Could not find the table 'public.courses' in the schema cache
-Table 'academic_years': FAILED - PGRST205 - Could not find the table 'public.academic_years' in the schema cache
-Table 'semesters': FAILED - PGRST205 - Could not find the table 'public.semesters' in the schema cache
-Table 'subjects': FAILED - PGRST205 - Could not find the table 'public.subjects' in the schema cache
-Table 'internships': FAILED - PGRST205 - Could not find the table 'public.internships' in the schema cache
-Table 'internship_eligibility': FAILED - PGRST205 - Could not find the table 'public.internship_eligibility' in the schema cache
-Table 'internship_modules': FAILED - PGRST205 - Could not find the table 'public.internship_modules' in the schema cache
-Table 'lessons': FAILED - PGRST205 - Could not find the table 'public.lessons' in the schema cache
-Table 'lesson_progress': FAILED - PGRST205 - Could not find the table 'public.lesson_progress' in the schema cache
-Table 'applications': FAILED - PGRST205 - Could not find the table 'public.applications' in the schema cache
-Table 'enrollments': FAILED - PGRST205 - Could not find the table 'public.enrollments' in the schema cache
-Table 'internship_enrollments': FAILED - PGRST205 - Could not find the table 'public.internship_enrollments' in the schema cache
-Table 'tasks': FAILED - PGRST205 - Could not find the table 'public.tasks' in the schema cache
-Table 'task_submissions': FAILED - PGRST205 - Could not find the table 'public.task_submissions' in the schema cache
-Table 'projects': FAILED - PGRST205 - Could not find the table 'public.projects' in the schema cache
-Table 'project_submissions': FAILED - PGRST205 - Could not find the table 'public.project_submissions' in the schema cache
-Table 'evaluations': FAILED - PGRST205 - Could not find the table 'public.evaluations' in the schema cache
-Table 'offer_letters': FAILED - PGRST205 - Could not find the table 'public.offer_letters' in the schema cache
-Table 'internship_id_cards': FAILED - PGRST205 - Could not find the table 'public.internship_id_cards' in the schema cache
-Table 'certificates': FAILED - PGRST205 - Could not find the table 'public.certificates' in the schema cache
-Table 'notifications': FAILED - PGRST205 - Could not find the table 'public.notifications' in the schema cache
-Table 'portfolio_profiles': FAILED - PGRST205 - Could not find the table 'public.portfolio_profiles' in the schema cache
-Table 'portfolio_projects': FAILED - PGRST205 - Could not find the table 'public.portfolio_projects' in the schema cache
-Table 'audit_logs': FAILED - PGRST205 - Could not find the table 'public.audit_logs' in the schema cache
-Table 'internship_applications': SUCCESS - 0 rows loaded
-Inspection complete.
+{
+  "enrollData": [
+    {
+      "id": "ff20b720-f535-499d-a35a-ec3b5b56b69d",
+      "student_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "user_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+      "status": "completed",
+      "application_status": "approved",
+      "progress": 100,
+      "enrolled_at": "2026-08-22T11:24:51.235437+00:00",
+      "completed_at": "2026-08-23T04:32:32.605+00:00",
+      "joined_at": "2026-08-22T11:24:51.235437+00:00",
+      "created_at": "2026-08-22T11:24:51.235437+00:00",
+      "updated_at": "2026-08-22T11:24:51.235437+00:00",
+      "internship": {
+        "title": "Full Stack Development",
+        "category": "Full Stack Development",
+        "duration": "3 Months",
+        "description": "Full Stack Development Virtual Internship"
+      }
+    }
+  ],
+  "enrollErr": null,
+  "offerData": [
+    {
+      "id": "ebb2ac7e-4783-47c6-83fd-95386606bcc2",
+      "user_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "student_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "offer_letter_id": "VINIX-OFFER-6391",
+      "student_name": "vishal rajesh",
+      "student_email": "vr271028@gmail.com",
+      "internship_title": "Full Stack Development",
+      "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+      "duration": "1 Month",
+      "status": "ACCEPTED",
+      "verification_token": "tok_offer_182237",
+      "issue_date": "2026-08-22T09:51:57.304+00:00",
+      "created_at": "2026-08-22T09:51:57.700906+00:00"
+    }
+  ],
+  "offerErr": null,
+  "certsData": [
+    {
+      "id": "d3d614d1-f863-44ff-8018-abdfa7758dcc",
+      "student_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "user_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "internship_id": null,
+      "enrollment_id": null,
+      "certificate_id": "VINIX-CERT-2026-6790",
+      "certificate_number": "VINIX-CERT-2026-6790",
+      "verification_code": "VINIX-CERT-2026-6790",
+      "certificate_url": null,
+      "course_name": "Full Stack Development",
+      "status": "issued",
+      "verification_status": "VALID",
+      "issue_date": "2026-08-23T04:32:33.394+00:00",
+      "issued_at": "2026-08-23T04:32:34.051688+00:00",
+      "created_at": "2026-08-23T04:32:34.051688+00:00"
+    }
+  ],
+  "certErr": null
+}

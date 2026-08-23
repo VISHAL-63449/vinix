@@ -9,7 +9,8 @@ const supabase = createClient(supabaseUrl, serviceRoleKey);
 async function check() {
     const { data: users } = await supabase.from('profiles').select('*');
     const { data: enrollments } = await supabase.from('internship_enrollments').select('*');
-    fs.writeFileSync('db_output_clean.json', JSON.stringify({ users, enrollments }, null, 2), 'utf-8');
+    const { data: offers } = await supabase.from('offer_letters').select('*');
+    fs.writeFileSync('db_output_clean_2.json', JSON.stringify({ users, enrollments, offers }, null, 2), 'utf-8');
 }
 
 check();
