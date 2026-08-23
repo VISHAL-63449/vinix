@@ -1,0 +1,68 @@
+{
+  "users": [
+    {
+      "id": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564",
+      "email": "vishal@vinix.com",
+      "full_name": "Vishal R",
+      "name": "Vishal R",
+      "avatar_url": null,
+      "role": "admin",
+      "college": "VINIX Technologies",
+      "branch": null,
+      "year": null,
+      "phone": null,
+      "bio": null,
+      "linkedin_url": null,
+      "github_url": null,
+      "created_at": "2026-08-22T08:16:06.637729+00:00",
+      "updated_at": "2026-08-22T08:16:06.637729+00:00"
+    },
+    {
+      "id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "email": "vr271028@gmail.com",
+      "full_name": "vishal",
+      "name": "vishal",
+      "avatar_url": null,
+      "role": "student",
+      "college": "mzcet",
+      "branch": null,
+      "year": null,
+      "phone": "1234567890",
+      "bio": null,
+      "linkedin_url": null,
+      "github_url": null,
+      "created_at": "2026-08-22T08:13:50.714363+00:00",
+      "updated_at": "2026-08-22T08:13:50.714363+00:00"
+    }
+  ],
+  "enrollments": [
+    {
+      "id": "9783497d-43d3-4d25-a719-6e0274fa8df1",
+      "student_id": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564",
+      "user_id": "7cef3fb3-4f69-42dc-ae1b-faf0fb86c564",
+      "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+      "status": "active",
+      "application_status": "approved",
+      "progress": 100,
+      "enrolled_at": "2026-07-21T00:00:00+00:00",
+      "completed_at": null,
+      "joined_at": "2026-08-22T08:57:39.721131+00:00",
+      "created_at": "2026-08-22T08:57:39.721131+00:00",
+      "updated_at": "2026-08-22T08:57:39.721131+00:00"
+    },
+    {
+      "id": "ff20b720-f535-499d-a35a-ec3b5b56b69d",
+      "student_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "user_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+      "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+      "status": "completed",
+      "application_status": "approved",
+      "progress": 100,
+      "enrolled_at": "2026-08-22T11:24:51.235437+00:00",
+      "completed_at": "2026-08-23T04:32:32.605+00:00",
+      "joined_at": "2026-08-22T11:24:51.235437+00:00",
+      "created_at": "2026-08-22T11:24:51.235437+00:00",
+      "updated_at": "2026-08-22T11:24:51.235437+00:00"
+    }
+  ]
+}

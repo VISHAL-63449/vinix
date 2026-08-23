@@ -347,7 +347,7 @@ const Dashboard: React.FC = () => {
         );
     }
 
-    const activeEnrollment = enrollments.find(e => e.status === 'active');
+    const activeEnrollment = enrollments.find(e => e.status === 'active' || e.status === 'completed');
     const pendingEnrollment = enrollments.find(e => e.status === 'pending');
     const activeOffer = offerLetters[0];
 

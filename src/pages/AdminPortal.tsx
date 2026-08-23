@@ -927,8 +927,9 @@ const AdminPortal: React.FC = () => {
                                                     <td className="p-4 text-slate-500">{enroll.profiles?.college}</td>
                                                     <td className="p-4">
                                                         <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${enroll.status === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20' :
-                                                            enroll.status === 'pending' ? 'bg-amber-100 text-amber-700 animate-pulse' :
-                                                                'bg-rose-100 text-rose-700'
+                                                            enroll.status === 'completed' ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/20' :
+                                                                enroll.status === 'pending' ? 'bg-amber-100 text-amber-700 animate-pulse' :
+                                                                    'bg-rose-100 text-rose-700'
                                                             }`}>
                                                             {enroll.status}
                                                         </span>
