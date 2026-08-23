@@ -672,7 +672,7 @@ const Dashboard: React.FC = () => {
 
                                 <div className="flex flex-wrap items-center gap-2 mt-2">
                                     <span className="px-3 py-1 bg-white/10 text-white border border-white/20 rounded-full text-xs font-bold">
-                                        {activeEnrollment?.internship?.title || 'Full Stack Development'}
+                                        {activeEnrollment?.internship?.title || 'Virtual Internship'}
                                     </span>
                                     <span className="px-3 py-1 bg-white/10 text-white/95 border border-white/20 rounded-full text-xs font-mono font-bold">
                                         ID: {activeOffer?.offer_letter_id || 'SKX-2026-1757'}

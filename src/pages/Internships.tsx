@@ -740,15 +740,16 @@ const Internships: React.FC = () => {
                 .select('id, title, category, duration');
             if (dbIntersErr) throw dbIntersErr;
 
+            // Match ONLY by the selected domain's category/title — never fall back to first DB record
             let matchedIntern = (dbInters || []).find(i =>
                 (i.category && i.category.toLowerCase() === activeDomain.label.toLowerCase()) ||
                 (i.title && i.title.toLowerCase() === activeDomain.title.toLowerCase())
-            ) || dbInters?.[0];
+            );
 
             let internshipId = matchedIntern?.id;
             let internshipTitle = matchedIntern?.title || activeDomain.title;
 
-            // Fallback: Create internship record if missing
+            // If no matching internship found for this domain, create one with correct domain tasks
             if (!internshipId) {
                 const { data: newDbIntern, error: newDbInternErr } = await supabaseAdmin
                     .from('internships')
@@ -767,16 +768,22 @@ const Internships: React.FC = () => {
                     internshipId = newDbIntern.id;
                     internshipTitle = newDbIntern.title;
 
-                    // Seed default tasks
-                    const defaultTasks = [];
-                    for (let i = 1; i <= 11; i++) {
-                        defaultTasks.push({
+                    // Seed tasks using the actual domain-specific task names
+                    const domainTaskNames = curriculum; // tasks for selected duration
+                    const defaultTasks: any[] = [
+                        {
                             internship_id: internshipId,
-                            task_number: i,
-                            title: i === 1 ? 'LinkedIn Offer Post Requirement' : `Milestone ${i - 1} Engineering Requirement`,
-                            description: i === 1 ? 'Share your internship selection announcement on LinkedIn to unlock tasks.' : 'Complete technical assignment objectives.'
-                        });
-                    }
+                            task_number: 1,
+                            title: 'LinkedIn Offer Post Requirement',
+                            description: 'Share your internship selection announcement on LinkedIn to unlock tasks.'
+                        },
+                        ...domainTaskNames.map((taskTitle, idx) => ({
+                            internship_id: internshipId,
+                            task_number: idx + 2,
+                            title: taskTitle,
+                            description: `Complete the ${activeDomain.label} task: ${taskTitle}`
+                        }))
+                    ];
                     const { error: rErr } = await supabaseAdmin.from('internship_tasks').insert(defaultTasks);
                     if (rErr) throw rErr;
                 }
@@ -786,6 +793,7 @@ const Internships: React.FC = () => {
             try {
                 const { error: appErr } = await supabaseAdmin.from('internship_applications').insert({
                     student_id: uid,
+                    internship_id: internshipId,
                     student_name: form.fullName,
                     email: form.email,
                     phone: form.phone,

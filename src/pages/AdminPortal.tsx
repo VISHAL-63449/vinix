@@ -34,6 +34,8 @@ interface Enrollment {
     };
     internships?: {
         title: string;
+        duration?: string;
+        category?: string;
     };
 }
 
@@ -167,7 +169,7 @@ const AdminPortal: React.FC = () => {
             // Fetch enrollments with internship details (joining profiles in JS instead of PostgREST)
             const { data: enrolls } = await supabaseAdmin
                 .from('internship_enrollments')
-                .select('*, internships:internship_id(title)')
+                .select('*, internships:internship_id(title, duration, category)')
                 .order('joined_at', { ascending: false });
 
             // Fetch submissions (joining profiles in JS instead of PostgREST)
@@ -341,7 +343,7 @@ const AdminPortal: React.FC = () => {
                 student_name: enroll.profiles?.full_name || 'Alumnus',
                 student_email: enroll.profiles?.email || '',
                 internship_title: enroll.internships?.title || 'Engineering Internship',
-                duration: '3 Months',
+                duration: enroll.internships?.duration || '3 Months',
                 status: 'SENT',
                 verification_token: token,
                 issue_date: new Date().toISOString()
