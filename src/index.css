@@ -239,16 +239,16 @@ body {
         margin-top: 0.1rem !important;
     }
 
-    .offer-letter .space-y-0.5> :not([hidden])~ :not([hidden]) {
+    .offer-letter .space-y-0\.5> :not([hidden])~ :not([hidden]) {
         margin-top: 0.05rem !important;
     }
 
-    .offer-letter .p-2.5 {
+    .offer-letter .p-2\.5 {
         padding: 0.35rem !important;
     }
 
     /* Table padding and borders */
-    .offer-letter .py-1.5 {
+    .offer-letter .py-1\.5 {
         padding-top: 0.2rem !important;
         padding-bottom: 0.2rem !important;
     }
@@ -389,7 +389,7 @@ input:-webkit-autofill:active {
     margin-top: 0.4rem !important;
 }
 
-.pdf-download-mode .space-y-3.5> :not([hidden])~ :not([hidden]) {
+.pdf-download-mode .space-y-3\.5> :not([hidden])~ :not([hidden]) {
     margin-top: 0.3rem !important;
 }
 
@@ -397,7 +397,7 @@ input:-webkit-autofill:active {
     margin-top: 0.25rem !important;
 }
 
-.pdf-download-mode .space-y-2.5> :not([hidden])~ :not([hidden]) {
+.pdf-download-mode .space-y-2\.5> :not([hidden])~ :not([hidden]) {
     margin-top: 0.2rem !important;
 }
 
@@ -405,7 +405,7 @@ input:-webkit-autofill:active {
     margin-top: 0.15rem !important;
 }
 
-.pdf-download-mode .space-y-1.5> :not([hidden])~ :not([hidden]) {
+.pdf-download-mode .space-y-1\.5> :not([hidden])~ :not([hidden]) {
     margin-top: 0.125rem !important;
 }
 
@@ -413,15 +413,15 @@ input:-webkit-autofill:active {
     margin-top: 0.1rem !important;
 }
 
-.pdf-download-mode .space-y-0.5> :not([hidden])~ :not([hidden]) {
+.pdf-download-mode .space-y-0\.5> :not([hidden])~ :not([hidden]) {
     margin-top: 0.05rem !important;
 }
 
-.pdf-download-mode .p-2.5 {
+.pdf-download-mode .p-2\.5 {
     padding: 0.35rem !important;
 }
 
-.pdf-download-mode .py-1.5 {
+.pdf-download-mode .py-1\.5 {
     padding-top: 0.2rem !important;
     padding-bottom: 0.2rem !important;
 }
@@ -431,7 +431,7 @@ input:-webkit-autofill:active {
     padding-bottom: 0.3rem !important;
 }
 
-.pdf-download-mode .pt-3.5 {
+.pdf-download-mode .pt-3\.5 {
     padding-top: 0.4rem !important;
 }
 
@@ -485,12 +485,11 @@ input:-webkit-autofill:active {
 }
 
 .cert-pdf-download-mode {
-    border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     box-sizing: border-box !important;
-    width: 297mm !important;
-    height: 210mm !important;
-    max-width: 297mm !important;
-    max-height: 210mm !important;
+    width: 1122px !important;
+    height: 793px !important;
+    max-width: 1122px !important;
+    max-height: 793px !important;
 }
