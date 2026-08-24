@@ -493,3 +493,36 @@ input:-webkit-autofill:active {
     max-width: 1122px !important;
     max-height: 793px !important;
 }
+
+/* Floating Badges Custom Animations */
+@keyframes float {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-8px);
+    }
+}
+
+@keyframes float-delayed {
+
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(8px);
+    }
+}
+
+.animate-float {
+    animation: float 4s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+    animation: float-delayed 4.5s ease-in-out infinite;
+}
