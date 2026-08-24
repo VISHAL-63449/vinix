@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Clock } from 'lucide-react';
+import logoImg from '../assets/vinix-logo.png';
 
 const Footer: React.FC = () => {
     const year = new Date().getFullYear();
@@ -13,7 +14,7 @@ const Footer: React.FC = () => {
                 <div className="col-span-2 sm:col-span-3 lg:col-span-1 space-y-4">
                     <Link to="/" className="flex items-center hover:opacity-90 transition">
                         <img
-                            src={`${import.meta.env.BASE_URL}vinix-logo.png`}
+                            src={logoImg}
                             alt="Vinix"
                             className="h-7 w-auto object-contain mix-blend-multiply dark:invert dark:brightness-200 dark:mix-blend-screen transition-all duration-300"
                         />

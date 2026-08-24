@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
+import logoImg from '../assets/vinix-logo.png';
 import {
     Sun, Moon, Menu, X, Rocket, LogOut, LayoutDashboard, Briefcase,
     User, Settings, ShieldAlert, Code, Home, Info,
@@ -52,7 +53,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                     <div className="flex items-center font-extrabold text-slate-900 dark:text-white">
                         <Link to="/" className="flex items-center transition hover:opacity-85">
                             <img
-                                src={`${import.meta.env.BASE_URL}vinix-logo.png`}
+                                src={logoImg}
                                 alt="Vinix"
                                 className={`h-8 w-auto object-contain transition-all duration-300 ${darkMode
                                         ? 'invert brightness-200 mix-blend-screen'

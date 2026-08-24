@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-    Sparkles, Award, ArrowRight, Code, Users, Briefcase, Mail, GraduationCap
+    Sparkles, Award, ArrowRight, Code, Users, Briefcase, Mail
 } from 'lucide-react';
 
 const Linkedin = ({ size = 18 }: { size?: number }) => (
