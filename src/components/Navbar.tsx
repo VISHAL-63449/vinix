@@ -64,7 +64,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
 
     return (
         <nav className={`sticky top-0 z-40 w-full transition-all duration-300 no-print ${(isScrolled || mobileMenuOpen)
-            ? 'bg-white/95 dark:bg-brand-bgDark/95 border-b border-slate-200/80 dark:border-slate-800/80 shadow-sm backdrop-blur-md'
+            ? 'bg-white dark:bg-brand-bgDark border-b border-slate-200 dark:border-slate-800 shadow-sm'
             : 'bg-transparent border-b border-transparent shadow-none'
             }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -205,7 +205,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
 
             {/* Mobile Drawer */}
             {mobileMenuOpen && (
-                <div className="md:hidden bg-white/95 dark:bg-brand-bgDark/95 border-t border-slate-200/50 dark:border-slate-800/40 py-3 px-4 space-y-2 backdrop-blur-md">
+                <div className="md:hidden bg-white dark:bg-brand-bgDark border-t border-slate-200/50 dark:border-slate-800/40 py-3 px-4 space-y-2">
                     {navLinks.map((link) => {
                         const Icon = link.icon;
                         return (
