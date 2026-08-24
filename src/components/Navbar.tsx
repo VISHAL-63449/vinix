@@ -24,7 +24,8 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
 
     useEffect(() => {
         const handleScroll = () => {
-            if (window.scrollY > 15) {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop || window.scrollY || 0;
+            if (scrollTop > 10) {
                 setIsScrolled(true);
             } else {
                 setIsScrolled(false);
@@ -34,8 +35,15 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
         // Initialize scroll state on mount
         handleScroll();
 
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        window.addEventListener('resize', handleScroll, { passive: true });
+        document.addEventListener('scroll', handleScroll, { passive: true });
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+            window.removeEventListener('resize', handleScroll);
+            document.removeEventListener('scroll', handleScroll);
+        };
     }, []);
 
     const isActive = (path: string) => {
@@ -63,10 +71,20 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
     };
 
     return (
-        <nav className={`sticky top-0 z-40 w-full transition-all duration-300 no-print ${(isScrolled || mobileMenuOpen)
-            ? 'bg-white dark:bg-brand-bgDark border-b border-slate-200 dark:border-slate-800 shadow-sm'
-            : 'bg-transparent border-b border-transparent shadow-none'
-            }`}>
+        <nav
+            style={{
+                backgroundColor: (isScrolled || mobileMenuOpen)
+                    ? (darkMode ? '#0D0E12' : '#FFFFFF')
+                    : 'transparent',
+                borderColor: (isScrolled || mobileMenuOpen)
+                    ? (darkMode ? '#1E293B' : '#E2E8F0')
+                    : 'transparent',
+                boxShadow: (isScrolled || mobileMenuOpen)
+                    ? '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+                    : 'none',
+            }}
+            className="sticky top-0 z-40 w-full transition-all duration-300 border-b no-print"
+        >
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo & Brand */}
@@ -205,7 +223,13 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
 
             {/* Mobile Drawer */}
             {mobileMenuOpen && (
-                <div className="md:hidden bg-white dark:bg-brand-bgDark border-t border-slate-200/50 dark:border-slate-800/40 py-3 px-4 space-y-2">
+                <div
+                    style={{
+                        backgroundColor: darkMode ? '#0D0E12' : '#FFFFFF',
+                        borderColor: darkMode ? '#1E293B' : '#E2E8F0',
+                    }}
+                    className="md:hidden border-t py-3 px-4 space-y-2"
+                >
                     {navLinks.map((link) => {
                         const Icon = link.icon;
                         return (
