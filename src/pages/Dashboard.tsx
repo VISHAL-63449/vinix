@@ -23,6 +23,13 @@ interface Enrollment {
     };
 }
 
+interface InternshipApplication {
+    id: string;
+    domain: string;
+    duration: string;
+    status: string;
+}
+
 interface OfferLetter {
     id: string;
     offer_letter_id: string;
@@ -66,9 +73,11 @@ const Dashboard: React.FC = () => {
 
     // Database Data States
     const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
+    const [application, setApplication] = useState<InternshipApplication | null>(null);
     const [offerLetters, setOfferLetters] = useState<OfferLetter[]>([]);
     const [taskProgresses, setTaskProgresses] = useState<TaskProgress[]>([]);
     const [certificates, setCertificates] = useState<CertificateData[]>([]);
+    const [totalTaskCount, setTotalTaskCount] = useState<number>(0);
 
     // Settings Edit fields
     const [editName, setEditName] = useState('');
@@ -94,11 +103,20 @@ const Dashboard: React.FC = () => {
         try {
             setLoading(true);
 
-            // Fetch enrollments
+            // Fetch enrollments — join internship title & duration
             const { data: enrollData } = await supabaseAdmin
                 .from('internship_enrollments')
-                .select('*, internship:internships(title, category, description, duration)')
+                .select('*, internship:internships(title, description, duration)')
                 .eq('user_id', user.id);
+
+            // Fetch the student's internship application to get domain & duration chosen
+            const { data: appData } = await supabaseAdmin
+                .from('internship_applications')
+                .select('id, domain, duration, status')
+                .eq('student_id', user.id)
+                .order('applied_at', { ascending: false })
+                .limit(1)
+                .maybeSingle();
 
             // Fetch offer letters
             const { data: offerData } = await supabaseAdmin
@@ -118,6 +136,21 @@ const Dashboard: React.FC = () => {
                 .select('*, internship_tasks:internship_tasks(task_number, title, description)')
                 .eq('user_id', user.id);
 
+            const sortedProgress = (progressData || []).sort((a: any, b: any) =>
+                (a.internship_tasks?.task_number || 0) - (b.internship_tasks?.task_number || 0)
+            );
+
+            // Fetch total task count for current internship (for accurate progress %)
+            let totalTasks = sortedProgress.length;
+            const firstEnroll = (enrollData || [])[0];
+            if (firstEnroll?.internship_id) {
+                const { count } = await supabaseAdmin
+                    .from('internship_tasks')
+                    .select('id', { count: 'exact', head: true })
+                    .eq('internship_id', firstEnroll.internship_id);
+                if (count && count > 0) totalTasks = count;
+            }
+
             setEnrollments((enrollData || []).map(e => ({
                 id: e.id,
                 internship_id: e.internship_id,
@@ -125,17 +158,17 @@ const Dashboard: React.FC = () => {
                 status: e.status,
                 internship: {
                     title: e.internship?.title || 'Virtual Internship',
-                    domain: e.internship?.category || 'Software Engineering',
+                    domain: appData?.domain || 'Software Engineering',
                     description: e.internship?.description || '',
-                    duration: e.internship?.duration || '3 Months'
+                    duration: e.internship?.duration || appData?.duration || '3 Months'
                 }
             })));
 
+            setApplication(appData || null);
             setOfferLetters(offerData || []);
             setCertificates(certsData || []);
-            setTaskProgresses((progressData || []).sort((a: any, b: any) =>
-                (a.internship_tasks?.task_number || 0) - (b.internship_tasks?.task_number || 0)
-            ));
+            setTaskProgresses(sortedProgress);
+            setTotalTaskCount(totalTasks);
 
             // Prep editing fields with profile values
             if (profile) {
@@ -348,8 +381,13 @@ const Dashboard: React.FC = () => {
     }
 
     const activeEnrollment = enrollments.find(e => e.status === 'active' || e.status === 'completed');
-    const pendingEnrollment = enrollments.find(e => e.status === 'pending');
+    const pendingEnrollment = enrollments.find(e => e.status === 'pending') ||
+        (!activeEnrollment && application && application.status === 'pending' ? { internship: { title: application.domain + ' Internship' } } as any : null);
     const activeOffer = offerLetters[0];
+
+    // Dynamic progress computed from real approved task count vs total
+    const approvedCount = taskProgresses.filter(p => p.status === 'approved').length;
+    const dynamicProgress = totalTaskCount > 0 ? Math.round((approvedCount / totalTaskCount) * 100) : (activeEnrollment?.progress || 0);
 
     // Helper values for locks
     // If task_number = 1 (linkedin post) is approved, we unlock the rest of the milestones!
@@ -674,9 +712,11 @@ const Dashboard: React.FC = () => {
                                     <span className="px-3 py-1 bg-white/10 text-white border border-white/20 rounded-full text-xs font-bold">
                                         {activeEnrollment?.internship?.title || 'Virtual Internship'}
                                     </span>
-                                    <span className="px-3 py-1 bg-white/10 text-white/95 border border-white/20 rounded-full text-xs font-mono font-bold">
-                                        ID: {activeOffer?.offer_letter_id || 'SKX-2026-1757'}
-                                    </span>
+                                    {activeOffer?.offer_letter_id && (
+                                        <span className="px-3 py-1 bg-white/10 text-white/95 border border-white/20 rounded-full text-xs font-mono font-bold">
+                                            ID: {activeOffer.offer_letter_id}
+                                        </span>
+                                    )}
                                 </div>
 
                                 {/* Meta details list */}
@@ -691,7 +731,7 @@ const Dashboard: React.FC = () => {
                                     </div>
                                     <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5 text-xs text-white/80 font-medium">
                                         <CheckCircle className="w-4 h-4 text-emerald-450" />
-                                        <span>Tasks: {taskProgresses.filter(p => p.status === 'approved').length} / {taskProgresses.length || 11} Approved</span>
+                                        <span>Tasks: {approvedCount} / {totalTaskCount || taskProgresses.length} Approved</span>
                                     </div>
                                 </div>
 
@@ -754,13 +794,13 @@ const Dashboard: React.FC = () => {
                                             className="stroke-emerald-400 transition-all duration-500 ease-out"
                                             strokeWidth="8"
                                             strokeDasharray={2 * Math.PI * 40}
-                                            strokeDashoffset={2 * Math.PI * 40 * (1 - (activeEnrollment ? activeEnrollment.progress : 100) / 100)}
+                                            strokeDashoffset={2 * Math.PI * 40 * (1 - dynamicProgress / 100)}
                                             strokeLinecap="round"
                                             fill="transparent"
                                         />
                                     </svg>
                                     <div className="absolute flex flex-col items-center text-center">
-                                        <span className="text-2xl font-black text-white leading-none">{activeEnrollment ? activeEnrollment.progress : 100}%</span>
+                                        <span className="text-2xl font-black text-white leading-none">{dynamicProgress}%</span>
                                         <span className="text-[8px] text-white/60 font-bold uppercase tracking-wider mt-1">Progress</span>
                                     </div>
                                 </div>
@@ -825,7 +865,7 @@ const Dashboard: React.FC = () => {
                                                 COMPLETED TASKS
                                             </span>
                                             <h3 className="text-2xl font-black text-slate-900 dark:text-white mt-2">
-                                                {taskProgresses.filter(p => p.status === 'approved').length} / {taskProgresses.length || 11}
+                                                {approvedCount} / {totalTaskCount || taskProgresses.length}
                                             </h3>
                                             <p className="text-xs text-slate-450 dark:text-slate-400 font-semibold uppercase tracking-wider">Approved Tasks</p>
                                         </div>

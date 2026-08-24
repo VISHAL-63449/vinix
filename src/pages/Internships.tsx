@@ -685,6 +685,17 @@ const Internships: React.FC = () => {
         e.preventDefault();
         setError('');
         setSubmitting(true);
+
+        // ⚠ CRITICAL: Snapshot domain + duration NOW before any async calls.
+        // React state (selectedDomainId, durationIdx) can be reset by re-renders
+        // triggered during signUp/signIn, causing activeDomain to silently revert
+        // to 'fullstack'. Local consts are immune to re-renders.
+        const snapshotDomainId = selectedDomainId;
+        const snapshotDurationIdx = durationIdx;
+        const snapshotDomain = DOMAINS.find(d => d.id === snapshotDomainId) || DOMAINS.find(d => d.id === 'fullstack')!;
+        const snapshotDuration = DURATIONS[snapshotDurationIdx];
+        const snapshotCurriculum = snapshotDomain.tasks[snapshotDuration.label];
+
         try {
             let uid = user?.id;
             if (!uid) {
@@ -742,22 +753,22 @@ const Internships: React.FC = () => {
 
             // Match ONLY by the selected domain's category/title — never fall back to first DB record
             let matchedIntern = (dbInters || []).find(i =>
-                (i.category && i.category.toLowerCase() === activeDomain.label.toLowerCase()) ||
-                (i.title && i.title.toLowerCase() === activeDomain.title.toLowerCase())
+                (i.category && i.category.toLowerCase() === snapshotDomain.label.toLowerCase()) ||
+                (i.title && i.title.toLowerCase() === snapshotDomain.title.toLowerCase())
             );
 
             let internshipId = matchedIntern?.id;
-            let internshipTitle = matchedIntern?.title || activeDomain.title;
+            let internshipTitle = matchedIntern?.title || snapshotDomain.title;
 
             // If no matching internship found for this domain, create one with correct domain tasks
             if (!internshipId) {
                 const { data: newDbIntern, error: newDbInternErr } = await supabaseAdmin
                     .from('internships')
                     .insert({
-                        title: activeDomain.title,
-                        category: activeDomain.label,
-                        description: activeDomain.description,
-                        duration: activeDuration.label,
+                        title: snapshotDomain.title,
+                        category: snapshotDomain.label,
+                        description: snapshotDomain.description,
+                        duration: snapshotDuration.label,
                         status: 'active'
                     })
                     .select()
@@ -769,7 +780,7 @@ const Internships: React.FC = () => {
                     internshipTitle = newDbIntern.title;
 
                     // Seed tasks using the actual domain-specific task names
-                    const domainTaskNames = curriculum; // tasks for selected duration
+                    const domainTaskNames = snapshotCurriculum; // tasks for selected duration
                     const defaultTasks: any[] = [
                         {
                             internship_id: internshipId,
@@ -781,7 +792,7 @@ const Internships: React.FC = () => {
                             internship_id: internshipId,
                             task_number: idx + 2,
                             title: taskTitle,
-                            description: `Complete the ${activeDomain.label} task: ${taskTitle}`
+                            description: `Complete the ${snapshotDomain.label} task: ${taskTitle}`
                         }))
                     ];
                     const { error: rErr } = await supabaseAdmin.from('internship_tasks').insert(defaultTasks);
@@ -805,8 +816,8 @@ const Internships: React.FC = () => {
                     district: form.district,
                     city: form.city,
                     pin_code: form.pin,
-                    domain: activeDomain.id,
-                    duration: activeDuration.label,
+                    domain: snapshotDomain.id,
+                    duration: snapshotDuration.label,
                     promo_code: form.promo || null,
                     status: 'approved',
                 });
@@ -883,7 +894,7 @@ const Internships: React.FC = () => {
                             student_email: form.email,
                             internship_title: internshipTitle,
                             internship_id: internshipId,
-                            duration: activeDuration.label,
+                            duration: snapshotDuration.label,
                             status: 'ACCEPTED',
                             verification_token: verificationToken,
                             issue_date: new Date().toISOString()

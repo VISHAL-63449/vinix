@@ -1,0 +1,110 @@
+{
+  "internship_applications": {
+    "columns": [
+      "id",
+      "student_id",
+      "internship_id",
+      "status",
+      "student_name",
+      "email",
+      "phone",
+      "college",
+      "resume_url",
+      "github_url",
+      "linkedin_url",
+      "year_of_study",
+      "course_branch",
+      "country",
+      "state",
+      "district",
+      "city",
+      "pin_code",
+      "domain",
+      "duration",
+      "promo_code",
+      "applied_at",
+      "updated_at"
+    ]
+  },
+  "internship_enrollments": {
+    "columns": [
+      "id",
+      "student_id",
+      "user_id",
+      "internship_id",
+      "status",
+      "application_status",
+      "progress",
+      "enrolled_at",
+      "completed_at",
+      "joined_at",
+      "created_at",
+      "updated_at"
+    ]
+  },
+  "offer_letters": {
+    "columns": [
+      "id",
+      "user_id",
+      "student_id",
+      "offer_letter_id",
+      "student_name",
+      "student_email",
+      "internship_title",
+      "internship_id",
+      "duration",
+      "status",
+      "verification_token",
+      "issue_date",
+      "created_at"
+    ]
+  },
+  "certificates": {
+    "columns": [
+      "id",
+      "student_id",
+      "user_id",
+      "internship_id",
+      "enrollment_id",
+      "certificate_id",
+      "certificate_number",
+      "verification_code",
+      "certificate_url",
+      "course_name",
+      "status",
+      "verification_status",
+      "issue_date",
+      "issued_at",
+      "created_at"
+    ]
+  },
+  "task_progress": {
+    "columns": [
+      "id",
+      "student_id",
+      "user_id",
+      "internship_id",
+      "task_id",
+      "status",
+      "submission_url",
+      "github_url",
+      "linkedin_url",
+      "student_note",
+      "admin_feedback",
+      "submitted_at",
+      "reviewed_at"
+    ]
+  },
+  "internship_tasks": {
+    "columns": [
+      "id",
+      "internship_id",
+      "title",
+      "description",
+      "task_number",
+      "deadline",
+      "points",
+      "created_at"
+    ]
+  }
+}
