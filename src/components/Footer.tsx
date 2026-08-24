@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, MapPin, Clock, GraduationCap } from 'lucide-react';
+import { Mail, MapPin, Clock } from 'lucide-react';
 
 const Footer: React.FC = () => {
     const year = new Date().getFullYear();
@@ -11,15 +11,12 @@ const Footer: React.FC = () => {
 
                 {/* ── Brand ── */}
                 <div className="col-span-2 sm:col-span-3 lg:col-span-1 space-y-4">
-                    <Link to="/" className="flex items-center gap-1 hover:opacity-90 transition">
-                        <span className="font-extrabold text-[20px] text-blue-600 dark:text-blue-400">vin</span>
-                        <span className="relative font-extrabold text-[20px] text-slate-800 dark:text-white inline-flex items-center">
-                            <span className="relative inline-block">
-                                i
-                                <GraduationCap className="absolute -top-[4px] -left-[2.5px] h-2.5 w-2.5 text-blue-800 dark:text-white rotate-[12deg]" />
-                            </span>
-                            x
-                        </span>
+                    <Link to="/" className="flex items-center hover:opacity-90 transition">
+                        <img
+                            src="/vinix-logo.png"
+                            alt="Vinix"
+                            className="h-7 w-auto object-contain"
+                        />
                     </Link>
                     <p className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
                         Build real-world skills through industry-focused virtual internships.
