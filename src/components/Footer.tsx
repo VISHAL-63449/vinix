@@ -15,7 +15,7 @@ const Footer: React.FC = () => {
                         <img
                             src="/vinix-logo.png"
                             alt="Vinix"
-                            className="h-7 w-auto object-contain"
+                            className="h-7 w-auto object-contain mix-blend-multiply dark:invert dark:brightness-200 dark:mix-blend-screen transition-all duration-300"
                         />
                     </Link>
                     <p className="text-[12px] text-slate-500 dark:text-slate-400 leading-relaxed">
