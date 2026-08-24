@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import logoImg from '../assets/vinix-logo.png';
@@ -20,6 +20,23 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [shareTooltip, setShareTooltip] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 15) {
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        };
+
+        // Initialize scroll state on mount
+        handleScroll();
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     const isActive = (path: string) => {
         return location.pathname === path;
@@ -46,7 +63,10 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
     };
 
     return (
-        <nav className="sticky top-0 z-40 w-full transition-all duration-300 glass border-b border-slate-200/50 dark:border-slate-800/40 no-print">
+        <nav className={`sticky top-0 z-40 w-full transition-all duration-300 no-print ${(isScrolled || mobileMenuOpen)
+            ? 'bg-white/95 dark:bg-brand-bgDark/95 border-b border-slate-200/80 dark:border-slate-800/80 shadow-sm backdrop-blur-md'
+            : 'bg-transparent border-b border-transparent shadow-none'
+            }`}>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex items-center justify-between h-16">
                     {/* Logo & Brand */}
@@ -56,8 +76,8 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                 src={logoImg}
                                 alt="Vinix"
                                 className={`h-8 w-auto object-contain transition-all duration-300 ${darkMode
-                                        ? 'invert brightness-200 mix-blend-screen'
-                                        : 'mix-blend-multiply'
+                                    ? 'invert brightness-200 mix-blend-screen'
+                                    : 'mix-blend-multiply'
                                     }`}
                             />
                         </Link>
@@ -185,7 +205,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
 
             {/* Mobile Drawer */}
             {mobileMenuOpen && (
-                <div className="md:hidden glass border-t border-slate-200/50 dark:border-slate-800/40 py-3 px-4 space-y-2">
+                <div className="md:hidden bg-white/95 dark:bg-brand-bgDark/95 border-t border-slate-200/50 dark:border-slate-800/40 py-3 px-4 space-y-2 backdrop-blur-md">
                     {navLinks.map((link) => {
                         const Icon = link.icon;
                         return (
