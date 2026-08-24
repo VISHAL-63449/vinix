@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import {
     Sun, Moon, Menu, X, Rocket, LogOut, LayoutDashboard, Briefcase,
-    GraduationCap, User, Settings, ShieldAlert, Code, Home, Info,
+    User, Settings, ShieldAlert, Code, Home, Info,
     MessageSquare, Mail, ShieldCheck, Share2, LogIn, BookOpen
 } from 'lucide-react';
 
@@ -50,17 +50,12 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo & Brand */}
                     <div className="flex items-center font-extrabold text-slate-900 dark:text-white">
-                        <Link to="/" className="flex items-center space-x-1.5 text-2xl font-extrabold tracking-tight transition hover:opacity-90">
-                            <div>
-                                <span className="font-extrabold text-[23px] text-blue-600 dark:text-blue-400">vin</span>
-                                <span className="relative font-extrabold text-[23px] text-slate-800 dark:text-white inline-flex items-center">
-                                    <span className="relative inline-block">
-                                        i
-                                        <GraduationCap className="absolute -top-[5px] -left-[3px] h-3 w-3 text-blue-805 dark:text-white rotate-[12deg]" />
-                                    </span>
-                                    x
-                                </span>
-                            </div>
+                        <Link to="/" className="flex items-center transition hover:opacity-85">
+                            <img
+                                src="/vinix-logo.png"
+                                alt="Vinix"
+                                className="h-8 w-auto object-contain"
+                            />
                         </Link>
                     </div>
 
