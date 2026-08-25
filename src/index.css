@@ -258,7 +258,7 @@ body {
         padding-bottom: 0.3rem !important;
     }
 
-    .offer-letter .pt-3.5 {
+    .offer-letter .pt-3\.5 {
         padding-top: 0.4rem !important;
     }
 
@@ -275,7 +275,7 @@ body {
         font-size: 8.5px !important;
     }
 
-    .offer-letter .text-\[9.5px\] {
+    .offer-letter .text-\[9\.5px\] {
         font-size: 8.5px !important;
     }
 
@@ -283,7 +283,7 @@ body {
         font-size: 8px !important;
     }
 
-    .offer-letter .text-\[7.5px\] {
+    .offer-letter .text-\[7\.5px\] {
         font-size: 7px !important;
     }
 
@@ -316,7 +316,7 @@ body {
     #certificate-print-area {
         border: none !important;
         box-shadow: none !important;
-        background-color: #0b1a30 !important;
+        background-color: #ffffff !important;
         box-sizing: border-box !important;
         page-break-inside: avoid !important;
         -webkit-print-color-adjust: exact !important;
@@ -448,7 +448,7 @@ input:-webkit-autofill:active {
     font-size: 8.5px !important;
 }
 
-.pdf-download-mode .text-\[9.5px\] {
+.pdf-download-mode .text-\[9\.5px\] {
     font-size: 8.5px !important;
 }
 
@@ -456,7 +456,7 @@ input:-webkit-autofill:active {
     font-size: 8px !important;
 }
 
-.pdf-download-mode .text-\[7.5px\] {
+.pdf-download-mode .text-\[7\.5px\] {
     font-size: 7px !important;
 }
 
