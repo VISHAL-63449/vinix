@@ -131,23 +131,6 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                         >
                             {darkMode ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
                         </button>
-
-                        {/* Share Button with Tooltip */}
-                        <div className="relative">
-                            <button
-                                onClick={handleShare}
-                                className="flex items-center space-x-1.5 px-4.5 py-2 rounded-xl border border-purple-200 dark:border-purple-800/80 bg-purple-50/50 dark:bg-purple-950/20 text-slate-800 dark:text-slate-200 text-xs font-bold hover:bg-purple-100/50 dark:hover:bg-purple-900/30 transition-all duration-205 cursor-pointer"
-                            >
-                                <Share2 className="w-3.5 h-3.5 text-slate-750 dark:text-slate-350" />
-                                <span>Share</span>
-                            </button>
-                            {shareTooltip && (
-                                <div className="absolute right-0 top-12 bg-slate-900 dark:bg-slate-800 text-white text-[10px] px-2.5 py-1 rounded shadow-md whitespace-nowrap animate-pulse">
-                                    Portal link copied!
-                                </div>
-                            )}
-                        </div>
-
                         {/* Auth Buttons */}
                         {user ? (
                             <div className="flex items-center space-x-3">
