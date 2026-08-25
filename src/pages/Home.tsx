@@ -349,7 +349,7 @@ export const Home: React.FC = () => {
                                 <img
                                     src={`${import.meta.env.BASE_URL}home-image.jpeg`}
                                     alt="Vinix Internships"
-                                    className="w-full h-full object-cover rounded-3xl border border-slate-100/50 shadow-md select-none transform hover:scale-[1.01] transition-transform duration-500"
+                                    className="w-full h-full object-cover rounded-3xl border border-slate-100/50 select-none transform hover:scale-[1.01] transition-transform duration-500"
                                 />
 
                                 {/* Overlay/floating cards: only display on screens that can fit them nicely */}
