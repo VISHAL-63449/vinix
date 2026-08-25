@@ -288,7 +288,7 @@ const VerifyCertificate: React.FC = () => {
                                             <span className="text-[18px] font-bold text-[#0b1a30] tracking-[0.25em] block leading-none font-sans uppercase">
                                                 VINIX
                                             </span>
-                                            <span className="text-[8px] font-normal text-slate-400 tracking-[0.1em] block mt-1.5 uppercase font-sans">
+                                            <span className="text-[8px] font-normal text-slate-400 tracking-[0.1em] block mt-1.5 font-sans">
                                                 Empowering Future Innovators
                                             </span>
                                         </div>
