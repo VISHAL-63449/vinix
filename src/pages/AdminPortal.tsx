@@ -5,7 +5,7 @@ import {
     LayoutDashboard, CheckSquare, Search, ShieldCheck, User, FolderOpen,
     Award, FileSpreadsheet, Plus, Trash2, Edit3, X, Megaphone, Mail,
     Sparkles, PlusCircle, Bell, Moon, ChevronDown, ListTodo, Users, ExternalLink,
-    Briefcase, BookOpen, Layers, Check, Activity
+    Briefcase, BookOpen, Layers, Check, Activity, GraduationCap
 } from 'lucide-react';
 
 interface Internship {
@@ -22,6 +22,7 @@ interface Enrollment {
     internship_id: string;
     status: string;
     joined_at: string;
+    progress?: number;
     profiles?: {
         full_name: string;
         email: string;
@@ -97,8 +98,10 @@ interface Domain {
 
 const AdminPortal: React.FC = () => {
     const { user, profile } = useAuth();
-    const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'submissions' | 'certificates' | 'domains'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'submissions' | 'certificates' | 'domains' | 'students' | 'student-detail'>('overview');
     const [subTab, setSubTab] = useState<'domains' | 'internships'>('domains');
+    const [selectedStudentForDetail, setSelectedStudentForDetail] = useState<Enrollment | null>(null);
+    const [studentsSearch, setStudentsSearch] = useState('');
 
     // Database Data States
     const [domainsList, setDomainsList] = useState<Domain[]>([]);
@@ -720,6 +723,14 @@ const AdminPortal: React.FC = () => {
                         >
                             <LayoutDashboard className="w-4 h-4" />
                             <span>Metrics Overview</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('students')}
+                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-xs font-bold transition uppercase tracking-wider ${activeTab === 'students' || activeTab === 'student-detail' ? 'bg-brand-primary text-white shadow' : 'hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-500'
+                                }`}
+                        >
+                            <GraduationCap className="w-4 h-4" />
+                            <span>Students</span>
                         </button>
                         <button
                             onClick={() => setActiveTab('applications')}
@@ -1624,6 +1635,386 @@ const AdminPortal: React.FC = () => {
                                 </div>
                             )}
 
+                        </div>
+                    )}
+
+                    {activeTab === 'students' && (
+                        <div className="space-y-6 text-left">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <h2 className="text-xl font-extrabold text-slate-800 dark:text-white">Students</h2>
+                                    <span className="text-xs text-slate-500">Manage and view all enrolled student interns</span>
+                                </div>
+                                <div className="relative max-w-sm w-full">
+                                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-3" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search students..."
+                                        value={studentsSearch}
+                                        onChange={(e) => setStudentsSearch(e.target.value)}
+                                        className="w-full pl-9 pr-4 py-2 border border-slate-205 bg-white dark:bg-slate-900 dark:border-slate-800 rounded-xl text-xs outline-none shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full min-w-[1000px] border-collapse text-left">
+                                        <thead>
+                                            <tr className="border-b border-slate-100 dark:border-slate-805 bg-slate-50/50 dark:bg-slate-900/50">
+                                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Student</th>
+                                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Status</th>
+                                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Domain</th>
+                                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">College</th>
+                                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Intern ID</th>
+                                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Last Login</th>
+                                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest">Joined</th>
+                                                <th className="px-6 py-4 text-[10px] font-bold text-slate-400 uppercase tracking-widest text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                            {enrollments.filter(e => {
+                                                const query = studentsSearch.toLowerCase();
+                                                return (
+                                                    e.profiles?.full_name?.toLowerCase().includes(query) ||
+                                                    e.profiles?.email?.toLowerCase().includes(query) ||
+                                                    e.profiles?.college?.toLowerCase().includes(query) ||
+                                                    e.internships?.title?.toLowerCase().includes(query)
+                                                );
+                                            }).length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={8} className="px-6 py-12 text-center text-xs text-slate-400 font-medium">
+                                                        No students found matching your search.
+                                                    </td>
+                                                </tr>
+                                            ) : (
+                                                enrollments.filter(e => {
+                                                    const query = studentsSearch.toLowerCase();
+                                                    return (
+                                                        e.profiles?.full_name?.toLowerCase().includes(query) ||
+                                                        e.profiles?.email?.toLowerCase().includes(query) ||
+                                                        e.profiles?.college?.toLowerCase().includes(query) ||
+                                                        e.internships?.title?.toLowerCase().includes(query)
+                                                    );
+                                                }).map((enroll) => {
+                                                    const initials = enroll.profiles?.full_name?.charAt(0).toUpperCase() || 'S';
+                                                    const internId = offerLetters.find(o => o.student_email === enroll.profiles?.email)?.offer_letter_id || `SKX-2026-${Math.floor(1000 + Math.random() * 9500)}`;
+                                                    const joinedDate = enroll.joined_at ? new Date(enroll.joined_at).toLocaleDateString('en-GB') : '23/8/2026';
+
+                                                    return (
+                                                        <tr key={enroll.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50 transition">
+                                                            <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-100">
+                                                                <div className="flex items-center space-x-3 text-left">
+                                                                    <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm">
+                                                                        {initials}
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="font-bold text-slate-805 dark:text-slate-100 block leading-tight">{enroll.profiles?.full_name}</span>
+                                                                        <span className="text-[11px] text-slate-400 font-medium font-mono leading-none block mt-0.5">{enroll.profiles?.email}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>
+                                                                    Offline
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                                                                    {enroll.internships?.title || enroll.internships?.category || 'Full Stack Development'}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-xs font-medium text-slate-500 max-w-[200px] truncate">
+                                                                {enroll.profiles?.college || 'N/A'}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-xs font-mono font-semibold text-slate-700 dark:text-slate-300">
+                                                                {internId}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-xs text-slate-400">
+                                                                —
+                                                            </td>
+                                                            <td className="px-6 py-4 text-xs font-medium text-slate-500">
+                                                                {joinedDate}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                <div className="flex items-center justify-end space-x-2">
+                                                                    <button
+                                                                        onClick={() => {
+                                                                            setSelectedStudentForDetail(enroll);
+                                                                            setActiveTab('student-detail');
+                                                                        }}
+                                                                        title="View Student Details"
+                                                                        className="p-1.5 border hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-750 text-xs rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
+                                                                    >
+                                                                        <Users className="w-3.5 h-3.5" />
+                                                                    </button>
+                                                                    <a
+                                                                        href={`mailto:${enroll.profiles?.email}`}
+                                                                        title="Send Email"
+                                                                        className="p-1.5 border hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-750 text-xs rounded-lg text-slate-600 dark:text-slate-300 transition cursor-pointer"
+                                                                    >
+                                                                        <Mail className="w-3.5 h-3.5" />
+                                                                    </a>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {activeTab === 'student-detail' && selectedStudentForDetail && (
+                        <div className="space-y-6 text-left">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-5">
+                                <div className="space-y-1">
+                                    <div className="flex items-center space-x-2 text-xs text-slate-400 font-semibold uppercase tracking-wider">
+                                        <span className="hover:text-slate-650 cursor-pointer hover:underline" onClick={() => setActiveTab('students')}>Students</span>
+                                        <span>/</span>
+                                        <span className="text-slate-600 dark:text-slate-350">Student Details</span>
+                                    </div>
+                                    <h2 className="text-2xl font-black text-slate-800 dark:text-white">Student Details</h2>
+                                </div>
+                                <div className="flex flex-wrap gap-2">
+                                    <button
+                                        onClick={() => setActiveTab('students')}
+                                        className="px-4 py-2 border border-slate-200 dark:border-slate-750 text-slate-700 dark:text-slate-205 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-850 cursor-pointer shadow-sm transition"
+                                    >
+                                        ← Back to Students
+                                    </button>
+                                    <a
+                                        href={`mailto:${selectedStudentForDetail.profiles?.email}`}
+                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition shadow-md flex items-center space-x-1.5 cursor-pointer"
+                                    >
+                                        <Mail className="w-3.5 h-3.5" />
+                                        <span>Send Email</span>
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                <div className="lg:col-span-1 space-y-6">
+                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center">
+                                        <div className="w-24 h-24 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-650 flex items-center justify-center font-bold text-3xl shadow-inner border border-blue-100 dark:border-blue-900/50">
+                                            {selectedStudentForDetail.profiles?.full_name?.charAt(0).toUpperCase() || 'S'}
+                                        </div>
+                                        <h3 className="text-lg font-black text-slate-800 dark:text-white mt-4 leading-none">
+                                            {selectedStudentForDetail.profiles?.full_name}
+                                        </h3>
+                                        <span className="text-xs text-slate-400 font-mono mt-1.5 select-all">
+                                            {selectedStudentForDetail.profiles?.email}
+                                        </span>
+
+                                        <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                                                {selectedStudentForDetail.status || 'Active'}
+                                            </span>
+                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-350">
+                                                Offline
+                                            </span>
+                                        </div>
+
+                                        <div className="w-full mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 space-y-3 text-left">
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Joined Platform</span>
+                                                <span className="font-bold text-slate-700 dark:text-slate-205">
+                                                    {selectedStudentForDetail.joined_at ? new Date(selectedStudentForDetail.joined_at).toLocaleDateString('en-GB') : '23/8/2026'}
+                                                </span>
+                                            </div>
+                                            <div className="flex justify-between items-center text-xs">
+                                                <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Current Progress</span>
+                                                <span className="font-bold text-blue-605 dark:text-blue-400">{selectedStudentForDetail.progress || 0}%</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-450 mb-4">Overall Progress</h4>
+                                        <div className="relative pt-1">
+                                            <div className="flex mb-2 items-center justify-between">
+                                                <div>
+                                                    <span className="text-xs font-bold inline-block py-1 px-2.5 uppercase rounded-full text-blue-700 bg-blue-105/30">
+                                                        Track Completion
+                                                    </span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-xs font-black inline-block text-blue-600">
+                                                        {selectedStudentForDetail.progress || 0}%
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="overflow-hidden h-2 text-xs flex rounded-full bg-slate-100 dark:bg-slate-800">
+                                                <div
+                                                    style={{ width: `${selectedStudentForDetail.progress || 0}%` }}
+                                                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600 transition-all duration-500"
+                                                ></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="lg:col-span-2 space-y-6">
+                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Academic & Personal Profile</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl">
+                                                <span className="font-bold text-slate-450 uppercase tracking-widest text-[9px] block">Full Name</span>
+                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">{selectedStudentForDetail.profiles?.full_name || 'N/A'}</p>
+                                            </div>
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-830 rounded-xl">
+                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Email Address</span>
+                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-205 mt-0.5 font-mono">{selectedStudentForDetail.profiles?.email || 'N/A'}</p>
+                                            </div>
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl md:col-span-2">
+                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">College / University Name</span>
+                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">{selectedStudentForDetail.profiles?.college || 'N/A'}</p>
+                                            </div>
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl">
+                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Year of Study & Course/Branch</span>
+                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">
+                                                    {(selectedStudentForDetail.profiles?.year_of_study && `${selectedStudentForDetail.profiles?.year_of_study} - ${selectedStudentForDetail.profiles?.course_branch || ''}`) || 'N/A'}
+                                                </p>
+                                            </div>
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl">
+                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Location</span>
+                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">
+                                                    {(selectedStudentForDetail.profiles?.state && `${selectedStudentForDetail.profiles?.city || ''}, ${selectedStudentForDetail.profiles?.state}`) || 'N/A'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Credentials & Assigned Track</h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl">
+                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Enrolled Internship Track</span>
+                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">
+                                                    {selectedStudentForDetail.internships?.title || 'Full Stack Development'}
+                                                </p>
+                                            </div>
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl">
+                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Duration & Stipend</span>
+                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">
+                                                    {selectedStudentForDetail.internships?.duration || '1 Month'} • Free / Unpaid
+                                                </p>
+                                            </div>
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl">
+                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Intern ID</span>
+                                                <p className="text-xs font-mono font-bold text-blue-600 dark:text-blue-450 mt-0.5">
+                                                    {offerLetters.find(o => o.student_email === selectedStudentForDetail.profiles?.email)?.offer_letter_id || 'SKX-2026-3880'}
+                                                </p>
+                                            </div>
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl">
+                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Certificate Issued</span>
+                                                <p className="text-xs font-bold text-slate-805 dark:text-slate-100 mt-0.5 font-mono">
+                                                    {certificates.find(c => c.user_id === selectedStudentForDetail.user_id)?.certificate_number || 'No issued certificate yet'}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm text-left">
+                                <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Milestone Quest Log / Submissions</h4>
+                                <div className="space-y-6">
+                                    {[1, 2, 3, 4, 5, 6].map((num) => {
+                                        const sub = allSubmissions.find(s =>
+                                            s.user_id === selectedStudentForDetail.user_id &&
+                                            s.internship_id === selectedStudentForDetail.internship_id &&
+                                            s.internship_tasks?.task_number === num
+                                        );
+
+                                        const taskTitle = num === 1 ? 'LinkedIn Offer Post Requirement' : `Milestone ${num - 1} Engineering Requirement`;
+                                        const taskDesc = num === 1 ? 'Share your internship selection announcement on LinkedIn to unlock tasks.' : 'Complete technical assignment objectives.';
+
+                                        let statusColor = 'bg-slate-100 text-slate-500 border border-slate-205 dark:border-slate-800';
+                                        let statusText = 'Locked';
+
+                                        if (sub) {
+                                            if (sub.status === 'approved') {
+                                                statusColor = 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-950/30 dark:text-green-300 dark:border-green-800/40';
+                                                statusText = 'Approved';
+                                            } else if (sub.status === 'submitted') {
+                                                statusColor = 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800/40';
+                                                statusText = 'Under Review';
+                                            } else if (sub.status === 'resubmission_required') {
+                                                statusColor = 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800/40';
+                                                statusText = 'Changes Requested';
+                                            } else {
+                                                statusColor = 'bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/30 dark:text-indigo-300 dark:border-indigo-805/40';
+                                                statusText = 'Active / In Progress';
+                                            }
+                                        } else if (num === 1) {
+                                            statusColor = 'bg-indigo-50 text-indigo-700 border border-indigo-200 dark:bg-indigo-950/30 dark:text-indigo-300 dark:border-indigo-805/40';
+                                            statusText = 'Active / In Progress';
+                                        }
+
+                                        return (
+                                            <div key={num} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-855 rounded-2xl gap-4 hover:border-slate-200 dark:hover:border-slate-800 transition">
+                                                <div className="space-y-1 max-w-xl">
+                                                    <div className="flex items-center space-x-2.5">
+                                                        <span className="w-6 h-6 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
+                                                            {num}
+                                                        </span>
+                                                        <h5 className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">{taskTitle}</h5>
+                                                        <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold ${statusColor}`}>
+                                                            {statusText}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-xs text-slate-500 ml-8 leading-relaxed">{sub?.internship_tasks?.description || taskDesc}</p>
+
+                                                    {sub && (
+                                                        <div className="ml-8 mt-2 space-y-1.5 text-xs text-left">
+                                                            {sub.github_url && (
+                                                                <p className="flex items-center space-x-1.5 text-slate-500 font-mono">
+                                                                    <span className="font-black text-slate-400">GitHub:</span>
+                                                                    <a href={sub.github_url} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-450 hover:underline inline-flex items-center">
+                                                                        {sub.github_url} <ExternalLink className="w-3 h-3 ml-0.5" />
+                                                                    </a>
+                                                                </p>
+                                                            )}
+                                                            {sub.linkedin_url && (
+                                                                <p className="flex items-center space-x-1.5 text-slate-505 font-mono">
+                                                                    <span className="font-black text-slate-405">LinkedIn:</span>
+                                                                    <a href={sub.linkedin_url} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-450 hover:underline inline-flex items-center">
+                                                                        {sub.linkedin_url} <ExternalLink className="w-3 h-3 ml-0.5" />
+                                                                    </a>
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className="flex items-center md:justify-end gap-2 ml-8 md:ml-0">
+                                                    {sub && sub.status === 'submitted' && (
+                                                        <button
+                                                            onClick={() => {
+                                                                setSelectedSubForReview(sub);
+                                                                setAdminFeedback(sub.admin_feedback || '');
+                                                            }}
+                                                            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow cursor-pointer transition"
+                                                        >
+                                                            Evaluate Milestone
+                                                        </button>
+                                                    )}
+                                                    {sub?.admin_feedback && (
+                                                        <div className="text-right text-xs max-w-[200px] truncate text-slate-500 font-medium">
+                                                            Feedback: <span className="italic block text-[10px] text-slate-500 mt-0.5">"{sub.admin_feedback}"</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         </div>
                     )}
 
