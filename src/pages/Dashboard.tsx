@@ -1833,24 +1833,24 @@ const Dashboard: React.FC = () => {
                         <div className="relative flex justify-between items-center z-20 px-10 pt-6 w-full font-sans">
                             {/* Left side: Corporate Logo */}
                             <div className="flex items-center">
-                                <div className="w-[60px] h-[60px] bg-[#0b2545] rounded-md flex items-center justify-center p-1.5 flex-shrink-0 shadow-xs border border-slate-205/20">
+                                <div className="w-[68px] h-[68px] bg-[#0b2545] rounded-md flex items-center justify-center p-1.5 flex-shrink-0 shadow-xs border border-slate-205/20">
                                     <img src={`${import.meta.env.BASE_URL}vinix-logo.jpeg`} alt="Vinix Logo" className="w-[90%] h-[90%] object-contain rounded-md" />
                                 </div>
                             </div>
 
                             {/* Center: Brand details */}
                             <div className="text-center flex flex-col items-center">
-                                <span className="text-[22px] font-bold text-[#0b1a30] tracking-[0.25em] block leading-none uppercase">
+                                <span className="text-[28px] font-bold text-[#0b1a30] tracking-[0.25em] block leading-none uppercase">
                                     VINIX
                                 </span>
-                                <span className="text-[10px] font-normal text-slate-405 tracking-[0.1em] block mt-2">
+                                <span className="text-[13px] font-normal text-slate-405 tracking-[0.1em] block mt-2">
                                     Empowering Future Innovators
                                 </span>
                             </div>
 
                             {/* Right side: MSME Logo */}
                             <div className="flex items-center">
-                                <div className="bg-white p-1 rounded flex items-center justify-center h-12 w-28">
+                                <div className="bg-white p-1 rounded flex items-center justify-center h-14 w-32">
                                     <img src={`${import.meta.env.BASE_URL}msme-logo.png`} alt="MSME Certified" className="h-full object-contain" />
                                 </div>
                             </div>
@@ -1858,10 +1858,10 @@ const Dashboard: React.FC = () => {
 
                         {/* Certificate main title block */}
                         <div className="relative text-center z-20 mt-8 flex flex-col items-center font-sans">
-                            <h2 className="text-[48px] font-black text-[#0b1a30] tracking-[0.22em] leading-none uppercase">
+                            <h2 className="text-[56px] font-black text-[#0b1a30] tracking-[0.22em] leading-none uppercase">
                                 CERTIFICATE
                             </h2>
-                            <h4 className="text-[13px] font-semibold text-slate-400 tracking-[0.38em] leading-none mt-3.5 uppercase">
+                            <h4 className="text-[16px] font-semibold text-slate-400 tracking-[0.38em] leading-none mt-3.5 uppercase">
                                 OF INTERNSHIP COMPLETION
                             </h4>
                         </div>
@@ -1869,15 +1869,15 @@ const Dashboard: React.FC = () => {
                         {/* Recipient presentation line */}
                         <div className="relative text-center z-20 flex flex-col items-center mt-10 font-sans">
                             <p className="text-[12px] text-slate-405 tracking-wide">This certificate is proudly presented to</p>
-                            <h3 className="text-[36px] font-bold text-[#0b1a30] tracking-wide mt-3 leading-none capitalize">
+                            <h3 className="text-[48px] font-bold text-[#0b1a30] tracking-wide mt-3.5 leading-none capitalize">
                                 {profile?.full_name || 'Vinix Graduate'}
                             </h3>
-                            <div className="w-[260px] h-[1.5px] bg-slate-200 mt-2.5"></div>
+                            <div className="w-[280px] h-[1.5px] bg-slate-200 mt-2.5"></div>
                         </div>
 
                         {/* Body description */}
                         <div className="relative text-center z-20 px-12 mt-10 font-sans">
-                            <p className="text-[12.5px] text-slate-500 max-w-[700px] mx-auto leading-relaxed font-medium">
+                            <p className="text-[15.5px] text-slate-500 max-w-[760px] mx-auto leading-relaxed font-medium">
                                 for successfully completing the task-based virtual internship program in{' '}
                                 <strong className="text-[#0b1a30] font-bold select-all">{activeCertForDownload.course_name}</strong> at{' '}
                                 <strong className="text-[#0b1a30] font-bold">Vinix Technologies</strong>, demonstrating
@@ -1889,22 +1889,22 @@ const Dashboard: React.FC = () => {
                         <div className="relative flex justify-between items-end z-20 px-24 mt-10 w-full font-sans">
                             {/* Left: Circular Seal Stamp - BIGGER */}
                             <div className="flex flex-col items-center text-center pb-1">
-                                <div className="w-[96px] h-[96px] flex items-center justify-center mb-1">
+                                <div className="w-[120px] h-[120px] flex items-center justify-center mb-1">
                                     <img
                                         src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
                                         alt="Official Seal"
-                                        className="w-22 h-22 object-contain opacity-95 mix-blend-multiply filter contrast-125 saturate-150 rotate-3"
+                                        className="w-28 h-28 object-contain opacity-95 mix-blend-multiply filter contrast-125 saturate-150 rotate-3"
                                     />
                                 </div>
                                 <p className="text-[8.5px] font-semibold text-slate-400 tracking-[0.1em] uppercase leading-none whitespace-nowrap mt-1">Official Seal</p>
                             </div>
 
                             {/* Right Signature - BIGGER */}
-                            <div className="text-center flex flex-col items-center min-w-[160px] pb-1">
-                                <span className="font-['Great_Vibes'] text-3.5xl text-slate-800 select-none transform -rotate-1 font-medium inline-block mb-1.5 whitespace-nowrap">
+                            <div className="text-center flex flex-col items-center min-w-[180px] pb-1">
+                                <span className="font-['Great_Vibes'] text-4.5xl text-slate-800 select-none transform -rotate-1 font-medium inline-block mb-1.5 whitespace-nowrap">
                                     Vishal R.
                                 </span>
-                                <div className="w-40 h-[1.5px] bg-slate-200"></div>
+                                <div className="w-48 h-[1.5px] bg-slate-200"></div>
                                 <h5 className="text-[12px] font-bold text-[#0b1a30] mt-2.5 leading-none whitespace-nowrap">Vishal R</h5>
                                 <p className="text-[10px] font-medium text-slate-405 mt-1 leading-none whitespace-nowrap">Founder & CEO</p>
                             </div>
@@ -1913,11 +1913,11 @@ const Dashboard: React.FC = () => {
                         {/* Bottom references footer bar */}
                         <div className="relative w-full z-20 mt-8 font-sans">
                             <div className="w-full h-[1px] bg-slate-100 mb-3.5"></div>
-                            <div className="flex justify-between items-center px-10 pb-1 text-[9px] text-slate-450 tracking-wide">
+                            <div className="flex justify-between items-center px-10 pb-1 text-[11px] text-slate-450 tracking-wide">
                                 <div>Certificate ID: {activeCertForDownload.certificate_number}</div>
                                 <div className="text-center flex flex-col items-center">
                                     <div>Intern ID: VINIX-{activeCertForDownload.certificate_number.split('-').pop()}</div>
-                                    <div className="mt-0.5 text-[8px]">Verify at: visha19932-maker.github.io/verify/{activeCertForDownload.certificate_number}</div>
+                                    <div className="mt-0.5 text-[10px]">Verify at: visha19932-maker.github.io/verify/{activeCertForDownload.certificate_number}</div>
                                 </div>
                                 <div className="text-right">Issued: {new Date(activeCertForDownload.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
                             </div>
