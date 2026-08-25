@@ -347,7 +347,7 @@ export const Home: React.FC = () => {
 
                             <div className="relative w-[340px] h-[230px] sm:w-[480px] sm:h-[320px] lg:w-[500px] lg:h-[340px] flex justify-center items-center">
                                 <img
-                                    src={`${import.meta.env.BASE_URL}home-image.jpeg`}
+                                    src={`${import.meta.env.BASE_URL}home-image.jpeg?v=2`}
                                     alt="Vinix Internships"
                                     className="w-full h-full object-cover rounded-3xl border border-slate-100/50 select-none transform hover:scale-[1.01] transition-transform duration-500"
                                 />
