@@ -13,8 +13,8 @@ const client = createClient(supabaseUrl, serviceRoleKey, {
 async function seedVishal() {
     console.log('🌱 Starting database seeding for student Vishal R (SKX-2026-1757)...');
 
-    const email = 'vishal@vinix.com';
-    const password = 'Password123!';
+    const email = 'student@vinix.com';
+    const password = 'student123';
     const fullName = 'Vishal R';
     const offerLetterId = 'SKX-2026-1757';
     const certNumber = 'VINIX-CERT-2026-1757';
@@ -250,7 +250,7 @@ async function seedVishal() {
 
     // 8. Generate Offer Letter
     console.log('\nCreating verified Offer Letter...');
-    await client.from('offer_letters').delete().eq('student_id', userId);
+    await client.from('offer_letters').delete().or(`student_id.eq.${userId},offer_letter_id.eq.${offerLetterId}`);
 
     const { error: olErr } = await client
         .from('offer_letters')
@@ -275,7 +275,7 @@ async function seedVishal() {
 
     // 9. Generate Certificate
     console.log('\nGenerating verified Completion Certificate...');
-    await client.from('certificates').delete().eq('student_id', userId);
+    await client.from('certificates').delete().or(`student_id.eq.${userId},certificate_number.eq.${certNumber}`);
 
     const { error: cErr } = await client
         .from('certificates')
@@ -297,8 +297,7 @@ async function seedVishal() {
         console.error('Failed on Certificate:', cErr);
         return;
     }
-    console.log('✅ Certificate seeded (Number: ' + certNumber + ').');
-    console.log('\n🎉 DATABASE SEEDING COMPLETED SUCCESSFULLY! Login with vishal@vinix.com / Password123! to view.');
+    console.log('\n🎉 DATABASE SEEDING COMPLETED SUCCESSFULLY! Login with student@vinix.com / student123 to view.');
 }
 
 seedVishal();
