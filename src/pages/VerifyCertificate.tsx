@@ -21,6 +21,24 @@ const VerifyCertificate: React.FC = () => {
     const [result, setResult] = useState<VerificationResult | null>(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [containerWidth, setContainerWidth] = useState(1122);
+
+    useEffect(() => {
+        if (!result) return;
+        const handleResize = () => {
+            const wrapper = document.getElementById('cert-scale-wrapper');
+            if (wrapper) {
+                setContainerWidth(wrapper.clientWidth);
+            }
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        const timer = setTimeout(handleResize, 100);
+        return () => {
+            window.removeEventListener('resize', handleResize);
+            clearTimeout(timer);
+        };
+    }, [result]);
 
     const fetchVerify = async (idToVerify: string) => {
         if (!idToVerify.trim()) return;
@@ -231,100 +249,119 @@ const VerifyCertificate: React.FC = () => {
                 {result && (
                     <div className="space-y-6">
 
-                        {/* Visual template mimic (printable style) */}
+                        {/* Scale Wrapper Container */}
                         <div
-                            id="certificate-print-area"
-                            className="w-full aspect-[1.414/1] bg-white relative flex flex-col justify-between overflow-hidden shadow-2xl border-[12px] border-[#0b1a30] p-8 select-text"
+                            id="cert-scale-wrapper"
+                            className="w-full overflow-hidden rounded-2xl shadow-2xl relative bg-slate-900/5"
+                            style={{ height: `${(containerWidth / 1122) * 793}px` }}
                         >
-                            {/* Inner thin border */}
-                            <div className="absolute inset-[8px] border border-[#0b1a30] pointer-events-none z-10"></div>
+                            <div
+                                style={{
+                                    width: '1122px',
+                                    height: '793px',
+                                    transform: `scale(${containerWidth / 1122})`,
+                                    transformOrigin: 'top left',
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0
+                                }}
+                            >
+                                <div
+                                    id="certificate-print-area"
+                                    className="w-[1122px] h-[793px] bg-white relative flex flex-col justify-between overflow-hidden border-[12px] border-[#0b1a30] p-8 select-text"
+                                    style={{ boxSizing: 'border-box' }}
+                                >
+                                    {/* Inner thin border */}
+                                    <div className="absolute inset-[8px] border border-[#0b1a30] pointer-events-none z-10"></div>
 
-                            {/* Authority header */}
-                            <div className="relative flex justify-between items-center z-20 px-10 pt-6 w-full">
-                                {/* Left side: Corporate Logo */}
-                                <div className="flex items-center">
-                                    <div className="w-14 h-14 bg-[#0b2545] rounded-xl flex items-center justify-center p-1.5 flex-shrink-0 shadow-xs border border-slate-200/20">
-                                        <img src={`${import.meta.env.BASE_URL}vinix-logo.jpeg`} alt="Vinix Logo" className="w-[90%] h-[90%] object-contain rounded-md" />
+                                    {/* Authority header */}
+                                    <div className="relative flex justify-between items-center z-20 px-10 pt-6 w-full">
+                                        {/* Left side: Corporate Logo */}
+                                        <div className="flex items-center">
+                                            <div className="w-14 h-14 bg-[#0b2545] rounded-xl flex items-center justify-center p-1.5 flex-shrink-0 shadow-xs border border-slate-200/20">
+                                                <img src={`${import.meta.env.BASE_URL}vinix-logo.jpeg`} alt="Vinix Logo" className="w-[90%] h-[90%] object-contain rounded-md" />
+                                            </div>
+                                        </div>
+
+                                        {/* Center: Brand details */}
+                                        <div className="text-center flex flex-col items-center">
+                                            <span className="text-[20px] font-black text-[#0b1a30] tracking-[0.25em] block leading-none font-sans uppercase">
+                                                VINIX
+                                            </span>
+                                            <span className="text-[9px] font-bold text-slate-450 tracking-[0.1em] block mt-1.5 uppercase">
+                                                Empowering Future Innovators
+                                            </span>
+                                        </div>
+
+                                        {/* Right side: MSME Logo */}
+                                        <div className="flex items-center">
+                                            <img src={`${import.meta.env.BASE_URL}msme-logo.png`} alt="MSME Certified" className="h-10 object-contain mix-blend-multiply filter contrast-125 opacity-95" />
+                                        </div>
+                                    </div>
+
+                                    {/* Certificate main title block */}
+                                    <div className="relative text-center z-20 mt-4 flex flex-col items-center">
+                                        <h2 className="text-[34px] font-black text-[#0b1a30] tracking-[0.22em] leading-none uppercase">
+                                            CERTIFICATE
+                                        </h2>
+                                        <h4 className="text-[10px] font-bold text-slate-450 tracking-[0.3em] leading-none mt-2.5 uppercase">
+                                            OF INTERNSHIP COMPLETION
+                                        </h4>
+                                    </div>
+
+                                    {/* Recipient presentation line */}
+                                    <div className="relative text-center z-20 flex flex-col items-center mt-3">
+                                        <p className="text-[10px] text-slate-450 tracking-wide">This certificate is proudly presented to</p>
+                                        <h3 className="text-3xl font-extrabold text-[#0b1a30] tracking-wide mt-2.5 border-b border-slate-200 pb-1.5 px-14 min-w-[340px] inline-block capitalize font-sans leading-snug">
+                                            {result.studentName}
+                                        </h3>
+                                    </div>
+
+                                    {/* Body description */}
+                                    <div className="relative text-center z-20 px-12 mt-3 text-center">
+                                        <p className="text-[10.5px] text-slate-500 max-w-[640px] mx-auto leading-relaxed">
+                                            for successfully completing the task-based virtual internship program in{' '}
+                                            <strong className="text-[#0b1a30] font-extrabold select-all">{result.courseName}</strong> at{' '}
+                                            <strong className="text-[#0b1a30] font-extrabold">Vinix Technologies</strong>, demonstrating
+                                            dedication, technical skill, and professional excellence throughout the program.
+                                        </p>
+                                    </div>
+
+                                    {/* Signatures & Seal Area */}
+                                    <div className="relative flex justify-between items-end z-20 px-24 mt-3">
+                                        {/* Left: Circular Seal Stamp */}
+                                        <div className="relative w-20 h-20 flex flex-col items-center justify-center text-center pb-1">
+                                            <div className="w-16 h-16 flex items-center justify-center mb-1">
+                                                <img
+                                                    src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
+                                                    alt="Official Seal"
+                                                    className="w-full h-full object-contain opacity-95 mix-blend-multiply filter contrast-125 saturate-150 rotate-3"
+                                                />
+                                            </div>
+                                            <p className="text-[7px] text-slate-400 font-bold uppercase tracking-wider whitespace-nowrap">Official Seal</p>
+                                        </div>
+
+                                        {/* Right Signature */}
+                                        <div className="text-center flex flex-col items-center min-w-[180px] pb-1">
+                                            <span className="font-['Great_Vibes'] text-3xl text-slate-800 select-none transform -rotate-1 font-medium inline-block mb-1 whitespace-nowrap">
+                                                Vishal R.
+                                            </span>
+                                            <div className="w-36 h-[1px] bg-slate-200"></div>
+                                            <h5 className="text-[9.5px] font-bold text-[#0b1a30] mt-1.5 leading-none whitespace-nowrap">Vishal R</h5>
+                                            <p className="text-[8px] font-medium text-slate-400 mt-0.5 leading-none whitespace-nowrap">Founder & CEO</p>
+                                        </div>
+                                    </div>
+
+                                    {/* Bottom references footer bar */}
+                                    <div className="relative flex justify-between items-center z-20 px-10 pt-4 pb-2 border-t border-slate-100 mt-3 text-[7.5px] text-slate-450 font-mono">
+                                        <div>Certificate ID: {result.certificateNumber}</div>
+                                        <div className="text-center">
+                                            <div>Intern ID: VINIX-{result.certificateNumber.split('-').pop()}</div>
+                                            <div className="mt-0.5">Verify at: {window.location.host}/verify/{result.certificateNumber}</div>
+                                        </div>
+                                        <div className="text-right">Issued: {new Date(result.issueDate).toLocaleDateString()}</div>
                                     </div>
                                 </div>
-
-                                {/* Center: Brand details */}
-                                <div className="text-center flex flex-col items-center">
-                                    <span className="text-[20px] font-black text-[#0b1a30] tracking-[0.25em] block leading-none font-sans uppercase">
-                                        VINIX
-                                    </span>
-                                    <span className="text-[9px] font-bold text-slate-450 tracking-[0.1em] block mt-1.5 uppercase">
-                                        Empowering Future Innovators
-                                    </span>
-                                </div>
-
-                                {/* Right side: MSME Logo */}
-                                <div className="flex items-center">
-                                    <img src={`${import.meta.env.BASE_URL}msme-logo.png`} alt="MSME Certified" className="h-10 object-contain mix-blend-multiply filter contrast-125 opacity-95" />
-                                </div>
-                            </div>
-
-                            {/* Certificate main title block */}
-                            <div className="relative text-center z-20 mt-4 flex flex-col items-center">
-                                <h2 className="text-[34px] font-black text-[#0b1a30] tracking-[0.22em] leading-none uppercase">
-                                    CERTIFICATE
-                                </h2>
-                                <h4 className="text-[10px] font-bold text-slate-450 tracking-[0.3em] leading-none mt-2.5 uppercase">
-                                    OF INTERNSHIP COMPLETION
-                                </h4>
-                            </div>
-
-                            {/* Recipient presentation line */}
-                            <div className="relative text-center z-20 flex flex-col items-center mt-3">
-                                <p className="text-[10px] text-slate-450 tracking-wide">This certificate is proudly presented to</p>
-                                <h3 className="text-3xl font-extrabold text-[#0b1a30] tracking-wide mt-2.5 border-b border-slate-200 pb-1.5 px-14 min-w-[340px] inline-block capitalize font-sans leading-snug">
-                                    {result.studentName}
-                                </h3>
-                            </div>
-
-                            {/* Body description */}
-                            <div className="relative text-center z-20 px-12 mt-3">
-                                <p className="text-[10.5px] text-slate-500 max-w-[640px] mx-auto leading-relaxed">
-                                    for successfully completing the task-based virtual internship program in{' '}
-                                    <strong className="text-[#0b1a30] font-extrabold select-all">{result.courseName}</strong> at{' '}
-                                    <strong className="text-[#0b1a30] font-extrabold">Vinix Technologies</strong>, demonstrating
-                                    dedication, technical skill, and professional excellence throughout the program.
-                                </p>
-                            </div>
-
-                            {/* Signatures & Seal Area */}
-                            <div className="relative flex justify-between items-end z-20 px-24 mt-3">
-                                {/* Left: Circular Seal Stamp */}
-                                <div className="relative w-20 h-20 flex flex-col items-center justify-center text-center pb-1">
-                                    <div className="w-16 h-16 flex items-center justify-center mb-1">
-                                        <img
-                                            src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
-                                            alt="Official Seal"
-                                            className="w-full h-full object-contain opacity-95 mix-blend-multiply filter contrast-125 saturate-150 rotate-3"
-                                        />
-                                    </div>
-                                    <p className="text-[7px] text-slate-400 font-bold uppercase tracking-wider">Official Seal</p>
-                                </div>
-
-                                {/* Right Signature */}
-                                <div className="text-center flex flex-col items-center min-w-[180px] pb-1">
-                                    <span className="font-['Great_Vibes'] text-3xl text-slate-800 select-none transform -rotate-1 font-medium inline-block mb-1">
-                                        Vishal R.
-                                    </span>
-                                    <div className="w-36 h-[1px] bg-slate-200"></div>
-                                    <h5 className="text-[9.5px] font-bold text-[#0b1a30] mt-1.5 leading-none">Vishal R</h5>
-                                    <p className="text-[8px] font-medium text-slate-400 mt-0.5 leading-none">Founder & CEO</p>
-                                </div>
-                            </div>
-
-                            {/* Bottom references footer bar */}
-                            <div className="relative flex justify-between items-center z-20 px-10 pt-4 pb-2 border-t border-slate-100 mt-3 text-[7.5px] text-slate-450 font-mono">
-                                <div>Certificate ID: {result.certificateNumber}</div>
-                                <div className="text-center">
-                                    <div>Intern ID: VINIX-{result.certificateNumber.split('-').pop()}</div>
-                                    <div className="mt-0.5">Verify at: {window.location.host}/verify/{result.certificateNumber}</div>
-                                </div>
-                                <div className="text-right">Issued: {new Date(result.issueDate).toLocaleDateString()}</div>
                             </div>
                         </div>
                         {/* Printing Options */}
