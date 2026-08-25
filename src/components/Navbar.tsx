@@ -136,7 +136,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                         <div className="relative">
                             <button
                                 onClick={handleShare}
-                                className="flex items-center space-x-1.5 px-4.5 py-2.5 rounded-full border border-purple-200 dark:border-purple-800/80 bg-purple-50/50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 text-xs font-bold hover:bg-purple-105 dark:hover:bg-purple-900/30 transition-all duration-205 cursor-pointer"
+                                className="flex items-center space-x-1.5 px-4.5 py-2 rounded-full border border-purple-200 dark:border-purple-800/80 bg-purple-50/50 dark:bg-purple-950/20 text-purple-700 dark:text-purple-300 text-xs font-bold hover:bg-purple-105 dark:hover:bg-purple-900/30 transition-all duration-205 cursor-pointer"
                             >
                                 <Share2 className="w-3.5 h-3.5" />
                                 <span>Share</span>
@@ -154,7 +154,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                 {/* Dashboard Button */}
                                 <Link
                                     to={profile?.role === 'admin' ? '/admin' : profile?.role === 'mentor' ? '/mentor' : '/dashboard'}
-                                    className="px-4.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl flex items-center space-x-1.5 shadow-md shadow-blue-500/10 transition-all duration-200 select-none cursor-pointer"
+                                    className="px-4.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-full flex items-center space-x-1.5 shadow-md shadow-blue-500/10 transition-all duration-200 select-none cursor-pointer"
                                 >
                                     <LayoutDashboard className="w-4 h-4" />
                                     <span>Dashboard</span>
@@ -163,7 +163,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                 {/* Logout Button */}
                                 <button
                                     onClick={handleSignOut}
-                                    className="px-4 py-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-red-500 hover:text-red-650 text-xs font-bold rounded-xl flex items-center space-x-1.5 transition-all duration-200 select-none cursor-pointer"
+                                    className="px-4 py-2 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900/60 text-red-500 hover:text-red-650 text-xs font-bold rounded-full flex items-center space-x-1.5 transition-all duration-200 select-none cursor-pointer"
                                 >
                                     <LogOut className="w-4 h-4" />
                                     <span>Logout</span>
@@ -193,7 +193,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                 </Link>
                                 <Link
                                     to="/register"
-                                    className="flex items-center justify-center px-6 py-2.5 rounded-full text-[13px] font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-650 hover:opacity-95 shadow-md transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                                    className="flex items-center justify-center px-6 py-2 rounded-full text-[13px] font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-650 hover:opacity-95 shadow-md transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                                 >
                                     Register
                                 </Link>
