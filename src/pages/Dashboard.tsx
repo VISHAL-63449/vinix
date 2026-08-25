@@ -97,6 +97,7 @@ const Dashboard: React.FC = () => {
     // Submit LinkedIn Verification Form
     const [linkedinUrl, setLinkedinUrl] = useState('');
     const [submittingLinkedin, setSubmittingLinkedin] = useState(false);
+    const [downloadingOffer, setDownloadingOffer] = useState(false);
 
     async function loadDashboardData() {
         if (!user) return;
@@ -370,6 +371,60 @@ const Dashboard: React.FC = () => {
         setTimeout(() => {
             document.title = originalTitle;
         }, 100);
+    };
+
+    const handleDownloadOfferLetterDirect = async () => {
+        if (!activeOffer) return;
+        setDownloadingOffer(true);
+        try {
+            const { jsPDF } = await import('jspdf');
+            const html2canvas = (await import('html2canvas')).default;
+            const element = document.getElementById('offer-letter-download-area');
+            if (element) {
+                // Set fixed temporary styling for pixel-perfect standard A4 DPI capture
+                element.style.width = '794px';
+                element.style.height = '1123px';
+
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    scrollY: 0,
+                    scrollX: 0
+                });
+
+                const pdf = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                const pageWidth = 210;
+                const pageHeight = 297;
+
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                const finalHeight = Math.min(imgHeight, pageHeight);
+
+                pdf.addImage(
+                    canvas.toDataURL('image/jpeg', 0.95),
+                    'JPEG',
+                    0,
+                    0,
+                    imgWidth,
+                    finalHeight
+                );
+
+                pdf.save(`${activeOffer.offer_letter_id || 'Offer_Letter'}.pdf`);
+            }
+        } catch (err: any) {
+            alert(`Direct download failed: ${err.message}. Navigating to verification page for download.`);
+            navigate('/verify/offer/' + activeOffer.offer_letter_id);
+        } finally {
+            setDownloadingOffer(false);
+        }
     };
 
     if (loading) {
@@ -739,11 +794,12 @@ const Dashboard: React.FC = () => {
                                 <div className="flex flex-wrap items-center gap-3 mt-6">
                                     {activeOffer && (
                                         <button
-                                            onClick={() => navigate('/verify/offer/' + activeOffer.offer_letter_id)}
+                                            onClick={handleDownloadOfferLetterDirect}
+                                            disabled={downloadingOffer}
                                             className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold rounded-xl transition flex items-center gap-2"
                                         >
                                             <FileText className="w-4 h-4" />
-                                            <span>Download Offer Letter</span>
+                                            <span>{downloadingOffer ? 'Downloading...' : 'Download Offer Letter'}</span>
                                         </button>
                                     )}
                                     <button
@@ -1501,6 +1557,195 @@ const Dashboard: React.FC = () => {
                 </div>
             )}
 
+            {/* Hidden Offer Letter Component for Direct PDF Download */}
+            {activeOffer && (
+                <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '794px', height: '1123px', overflow: 'hidden' }}>
+                    <div
+                        id="offer-letter-download-area"
+                        className="w-[210mm] min-h-[297mm] bg-white text-slate-800 p-12 relative flex flex-col justify-between select-text text-left overflow-hidden font-sans offer-letter"
+                        style={{ boxSizing: 'border-box' }}
+                    >
+                        {/* Watermark text diagonally across background */}
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
+                            <span className="text-[130px] font-black text-slate-100/50 opacity-15 tracking-[0.25em] transform -rotate-12 uppercase select-none">
+                                VINIX
+                            </span>
+                        </div>
+
+                        <div className="relative z-10 flex flex-col h-full justify-between" style={{ minHeight: '260mm' }}>
+                            {/* Header section */}
+                            <div>
+                                <div className="flex justify-between items-start">
+                                    {/* Left Side: Logo and Details */}
+                                    <div className="flex items-center space-x-3.5">
+                                        {/* Square logo container */}
+                                        <div className="w-11 h-11 bg-[#0b2545] rounded-xl flex items-center justify-center p-1.5 flex-shrink-0 shadow-sm">
+                                            <img src={`${import.meta.env.BASE_URL}vinix-logo.jpeg`} alt="Vinix Logo" className="w-full h-full object-contain rounded-lg" />
+                                        </div>
+                                        <div className="text-left font-sans flex flex-col justify-center">
+                                            <h1 className="text-[20px] font-black text-[#0b2545] tracking-tight leading-none uppercase">VINIX</h1>
+                                            <p className="text-[7.5px] text-[#0b2545] font-black tracking-wide mt-1 leading-none font-sans">
+                                                Empowering Future Innovators
+                                            </p>
+                                            <p className="text-[7px] text-slate-400 font-bold tracking-wider mt-0.5 leading-none">
+                                                www.vinixtech.com | academic@vinix.com
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Right Side: Credential indices */}
+                                    <div className="text-right font-sans leading-tight">
+                                        <p className="text-[7.5px] text-slate-400 font-extrabold uppercase tracking-wider">INTERNSHIP ID</p>
+                                        <p className="text-[9.5px] font-black text-[#0b2545] font-mono mt-0.5">{activeOffer.offer_letter_id}</p>
+                                        <p className="text-[7.5px] text-slate-400 font-extrabold uppercase tracking-wider mt-1.5">ISSUE DATE</p>
+                                        <p className="text-[9.5px] font-black text-[#0b2545] mt-0.5">
+                                            {new Date(activeOffer.issue_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Thin horizontal navy line at the bottom of the header */}
+                                <div className="w-full h-[1.5px] bg-[#0b2545] mt-3"></div>
+                            </div>
+
+                            {/* Main Flow Container for Content */}
+                            <div className="space-y-4 flex-1 flex flex-col justify-start">
+                                {/* Title Block */}
+                                <div className="text-left mt-3">
+                                    <h2 className="text-[20px] font-black text-[#0b2545] tracking-wider uppercase font-sans">
+                                        INTERNSHIP OFFER LETTER
+                                    </h2>
+                                </div>
+
+                                {/* Body content salutation and intro */}
+                                <div className="text-[10.5px] text-slate-650 leading-relaxed font-sans space-y-2.5">
+                                    <p className="text-slate-500 font-bold">Date: {new Date(activeOffer.issue_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
+                                    <p>Dear <strong>{activeOffer.student_name}</strong>,</p>
+                                    <p>
+                                        We are delighted to offer you the position of <strong>Virtual Intern – {activeOffer.internship_title}</strong> at <strong>Vinix Technologies</strong>.
+                                    </p>
+                                    <p>
+                                        After reviewing your profile, we are confident that your skills and enthusiasm make you a valuable addition to our team. We look forward to supporting your professional growth through this internship opportunity.
+                                    </p>
+                                </div>
+
+                                {/* Internship Details Section */}
+                                <div className="space-y-2 select-text section">
+                                    <h3 className="text-[11.5px] font-black text-[#0b2545] uppercase tracking-wide section-title">
+                                        Internship Details
+                                    </h3>
+                                    {/* Table layout matching the screenshot */}
+                                    <div className="border border-slate-200 rounded-lg overflow-hidden shadow-xs bg-white">
+                                        <table className="w-full border-collapse table-fixed select-text">
+                                            <thead>
+                                                <tr className="bg-[#0b2545] text-white text-[9.5px] font-black uppercase tracking-wider">
+                                                    <th className="w-[40%] text-left py-2 px-3.5 font-black">Particulars</th>
+                                                    <th className="w-[60%] text-left py-2 px-3.5 font-black">Details</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {[
+                                                    { p: 'Full Name', v: activeOffer.student_name, bg: 'bg-white' },
+                                                    { p: 'Intern ID', v: activeOffer.offer_letter_id, bg: 'bg-[#f8fafc]' },
+                                                    { p: 'Domain', v: activeOffer.internship_title, bg: 'bg-white' },
+                                                    { p: 'Duration', v: activeOffer.duration, bg: 'bg-[#f8fafc]' },
+                                                    { p: 'Start Date', v: new Date(activeOffer.issue_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }), bg: 'bg-white' },
+                                                    { p: 'End Date', v: new Date(new Date(activeOffer.issue_date).setMonth(new Date(activeOffer.issue_date).getMonth() + (parseInt(activeOffer.duration) || 1))).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }), bg: 'bg-[#f8fafc]' },
+                                                    { p: 'Mode of Internship', v: 'Remote / Virtual', bg: 'bg-white' }
+                                                ].map((row, idx) => (
+                                                    <tr key={idx} className={`text-[10px] border-t border-slate-200/60 ${row.bg}`}>
+                                                        <td className="py-2 px-3.5 text-slate-500 font-bold align-middle">{row.p}</td>
+                                                        <td className="py-2 px-3.5 text-slate-900 font-extrabold align-middle">{row.v}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                {/* Internship Overview Section */}
+                                <div className="space-y-1 section">
+                                    <h3 className="text-[11.5px] font-black text-[#0b2545] uppercase tracking-wide section-title">Internship Overview</h3>
+                                    <p className="text-[10px] text-slate-600 font-bold">During this internship, you will have the opportunity to:</p>
+                                    <ul className="list-disc pl-4 text-[10px] text-slate-600 space-y-0.5 leading-relaxed font-sans font-medium">
+                                        <li>Work on practical, real-world <strong>{activeOffer.internship_title}</strong> projects.</li>
+                                        <li>Gain hands-on experience with modern development tools and technologies.</li>
+                                        <li>Receive mentorship and guidance from experienced professionals.</li>
+                                        <li>Enhance your technical and problem-solving skills through project-based learning.</li>
+                                        <li>Participate in periodic progress reviews and feedback sessions.</li>
+                                    </ul>
+                                </div>
+
+                                {/* Certificate of Completion Section */}
+                                <div className="space-y-1 section">
+                                    <h3 className="text-[11.5px] font-black text-[#0b2545] uppercase tracking-wide section-title">Certificate of Completion</h3>
+                                    <p className="text-[10px] text-slate-600 leading-relaxed font-medium">
+                                        Upon successful completion of the internship and fulfillment of all assigned tasks, you will receive a <strong>Certificate of Internship</strong> with QR-code verification for authenticity.
+                                    </p>
+                                </div>
+
+                                {/* Terms & Conditions Section */}
+                                <div className="space-y-1 section pb-4">
+                                    <h3 className="text-[11.5px] font-black text-[#0b2545] uppercase tracking-wide section-title">Terms & Conditions</h3>
+                                    <ul className="list-disc pl-4 text-[10px] text-slate-600 space-y-0.5 leading-relaxed font-sans font-medium">
+                                        <li>This internship is conducted remotely and offers flexible working hours.</li>
+                                        <li>Interns are expected to maintain regular communication and submit assigned work within deadlines.</li>
+                                        <li>Successful completion will be determined based on performance, project submission, and adherence to internship guidelines.</li>
+                                    </ul>
+                                    <p className="text-[10px] text-slate-655 font-medium mt-1">
+                                        We are excited to have you join our team and wish you a rewarding learning experience with VINIX.
+                                    </p>
+                                    <p className="text-[10.5px] text-slate-700 font-black mt-2 leading-none">
+                                        Congratulations and Welcome to the Team!
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Signature Row */}
+                            <div className="flex justify-between items-end select-none px-4 signature-section mt-auto pb-4">
+                                {/* Company Seal Stamp */}
+                                <div className="flex flex-col items-center justify-center text-center">
+                                    <div style={{ width: '22mm', height: '22mm' }} className="flex items-center justify-center mb-1">
+                                        <img
+                                            src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
+                                            alt="Official Stamp"
+                                            className="w-full h-full object-contain opacity-90 mix-blend-multiply filter contrast-125 rotate-[4deg]"
+                                        />
+                                    </div>
+                                    <div className="w-16 h-[1px] bg-slate-200"></div>
+                                    <p className="text-[7px] text-slate-400 font-bold uppercase mt-1 tracking-wider font-sans">Company Seal</p>
+                                </div>
+
+                                {/* Director Sign */}
+                                <div className="flex flex-col items-center text-center">
+                                    <span className="font-['Great_Vibes'] text-2xl text-slate-700 select-none transform -rotate-1 font-medium inline-block mb-1">
+                                        Vishal R.
+                                    </span>
+                                    <div className="w-24 h-[1px] bg-slate-200"></div>
+                                    <h4 className="text-[9.5px] font-bold text-slate-900 mt-1 font-sans">Vishal R</h4>
+                                    <p className="text-[7.5px] text-slate-400 font-bold uppercase tracking-wider font-sans mt-0.5">Director – Academic Operations</p>
+                                </div>
+                            </div>
+
+                            {/* Footer section */}
+                            <div className="footer-section offer-footer">
+                                <div className="w-full h-[1.5px] bg-[#0b2545] mb-2"></div>
+                                <div className="flex justify-between items-center text-[8px] text-slate-450 font-bold font-sans px-1 select-none">
+                                    {/* MSME details */}
+                                    <div className="flex items-center space-x-1.5 flex-shrink-0">
+                                        <img src={`${import.meta.env.BASE_URL}msme-logo.png`} alt="MSME Logo" style={{ height: '14.5px', width: 'auto' }} className="object-contain filter grayscale opacity-80 bg-transparent" />
+                                        <span className="font-mono text-slate-400">MSME: UDYAM-TN-17-0076606</span>
+                                    </div>
+                                    {/* academic@vinix.com | www.vinixtech.com */}
+                                    <div className="font-sans text-slate-400 font-bold">
+                                        <span>academic@vinix.com | www.vinixtech.com</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
