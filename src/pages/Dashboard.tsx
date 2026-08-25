@@ -1840,11 +1840,11 @@ const Dashboard: React.FC = () => {
 
                             {/* Center: Brand details */}
                             <div className="text-center flex flex-col items-center">
-                                <span className="text-[20px] font-black text-[#0b1a30] tracking-[0.25em] block leading-none font-sans uppercase">
+                                <span className="text-[21px] font-black text-[#0b1a30] tracking-[0.25em] block leading-none font-sans uppercase">
                                     VINIX
                                 </span>
-                                <span className="text-[9px] font-bold text-slate-450 tracking-[0.1em] block mt-1.5 uppercase">
-                                    Empowering Future Innovators
+                                <span className="text-[9px] font-bold text-slate-400 tracking-[0.1em] block mt-1.5 uppercase font-sans">
+                                    EMPOWERING FUTURE INNOVATORS
                                 </span>
                             </div>
 
@@ -1855,26 +1855,27 @@ const Dashboard: React.FC = () => {
                         </div>
 
                         {/* Certificate main title block */}
-                        <div className="relative text-center z-20 mt-4 flex flex-col items-center">
-                            <h2 className="text-[34px] font-black text-[#0b1a30] tracking-[0.22em] leading-none uppercase">
+                        <div className="relative text-center z-20 mt-6 flex flex-col items-center">
+                            <h2 className="text-[42px] font-extrabold text-[#0b1a30] tracking-[0.22em] leading-none uppercase font-sans">
                                 CERTIFICATE
                             </h2>
-                            <h4 className="text-[10px] font-bold text-slate-450 tracking-[0.3em] leading-none mt-2.5 uppercase">
+                            <h4 className="text-[11px] font-bold text-slate-450 tracking-[0.3em] leading-none mt-3.5 uppercase font-sans">
                                 OF INTERNSHIP COMPLETION
                             </h4>
                         </div>
 
                         {/* Recipient presentation line */}
-                        <div className="relative text-center z-20 flex flex-col items-center mt-3">
-                            <p className="text-[10px] text-slate-450 tracking-wide">This certificate is proudly presented to</p>
-                            <h3 className="text-3xl font-extrabold text-[#0b1a30] tracking-wide mt-2.5 border-b border-slate-200 pb-1.5 px-14 min-w-[340px] inline-block capitalize font-sans leading-snug animate-none">
+                        <div className="relative text-center z-20 flex flex-col items-center mt-6">
+                            <p className="text-[11px] text-slate-450 tracking-wide font-sans">This certificate is proudly presented to</p>
+                            <h3 className="text-[34px] font-black text-[#0b1a30] tracking-wide mt-3.5 font-sans leading-none">
                                 {profile?.full_name || 'Vinix Graduate'}
                             </h3>
+                            <div className="w-[360px] h-[1.5px] bg-slate-200 mt-2.5"></div>
                         </div>
 
                         {/* Body description */}
-                        <div className="relative text-center z-20 px-12 mt-3 font-sans">
-                            <p className="text-[10.5px] text-slate-500 max-w-[640px] mx-auto leading-relaxed">
+                        <div className="relative text-center z-20 px-12 mt-6">
+                            <p className="text-[12px] text-slate-500 max-w-[680px] mx-auto leading-relaxed font-sans font-medium">
                                 for successfully completing the task-based virtual internship program in{' '}
                                 <strong className="text-[#0b1a30] font-extrabold select-all">{activeCertForDownload.course_name}</strong> at{' '}
                                 <strong className="text-[#0b1a30] font-extrabold">Vinix Technologies</strong>, demonstrating
@@ -1883,38 +1884,38 @@ const Dashboard: React.FC = () => {
                         </div>
 
                         {/* Signatures & Seal Area */}
-                        <div className="relative flex justify-between items-end z-20 px-24 mt-3">
+                        <div className="relative flex justify-between items-end z-20 px-24 mt-10 mb-4 w-full">
                             {/* Left: Circular Seal Stamp */}
-                            <div className="relative w-20 h-20 flex flex-col items-center justify-center text-center pb-1">
-                                <div className="w-16 h-16 flex items-center justify-center mb-1">
+                            <div className="flex flex-col items-center text-center pb-1">
+                                <div className="w-[84px] h-[84px] flex items-center justify-center mb-1">
                                     <img
                                         src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
                                         alt="Official Seal"
                                         className="w-full h-full object-contain opacity-95 mix-blend-multiply filter contrast-125 saturate-150 rotate-3"
                                     />
                                 </div>
-                                <p className="text-[7px] text-slate-400 font-bold uppercase tracking-wider">Official Seal</p>
+                                <p className="text-[8px] font-bold text-slate-400 tracking-[0.1em] uppercase leading-none whitespace-nowrap mt-1 font-sans">Official Seal</p>
                             </div>
 
                             {/* Right Signature */}
                             <div className="text-center flex flex-col items-center min-w-[180px] pb-1">
-                                <span className="font-['Great_Vibes'] text-3xl text-slate-800 select-none transform -rotate-1 font-medium inline-block mb-1">
+                                <span className="font-['Great_Vibes'] text-3.5xl text-slate-800 select-none transform -rotate-1 font-medium inline-block mb-1.5 whitespace-nowrap">
                                     Vishal R.
                                 </span>
                                 <div className="w-36 h-[1px] bg-slate-200"></div>
-                                <h5 className="text-[9.5px] font-bold text-[#0b1a30] mt-1.5 leading-none">Vishal R</h5>
-                                <p className="text-[8px] font-medium text-slate-400 mt-0.5 leading-none">Founder & CEO</p>
+                                <h5 className="text-[10px] font-extrabold text-[#0b1a30] mt-2 leading-none whitespace-nowrap font-sans">Vishal R</h5>
+                                <p className="text-[8.5px] font-medium text-slate-400 mt-1 leading-none whitespace-nowrap font-sans">Founder & CEO</p>
                             </div>
                         </div>
 
                         {/* Bottom references footer bar */}
-                        <div className="relative flex justify-between items-center z-20 px-10 pt-4 pb-2 border-t border-slate-100 mt-3 text-[7.5px] text-slate-450 font-mono">
+                        <div className="relative flex justify-between items-center z-20 px-10 pt-4 pb-2 border-t border-slate-100 mt-6 text-[8px] text-slate-440 font-mono w-full">
                             <div>Certificate ID: {activeCertForDownload.certificate_number}</div>
                             <div className="text-center">
                                 <div>Intern ID: VINIX-{activeCertForDownload.certificate_number.split('-').pop()}</div>
-                                <div className="mt-0.5">Verify at: {window.location.host}/verify/{activeCertForDownload.certificate_number}</div>
+                                <div className="mt-0.5">Verify at: visha19932-maker.github.io/verify/{activeCertForDownload.certificate_number}</div>
                             </div>
-                            <div className="text-right">Issued: {new Date(activeCertForDownload.issue_date).toLocaleDateString()}</div>
+                            <div className="text-right">Issued: {new Date(activeCertForDownload.issue_date).toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', year: 'numeric' })}</div>
                         </div>
                     </div>
                 </div>
