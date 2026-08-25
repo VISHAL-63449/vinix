@@ -1820,106 +1820,82 @@ const Dashboard: React.FC = () => {
 
             {/* Hidden Certificate Component for Direct PDF Download */}
             {activeCertForDownload && (
-                <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '1122px', height: '793px', overflow: 'hidden' }}>
+                <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '1123px', height: '794px', overflow: 'hidden' }}>
                     <div
                         id="certificate-download-area"
-                        className="w-[1122px] h-[793px] bg-white relative flex flex-col justify-between overflow-hidden border-[12px] border-[#0b1a30] p-8 select-text text-left font-sans"
-                        style={{ boxSizing: 'border-box' }}
+                        className="certificate-container"
                     >
-                        {/* Inner thin border - Double border style */}
-                        <div className="absolute inset-[24px] border border-[#0b1a30] pointer-events-none z-10"></div>
+                        {/* Double border lines */}
+                        <div className="cert-frame-outer"></div>
+                        <div className="cert-frame-inner"></div>
 
-                        {/* Authority header */}
-                        <div className="relative flex justify-between items-center z-20 px-10 pt-6 w-full font-sans">
-                            {/* Left side: Corporate Logo */}
-                            <div className="flex items-center">
-                                <div className="w-[68px] h-[68px] bg-[#0b2545] rounded-md flex items-center justify-center p-1.5 flex-shrink-0 shadow-xs border border-slate-205/20">
-                                    <img src={`${import.meta.env.BASE_URL}vinix-logo.jpeg`} alt="Vinix Logo" className="w-[90%] h-[90%] object-contain rounded-md" />
-                                </div>
+                        {/* Top branding elements */}
+                        <div className="cert-top-row">
+                            <div className="cert-logo-left">
+                                <img src={`${import.meta.env.BASE_URL}vinix-logo.png`} alt="VINIX Logo" />
                             </div>
 
-                            {/* Center: Brand details */}
-                            <div className="text-center flex flex-col items-center">
-                                <span className="text-[28px] font-bold text-[#0b1a30] tracking-[0.25em] block leading-none uppercase">
-                                    VINIX
-                                </span>
-                                <span className="text-[13px] font-normal text-slate-405 tracking-[0.1em] block mt-2">
-                                    Empowering Future Innovators
-                                </span>
+                            <div className="cert-brand-center">
+                                <span className="cert-brand-name">VINIX</span>
+                                <span className="cert-brand-tagline">Empowering Future Innovators</span>
                             </div>
 
-                            {/* Right side: MSME Logo */}
-                            <div className="flex items-center">
-                                <div className="bg-white p-1 rounded flex items-center justify-center h-14 w-32">
-                                    <img src={`${import.meta.env.BASE_URL}msme-logo.png`} alt="MSME Certified" className="h-full object-contain" />
-                                </div>
+                            <div className="cert-logo-right">
+                                <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Seal" />
                             </div>
                         </div>
 
-                        {/* Certificate main title block */}
-                        <div className="relative text-center z-20 mt-8 flex flex-col items-center font-sans">
-                            <h2 className="text-[56px] font-black text-[#0b1a30] tracking-[0.22em] leading-none uppercase">
-                                CERTIFICATE
-                            </h2>
-                            <h4 className="text-[16px] font-semibold text-slate-400 tracking-[0.38em] leading-none mt-3.5 uppercase">
-                                OF INTERNSHIP COMPLETION
-                            </h4>
+                        {/* Certificate Headings */}
+                        <div className="cert-title-section">
+                            <h1 className="cert-title-main">CERTIFICATE</h1>
+                            <h3 className="cert-title-sub">OF INTERNSHIP COMPLETION</h3>
                         </div>
 
-                        {/* Recipient presentation line */}
-                        <div className="relative text-center z-20 flex flex-col items-center mt-10 font-sans">
-                            <p className="text-[12px] text-slate-405 tracking-wide">This certificate is proudly presented to</p>
-                            <h3 className="text-[48px] font-bold text-[#0b1a30] tracking-wide mt-3.5 leading-none capitalize">
-                                {profile?.full_name || 'Vinix Graduate'}
-                            </h3>
-                            <div className="w-[280px] h-[1.5px] bg-slate-200 mt-2.5"></div>
-                        </div>
+                        {/* Certificate main body */}
+                        <div className="cert-body-section">
+                            <p className="cert-presentation-text">This certificate is proudly presented to</p>
+                            <h2 className="recipient-name" style={{ textTransform: 'uppercase' }}>{profile?.full_name || 'Vinix Graduate'}</h2>
 
-                        {/* Body description */}
-                        <div className="relative text-center z-20 px-12 mt-10 font-sans">
-                            <p className="text-[15.5px] text-slate-500 max-w-[760px] mx-auto leading-relaxed font-medium">
-                                for successfully completing the task-based virtual internship program in{' '}
-                                <strong className="text-[#0b1a30] font-bold select-all">{activeCertForDownload.course_name}</strong> at{' '}
-                                <strong className="text-[#0b1a30] font-bold">Vinix Technologies</strong>, demonstrating
-                                dedication, technical skill, and professional excellence throughout the program.
+                            <p className="cert-description">
+                                for successfully completing the task-based virtual internship program in <span className="bold-text">{activeCertForDownload.course_name}</span> at <span className="bold-text">VINIX Technologies</span>, demonstrating dedication, technical skill, and professional excellence throughout the program.
                             </p>
                         </div>
 
-                        {/* Signatures & Seal Area */}
-                        <div className="relative flex justify-between items-end z-20 px-24 mt-10 w-full font-sans">
-                            {/* Left: Circular Seal Stamp - BIGGER */}
-                            <div className="flex flex-col items-center text-center pb-1">
-                                <div className="w-[120px] h-[120px] flex items-center justify-center mb-1">
-                                    <img
-                                        src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
-                                        alt="Official Seal"
-                                        className="w-28 h-28 object-contain opacity-95 mix-blend-multiply filter contrast-125 saturate-150 rotate-3"
-                                    />
+                        {/* Footer signatory block with single Founder & Issued Date side */}
+                        <div className="cert-footer-section">
+                            {/* Date of Issuance Column (Left side) */}
+                            <div className="footer-col-left">
+                                <div className="signature-area" style={{ justifyContent: 'flex-start', alignItems: 'flex-end' }}>
+                                    <span className="issue-signer-date" style={{ fontWeight: 750, fontSize: '1.05rem', color: '#0f2942', marginBottom: '6px' }}>
+                                        {new Date(activeCertForDownload.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    </span>
                                 </div>
-                                <p className="text-[8.5px] font-semibold text-slate-400 tracking-[0.1em] uppercase leading-none whitespace-nowrap mt-1">Official Seal</p>
+                                <div className="signer-line"></div>
+                                <span className="signer-name">Date of Issuance</span>
+                                <span className="signer-title" style={{ visibility: 'hidden' }}>&nbsp;</span>
+                                <span className="detail-left">Issued Date</span>
                             </div>
 
-                            {/* Right Signature - BIGGER */}
-                            <div className="text-center flex flex-col items-center min-w-[180px] pb-1">
-                                <span className="font-['Great_Vibes'] text-4.5xl text-slate-800 select-none transform -rotate-1 font-medium inline-block mb-1.5 whitespace-nowrap">
-                                    Vishal R.
-                                </span>
-                                <div className="w-48 h-[1.5px] bg-slate-200"></div>
-                                <h5 className="text-[12px] font-bold text-[#0b1a30] mt-2.5 leading-none whitespace-nowrap">Vishal R</h5>
-                                <p className="text-[10px] font-medium text-slate-405 mt-1 leading-none whitespace-nowrap">Founder & CEO</p>
-                            </div>
-                        </div>
-
-                        {/* Bottom references footer bar */}
-                        <div className="relative w-full z-20 mt-8 font-sans">
-                            <div className="w-full h-[1px] bg-slate-100 mb-3.5"></div>
-                            <div className="flex justify-between items-center px-10 pb-1 text-[11px] text-slate-450 tracking-wide">
-                                <div>Certificate ID: {activeCertForDownload.certificate_number}</div>
-                                <div className="text-center flex flex-col items-center">
-                                    <div>Intern ID: VINIX-{activeCertForDownload.certificate_number.split('-').pop()}</div>
-                                    <div className="mt-0.5 text-[10px]">Verify at: visha19932-maker.github.io/verify/{activeCertForDownload.certificate_number}</div>
+                            {/* Official Stamp Column (Center) */}
+                            <div className="footer-col-center">
+                                <div className="stamp-container">
+                                    <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Company Stamp" className="stamp-img" style={{ mixBlendMode: 'multiply' }} />
                                 </div>
-                                <div className="text-right">Issued: {new Date(activeCertForDownload.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</div>
+                                <div className="detail-center-block">
+                                    <span>Intern ID: VINIX-{activeCertForDownload.certificate_number.split('-').pop()}</span>
+                                    <span>Verify at: <a href={`https://verify.vinix.co/credentials/${activeCertForDownload.certificate_number}`} className="verify-web-link" target="_blank" rel="noreferrer">verify.vinix.co/{activeCertForDownload.certificate_number}</a></span>
+                                </div>
+                            </div>
+
+                            {/* Founder Signatory Column (Right side) */}
+                            <div className="footer-col-right flex-col items-center">
+                                <div className="signature-area w-full" style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
+                                    <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Founder Signature" className="signature-img" />
+                                </div>
+                                <div className="signer-line"></div>
+                                <span className="signer-name" style={{ textAlign: 'center' }}>Vishal R</span>
+                                <span className="signer-title" style={{ textAlign: 'center' }}>Founder & CEO</span>
+                                <span className="detail-right" style={{ textAlign: 'center' }}>Certificate ID: {activeCertForDownload.certificate_number}</span>
                             </div>
                         </div>
                     </div>
