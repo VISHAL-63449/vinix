@@ -1831,12 +1831,10 @@ const Dashboard: React.FC = () => {
 
                         {/* Authority header */}
                         <div className="relative flex justify-between items-center z-20 px-10 pt-6 w-full">
-                            {/* Left side: VINIX Block Logo */}
+                            {/* Left side: Corporate Logo */}
                             <div className="flex items-center">
-                                <div className="bg-[#0b1a30] text-white px-2.5 py-4 flex items-center justify-center font-bold tracking-tight text-sm w-14 h-14 select-none">
-                                    <span className="font-sans font-black flex flex-col leading-none text-center">
-                                        <span className="text-[12px] font-black uppercase text-white tracking-widest">vinix</span>
-                                    </span>
+                                <div className="w-14 h-14 bg-[#0b2545] rounded-xl flex items-center justify-center p-1.5 flex-shrink-0 shadow-xs border border-slate-200/20">
+                                    <img src={`${import.meta.env.BASE_URL}vinix-logo.jpeg`} alt="Vinix Logo" className="w-[90%] h-[90%] object-contain rounded-md" />
                                 </div>
                             </div>
 
@@ -1852,7 +1850,7 @@ const Dashboard: React.FC = () => {
 
                             {/* Right side: MSME Logo */}
                             <div className="flex items-center">
-                                <img src={`${import.meta.env.BASE_URL}msme-logo.png`} alt="MSME Certified" className="h-10 object-contain" />
+                                <img src={`${import.meta.env.BASE_URL}msme-logo.png`} alt="MSME Certified" className="h-10 object-contain mix-blend-multiply filter contrast-125 opacity-95" />
                             </div>
                         </div>
 
@@ -1885,34 +1883,27 @@ const Dashboard: React.FC = () => {
                         </div>
 
                         {/* Signatures & Seal Area */}
-                        <div className="relative flex justify-between items-end z-20 px-14 mt-3">
-                            {/* Left Signature */}
-                            <div className="text-center flex flex-col items-center min-w-[150px] pb-1">
-                                <span className="font-['Great_Vibes'] text-3xl text-slate-800 select-none transform -rotate-1 font-medium inline-block mb-1">
-                                    Vishal R.
-                                </span>
-                                <div className="w-32 h-[1px] bg-slate-200"></div>
-                                <h5 className="text-[9.5px] font-bold text-[#0b1a30] mt-1.5 leading-none">Vishal R</h5>
-                                <p className="text-[8px] font-medium text-slate-405 mt-0.5 leading-none">Founder & CEO</p>
-                            </div>
-
-                            {/* Circular Seal Stamp */}
-                            <div className="relative w-20 h-20 flex items-center justify-center -mb-2">
-                                <img
-                                    src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
-                                    alt="Official Seal"
-                                    className="w-18 h-18 object-contain opacity-95 mix-blend-multiply filter contrast-125 saturate-150 rotate-3"
-                                />
+                        <div className="relative flex justify-between items-end z-20 px-24 mt-3">
+                            {/* Left: Circular Seal Stamp */}
+                            <div className="relative w-20 h-20 flex flex-col items-center justify-center text-center pb-1">
+                                <div className="w-16 h-16 flex items-center justify-center mb-1">
+                                    <img
+                                        src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
+                                        alt="Official Seal"
+                                        className="w-full h-full object-contain opacity-95 mix-blend-multiply filter contrast-125 saturate-150 rotate-3"
+                                    />
+                                </div>
+                                <p className="text-[7px] text-slate-400 font-bold uppercase tracking-wider">Official Seal</p>
                             </div>
 
                             {/* Right Signature */}
-                            <div className="text-center flex flex-col items-center min-w-[150px] pb-1">
-                                <span className="font-['Great_Vibes'] text-3xl text-slate-800 select-none transform -rotate-2 font-medium inline-block mb-1">
-                                    Gireesh K.
+                            <div className="text-center flex flex-col items-center min-w-[180px] pb-1">
+                                <span className="font-['Great_Vibes'] text-3xl text-slate-800 select-none transform -rotate-1 font-medium inline-block mb-1">
+                                    Vishal R.
                                 </span>
-                                <div className="w-32 h-[1px] bg-slate-200"></div>
-                                <h5 className="text-[9.5px] font-bold text-[#0b1a30] mt-1.5 leading-none">Gireesh K</h5>
-                                <p className="text-[8px] font-medium text-slate-405 mt-0.5 leading-none">Co-Founder & CTO</p>
+                                <div className="w-36 h-[1px] bg-slate-200"></div>
+                                <h5 className="text-[9.5px] font-bold text-[#0b1a30] mt-1.5 leading-none">Vishal R</h5>
+                                <p className="text-[8px] font-medium text-slate-400 mt-0.5 leading-none">Founder & CEO</p>
                             </div>
                         </div>
 
