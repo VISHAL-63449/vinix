@@ -98,6 +98,8 @@ const Dashboard: React.FC = () => {
     const [linkedinUrl, setLinkedinUrl] = useState('');
     const [submittingLinkedin, setSubmittingLinkedin] = useState(false);
     const [downloadingOffer, setDownloadingOffer] = useState(false);
+    const [downloadingCert, setDownloadingCert] = useState(false);
+    const [activeCertForDownload, setActiveCertForDownload] = useState<CertificateData | null>(null);
 
     async function loadDashboardData() {
         if (!user) return;
@@ -424,6 +426,64 @@ const Dashboard: React.FC = () => {
             navigate('/verify/offer/' + activeOffer.offer_letter_id);
         } finally {
             setDownloadingOffer(false);
+        }
+    };
+
+    const handleDownloadCertificateDirect = async (cert: CertificateData) => {
+        if (!cert) return;
+        setDownloadingCert(true);
+        setActiveCertForDownload(cert);
+        try {
+            const { jsPDF } = await import('jspdf');
+            const html2canvas = (await import('html2canvas')).default;
+
+            // Give React a moment to render the offscreen certificate container with cert details
+            await new Promise(resolve => setTimeout(resolve, 300));
+
+            const element = document.getElementById('certificate-download-area');
+            if (element) {
+                element.classList.add('cert-pdf-download-mode');
+
+                const canvas = await html2canvas(element, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    scrollY: 0,
+                    scrollX: 0
+                });
+
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                const pageWidth = 297;
+                const pageHeight = 210;
+
+                const imgWidth = pageWidth;
+                const imgHeight = (canvas.height * imgWidth) / canvas.width;
+                const finalHeight = Math.min(imgHeight, pageHeight);
+
+                pdf.addImage(
+                    canvas.toDataURL('image/jpeg', 0.95),
+                    'JPEG',
+                    0,
+                    0,
+                    imgWidth,
+                    finalHeight
+                );
+
+                pdf.save(`${cert.certificate_number || 'Certificate'}.pdf`);
+            }
+        } catch (err: any) {
+            alert(`Direct download failed: ${err.message}. Navigating to verification page for download.`);
+            navigate('/verify/' + cert.certificate_number);
+        } finally {
+            setActiveCertForDownload(null);
+            setDownloadingCert(false);
         }
     };
 
@@ -820,11 +880,12 @@ const Dashboard: React.FC = () => {
                                     </a>
                                     {certificates.length > 0 && (
                                         <button
-                                            onClick={() => navigate('/verify/' + certificates[0].certificate_number)}
+                                            onClick={() => handleDownloadCertificateDirect(certificates[0])}
+                                            disabled={downloadingCert}
                                             className="px-4 py-2.5 bg-[#009688] hover:bg-[#00796b] text-white text-xs font-bold rounded-xl transition flex items-center gap-2"
                                         >
                                             <Award className="w-4 h-4" />
-                                            <span>Download Certificate</span>
+                                            <span>{downloadingCert ? 'Downloading...' : 'Download Certificate'}</span>
                                         </button>
                                     )}
                                 </div>
@@ -1384,13 +1445,23 @@ const Dashboard: React.FC = () => {
 
                                                 <div className="flex items-center justify-between text-xs text-slate-405 border-t border-slate-100 dark:border-slate-850 pt-3">
                                                     <span>Issued: {new Date(cert.issue_date).toLocaleDateString()}</span>
-                                                    <button
-                                                        onClick={() => navigate(`/verify/${cert.certificate_number}`)}
-                                                        className="text-brand-primary hover:text-brand-primary/80 dark:text-brand-accent dark:hover:text-brand-accent/90 font-bold flex items-center space-x-1"
-                                                    >
-                                                        <span>Verify Certificate</span>
-                                                        <ExternalLink className="w-3.5 h-3.5" />
-                                                    </button>
+                                                    <div className="flex items-center gap-3">
+                                                        <button
+                                                            onClick={() => handleDownloadCertificateDirect(cert)}
+                                                            disabled={downloadingCert}
+                                                            className="text-emerald-600 hover:text-emerald-500 dark:text-emerald-400 dark:hover:text-emerald-300 font-bold flex items-center space-x-1"
+                                                        >
+                                                            <FileDown className="w-3.5 h-3.5" />
+                                                            <span>Download</span>
+                                                        </button>
+                                                        <button
+                                                            onClick={() => navigate(`/verify/${cert.certificate_number}`)}
+                                                            className="text-brand-primary hover:text-brand-primary/80 dark:text-brand-accent dark:hover:text-brand-accent/90 font-bold flex items-center space-x-1"
+                                                        >
+                                                            <span>Verify</span>
+                                                            <ExternalLink className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                         ))}
@@ -1742,6 +1813,117 @@ const Dashboard: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Hidden Certificate Component for Direct PDF Download */}
+            {activeCertForDownload && (
+                <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '1122px', height: '793px', overflow: 'hidden' }}>
+                    <div
+                        id="certificate-download-area"
+                        className="w-[1122px] h-[793px] bg-white relative flex flex-col justify-between overflow-hidden border-[12px] border-[#0b1a30] p-8 select-text text-left font-sans"
+                        style={{ boxSizing: 'border-box' }}
+                    >
+                        {/* Inner thin border */}
+                        <div className="absolute inset-[8px] border border-[#0b1a30] pointer-events-none z-10"></div>
+
+                        {/* Authority header */}
+                        <div className="relative flex justify-between items-center z-20 px-10 pt-6 w-full">
+                            {/* Left side: VINIX Block Logo */}
+                            <div className="flex items-center">
+                                <div className="bg-[#0b1a30] text-white px-2.5 py-4 flex items-center justify-center font-bold tracking-tight text-sm w-14 h-14 select-none">
+                                    <span className="font-sans font-black flex flex-col leading-none text-center">
+                                        <span className="text-[12px] font-black uppercase text-white tracking-widest">vinix</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Center: Brand details */}
+                            <div className="text-center flex flex-col items-center">
+                                <span className="text-[20px] font-black text-[#0b1a30] tracking-[0.25em] block leading-none font-sans uppercase">
+                                    VINIX
+                                </span>
+                                <span className="text-[9px] font-bold text-slate-450 tracking-[0.1em] block mt-1.5 uppercase">
+                                    Empowering Future Innovators
+                                </span>
+                            </div>
+
+                            {/* Right side: MSME Logo */}
+                            <div className="flex items-center">
+                                <img src={`${import.meta.env.BASE_URL}msme-logo.png`} alt="MSME Certified" className="h-10 object-contain" />
+                            </div>
+                        </div>
+
+                        {/* Certificate main title block */}
+                        <div className="relative text-center z-20 mt-4 flex flex-col items-center">
+                            <h2 className="text-[34px] font-black text-[#0b1a30] tracking-[0.22em] leading-none uppercase">
+                                CERTIFICATE
+                            </h2>
+                            <h4 className="text-[10px] font-bold text-slate-450 tracking-[0.3em] leading-none mt-2.5 uppercase">
+                                OF INTERNSHIP COMPLETION
+                            </h4>
+                        </div>
+
+                        {/* Recipient presentation line */}
+                        <div className="relative text-center z-20 flex flex-col items-center mt-3">
+                            <p className="text-[10px] text-slate-450 tracking-wide">This certificate is proudly presented to</p>
+                            <h3 className="text-3xl font-extrabold text-[#0b1a30] tracking-wide mt-2.5 border-b border-slate-200 pb-1.5 px-14 min-w-[340px] inline-block capitalize font-sans leading-snug animate-none">
+                                {profile?.full_name || 'Vinix Graduate'}
+                            </h3>
+                        </div>
+
+                        {/* Body description */}
+                        <div className="relative text-center z-20 px-12 mt-3 font-sans">
+                            <p className="text-[10.5px] text-slate-500 max-w-[640px] mx-auto leading-relaxed">
+                                for successfully completing the task-based virtual internship program in{' '}
+                                <strong className="text-[#0b1a30] font-extrabold select-all">{activeCertForDownload.course_name}</strong> at{' '}
+                                <strong className="text-[#0b1a30] font-extrabold">Vinix Technologies</strong>, demonstrating
+                                dedication, technical skill, and professional excellence throughout the program.
+                            </p>
+                        </div>
+
+                        {/* Signatures & Seal Area */}
+                        <div className="relative flex justify-between items-end z-20 px-14 mt-3">
+                            {/* Left Signature */}
+                            <div className="text-center flex flex-col items-center min-w-[150px] pb-1">
+                                <span className="font-['Great_Vibes'] text-3xl text-slate-800 select-none transform -rotate-1 font-medium inline-block mb-1">
+                                    Vishal R.
+                                </span>
+                                <div className="w-32 h-[1px] bg-slate-200"></div>
+                                <h5 className="text-[9.5px] font-bold text-[#0b1a30] mt-1.5 leading-none">Vishal R</h5>
+                                <p className="text-[8px] font-medium text-slate-405 mt-0.5 leading-none">Founder & CEO</p>
+                            </div>
+
+                            {/* Circular Seal Stamp */}
+                            <div className="relative w-20 h-20 flex items-center justify-center -mb-2">
+                                <img
+                                    src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
+                                    alt="Official Seal"
+                                    className="w-18 h-18 object-contain opacity-95 mix-blend-multiply filter contrast-125 saturate-150 rotate-3"
+                                />
+                            </div>
+
+                            {/* Right Signature */}
+                            <div className="text-center flex flex-col items-center min-w-[150px] pb-1">
+                                <span className="font-['Great_Vibes'] text-3xl text-slate-800 select-none transform -rotate-2 font-medium inline-block mb-1">
+                                    Gireesh K.
+                                </span>
+                                <div className="w-32 h-[1px] bg-slate-200"></div>
+                                <h5 className="text-[9.5px] font-bold text-[#0b1a30] mt-1.5 leading-none">Gireesh K</h5>
+                                <p className="text-[8px] font-medium text-slate-405 mt-0.5 leading-none">Co-Founder & CTO</p>
+                            </div>
+                        </div>
+
+                        {/* Bottom references footer bar */}
+                        <div className="relative flex justify-between items-center z-20 px-10 pt-4 pb-2 border-t border-slate-100 mt-3 text-[7.5px] text-slate-450 font-mono">
+                            <div>Certificate ID: {activeCertForDownload.certificate_number}</div>
+                            <div className="text-center">
+                                <div>Intern ID: VINIX-{activeCertForDownload.certificate_number.split('-').pop()}</div>
+                                <div className="mt-0.5">Verify at: {window.location.host}/verify/{activeCertForDownload.certificate_number}</div>
+                            </div>
+                            <div className="text-right">Issued: {new Date(activeCertForDownload.issue_date).toLocaleDateString()}</div>
                         </div>
                     </div>
                 </div>
