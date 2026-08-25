@@ -132,7 +132,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                         <div className="relative">
                             <button
                                 onClick={handleShare}
-                                className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold text-purple-650 bg-purple-50/50 hover:bg-purple-100/60 dark:text-purple-400 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/50 rounded-full transition cursor-pointer"
+                                className="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-purple-650 bg-purple-50/50 hover:bg-purple-100/60 dark:text-purple-400 dark:bg-purple-950/20 border border-purple-200 dark:border-purple-900/50 rounded-full transition cursor-pointer"
                             >
                                 <Share2 className="w-3.5 h-3.5" />
                                 <span>Share</span>
@@ -150,7 +150,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                 {/* Dashboard Button */}
                                 <Link
                                     to={profile?.role === 'admin' ? '/admin' : profile?.role === 'mentor' ? '/mentor' : '/dashboard'}
-                                    className="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition shadow select-none cursor-pointer"
+                                    className="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-full hover:bg-blue-700 transition shadow select-none cursor-pointer"
                                 >
                                     <LayoutDashboard className="w-3.25 h-3.25" />
                                     <span>Dashboard</span>
@@ -159,7 +159,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                 {/* Logout Button */}
                                 <button
                                     onClick={handleSignOut}
-                                    className="flex items-center space-x-1.5 px-3 py-1.5 text-xs font-bold text-red-650 hover:bg-red-50 dark:hover:bg-red-950/30 border border-red-105 rounded-full transition cursor-pointer"
+                                    className="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-red-650 hover:bg-red-50 dark:hover:bg-red-950/30 border border-red-105 rounded-full transition cursor-pointer"
                                 >
                                     <LogOut className="w-3.25 h-3.25" />
                                     <span>Logout</span>
