@@ -13,6 +13,7 @@ interface OfferLetterVerificationResult {
     issueDate: string;
     status: string;
     verificationResult: string;
+    college?: string;
 }
 
 const VerifyOffer: React.FC = () => {
@@ -41,7 +42,8 @@ const VerifyOffer: React.FC = () => {
                     duration: '1 Month',
                     issueDate: '2026-08-22',
                     status: 'APPROVED',
-                    verificationResult: 'OFFICIAL RECORD VALIDATED'
+                    verificationResult: 'OFFICIAL RECORD VALIDATED',
+                    college: 'Anna University, Chennai'
                 });
                 return;
             }
@@ -56,6 +58,19 @@ const VerifyOffer: React.FC = () => {
                 throw new Error('Offer Letter verification token not found or invalid.');
             }
 
+            // Fetch student profile for college
+            let collegeName = 'Anna University, Chennai'; // fallback default
+            if (data.user_id || data.student_id) {
+                const { data: studData } = await supabaseAdmin
+                    .from('student_profiles')
+                    .select('college')
+                    .eq('id', data.user_id || data.student_id)
+                    .maybeSingle();
+                if (studData?.college) {
+                    collegeName = studData.college;
+                }
+            }
+
             setResult({
                 verified: true,
                 offerLetterId: data.offer_letter_id,
@@ -65,7 +80,8 @@ const VerifyOffer: React.FC = () => {
                 duration: data.duration,
                 issueDate: data.issue_date,
                 status: data.status,
-                verificationResult: 'OFFICIAL RECORD VALIDATED'
+                verificationResult: 'OFFICIAL RECORD VALIDATED',
+                college: collegeName
             });
         } catch (err: any) {
             setError(err.message || 'Offer Letter verification token not found. Validate reference ID.');
@@ -244,186 +260,193 @@ const VerifyOffer: React.FC = () => {
                         {/* Printable corporate offer letter preview */}
                         <div
                             id="offer-letter-print-area"
-                            className="w-full aspect-[1/1.41] bg-white text-slate-800 p-12 relative flex flex-col justify-between shadow-2xl rounded-2xl border border-slate-200 select-text text-left overflow-hidden z-10 font-sans offer-letter"
-                            style={{ boxSizing: 'border-box' }}
+                            className="bg-white select-text text-left overflow-hidden z-10 font-sans relative offer-letter mx-auto"
+                            style={{
+                                boxSizing: 'border-box',
+                                width: '794px',
+                                height: '1123px',
+                                padding: '45px 50px',
+                                color: '#0f172a',
+                                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+                                position: 'relative'
+                            }}
                         >
-                            {/* Watermark text diagonally across background */}
-                            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none z-0">
-                                <span className="text-[130px] font-black text-slate-100/50 opacity-15 tracking-[0.25em] transform -rotate-12 uppercase select-none">
-                                    VINIX
-                                </span>
+                            {/* Elegant background watermark */}
+                            <div className="doc-watermark">VINIX TECHNOLOGIES</div>
+
+                            {/* Decorative double-border frames */}
+                            <div className="doc-frame-outer"></div>
+                            <div className="doc-frame-inner"></div>
+
+                            {/* Header Section */}
+                            <div className="doc-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', marginBottom: '2px', zIndex: 2 }}>
+                                <div className="header-left" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                    <div className="header-logo-container" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                        <span className="header-logo" style={{ height: '54px', display: 'flex', alignItems: 'center' }}>
+                                            <img src={`${import.meta.env.BASE_URL}vinix-logo.png`} alt="VINIX Logo" style={{ height: '100%', objectFit: 'contain' }} />
+                                        </span>
+                                        <div className="header-branding-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                            <span className="company-name" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: '1.25rem', color: '#0f2942', lineHeight: 1.1, letterSpacing: '0.5px' }}>VINIX</span>
+                                            <span className="company-tagline" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '0.62rem', fontWeight: 700, color: '#cca353', letterSpacing: '0.5px', marginTop: '1px' }}>Empowering Future Innovators</span>
+                                        </div>
+                                    </div>
+                                    <div className="company-contact-row" style={{ fontSize: '0.62rem', color: '#64748b', marginTop: '5px', fontWeight: 550 }}>
+                                        www.vinixtech.com | academic@vinix.com
+                                    </div>
+                                </div>
+                                <div className="header-right" style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <div className="meta-item" style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>INTERNSHIP ID</span>
+                                        <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>{result.offerLetterId}</span>
+                                    </div>
+                                    <div className="meta-item" style={{ marginTop: '5px', display: 'flex', flexDirection: 'column' }}>
+                                        <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>ISSUE DATE</span>
+                                        <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>
+                                            {new Date(result.issueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        </span>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="relative z-10 flex flex-col h-full justify-between">
-                                {/* Header section */}
-                                <div>
-                                    <div className="flex justify-between items-start">
-                                        {/* Left Side: Logo and Details */}
-                                        <div className="flex items-center space-x-3.5">
-                                            {/* Square logo container */}
-                                            <div className="w-11 h-11 bg-[#0b2545] rounded-xl flex items-center justify-center p-1.5 flex-shrink-0 shadow-sm">
-                                                <img src={`${import.meta.env.BASE_URL}vinix-logo.jpeg`} alt="Vinix Logo" className="w-full h-full object-contain rounded-lg" />
-                                            </div>
-                                            <div className="text-left font-sans flex flex-col justify-center">
-                                                <h1 className="text-[20px] font-black text-[#0b2545] tracking-tight leading-none uppercase">VINIX</h1>
-                                                <p className="text-[7.5px] text-[#0b2545] font-black tracking-wide mt-1 leading-none">
-                                                    Empowering Future Innovators
-                                                </p>
-                                                <p className="text-[7px] text-slate-400 font-bold tracking-wider mt-0.5 leading-none">
-                                                    www.vinixtech.com | academic@vinix.com
-                                                </p>
-                                            </div>
-                                        </div>
+                            {/* Divider Line */}
+                            <div className="header-line" style={{ width: '100%', height: '1.5px', backgroundColor: '#e2e8f0', marginTop: '8px', marginBottom: '16px', zIndex: 2 }}></div>
 
-                                        {/* Right Side: Credential indices */}
-                                        <div className="text-right font-sans leading-tight">
-                                            <p className="text-[7.5px] text-slate-400 font-extrabold uppercase tracking-wider">INTERNSHIP ID</p>
-                                            <p className="text-[9.5px] font-black text-[#0b2545] font-mono mt-0.5">{result.offerLetterId}</p>
-                                            <p className="text-[7.5px] text-slate-400 font-extrabold uppercase tracking-wider mt-1.5">ISSUE DATE</p>
-                                            <p className="text-[9.5px] font-black text-[#0b2545] mt-0.5">
-                                                {new Date(result.issueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    {/* Thin horizontal navy line at the bottom of the header */}
-                                    <div className="w-full h-[1.5px] bg-[#0b2545] mt-3"></div>
+                            {/* Body Content */}
+                            <div className="doc-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', zIndex: 2 }}>
+                                <h1 className="document-title" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: '1.2rem', color: '#0f2942', marginBottom: '2px', letterSpacing: '0.2px' }}>INTERNSHIP OFFER LETTER</h1>
+                                <div className="document-date" style={{ fontSize: '0.72rem', color: '#cca353', marginBottom: '15px', fontWeight: 600 }}>
+                                    Date: {new Date(result.issueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                                 </div>
 
-                                {/* Main Flow Container for Content */}
-                                <div className="space-y-3.5 flex-1 flex flex-col justify-start">
-                                    {/* Title Block */}
-                                    <div className="text-left mt-2">
-                                        <h2 className="text-[20px] font-black text-[#0b2545] tracking-wider uppercase font-sans">
-                                            INTERNSHIP OFFER LETTER
-                                        </h2>
-                                    </div>
+                                <div className="greeting-block" style={{ fontSize: '0.73rem', color: '#334155', marginBottom: '8px' }}>
+                                    Dear <strong>{result.studentName}</strong>,
+                                </div>
 
-                                    {/* Body content salutation and intro */}
-                                    <div className="text-[10px] text-slate-650 leading-relaxed font-sans space-y-2">
-                                        <p className="text-slate-500 font-bold">Date: {new Date(result.issueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' })}</p>
-                                        <p>Dear <strong>{result.studentName}</strong>,</p>
-                                        <p>
-                                            We are delighted to offer you the position of <strong>Virtual Intern – {result.internshipTitle}</strong> at <strong>Vinix Technologies</strong>.
-                                        </p>
-                                        <p>
-                                            After reviewing your profile, we are confident that your skills and enthusiasm make you a valuable addition to our team. We look forward to supporting your professional growth through this internship opportunity.
-                                        </p>
-                                    </div>
+                                <div className="intro-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '10px', textAlign: 'justify' }}>
+                                    We are delighted to offer you the position of <strong>Virtual Intern – {result.internshipTitle}</strong> at <strong>Vinix Technologies</strong>. After reviewing your application, we are confident that your skills and enthusiasm make you a valuable addition to our program.
+                                </div>
 
-                                    {/* Internship Details Section */}
-                                    <div className="space-y-1.5 select-text section">
-                                        <h3 className="text-[11px] font-black text-[#0b2545] uppercase tracking-wide section-title">
-                                            Internship Details
-                                        </h3>
-                                        {/* Table layout matching the screenshot */}
-                                        <div className="border border-slate-200 rounded-lg overflow-hidden shadow-xs bg-white">
-                                            <table className="w-full border-collapse table-fixed select-text">
-                                                <thead>
-                                                    <tr className="bg-[#0b2545] text-white text-[9px] font-black uppercase tracking-wider">
-                                                        <th className="w-[40%] text-left py-2 px-3.5 font-black">Particulars</th>
-                                                        <th className="w-[60%] text-left py-2 px-3.5 font-black">Details</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {[
-                                                        { p: 'Full Name', v: result.studentName, bg: 'bg-white' },
-                                                        { p: 'Intern ID', v: result.offerLetterId, bg: 'bg-[#f8fafc]' },
-                                                        { p: 'Domain', v: result.internshipTitle, bg: 'bg-white' },
-                                                        { p: 'Duration', v: result.duration, bg: 'bg-[#f8fafc]' },
-                                                        { p: 'Start Date', v: new Date(result.issueDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }), bg: 'bg-white' },
-                                                        { p: 'End Date', v: new Date(new Date(result.issueDate).setMonth(new Date(result.issueDate).getMonth() + (parseInt(result.duration) || 1))).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }), bg: 'bg-[#f8fafc]' },
-                                                        { p: 'Mode of Internship', v: 'Remote / Virtual', bg: 'bg-white' }
-                                                    ].map((row, idx) => (
-                                                        <tr key={idx} className={`text-[9.5px] border-t border-slate-200/60 ${row.bg}`}>
-                                                            <td className="py-1.5 px-3.5 text-slate-500 font-bold align-middle">{row.p}</td>
-                                                            <td className="py-1.5 px-3.5 text-slate-900 font-extrabold align-middle">{row.v}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
+                                <div className="intro-sub-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '10px', textAlign: 'justify' }}>
+                                    Your virtual internship details and key particulars are finalized as follows:
+                                </div>
 
-                                    {/* Internship Overview Section */}
-                                    <div className="space-y-1 section">
-                                        <h3 className="text-[11px] font-black text-[#0b2545] uppercase tracking-wide section-title">Internship Overview</h3>
-                                        <p className="text-[9.5px] text-slate-600 font-bold">During this internship, you will have the opportunity to:</p>
-                                        <ul className="list-disc pl-4 text-[9.5px] text-slate-600 space-y-0.5 leading-relaxed font-sans font-medium">
-                                            <li>Work on practical, real-world <strong>{result.internshipTitle}</strong> projects.</li>
-                                            <li>Gain hands-on experience with modern development tools and technologies.</li>
-                                            <li>Receive mentorship and guidance from experienced professionals.</li>
-                                            <li>Enhance your technical and problem-solving skills through project-based learning.</li>
-                                            <li>Participate in periodic progress reviews and feedback sessions.</li>
-                                        </ul>
-                                    </div>
+                                {/* Particulars Table */}
+                                <table className="particulars-table" style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '6px', overflow: 'hidden', border: '1px solid #e2e8f0', marginBottom: '12px', fontSize: '0.7rem' }}>
+                                    <thead>
+                                        <tr>
+                                            <th colSpan={2} style={{ backgroundColor: '#0f2942', color: '#ffffff', fontWeight: 700, padding: '8px 12px', textAlign: 'left', fontSize: '0.68rem', letterSpacing: '0.5px', border: 'none' }}>INTERNSHIP PROGRAM PARTICULARS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Internship Track</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{result.internshipTitle}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Intern ID</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{result.offerLetterId}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Duration</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{result.duration}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Commencement Date</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>
+                                                {(() => {
+                                                    const d = new Date(result.issueDate);
+                                                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                                    return `${String(d.getDate()).padStart(2, '0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
+                                                })()}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Estimated Completion</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>
+                                                {(() => {
+                                                    const d = new Date(result.issueDate);
+                                                    const num = parseInt(result.duration) || 1;
+                                                    if (result.duration.toLowerCase().includes('week')) {
+                                                        d.setDate(d.getDate() + num * 7);
+                                                    } else {
+                                                        d.setMonth(d.getMonth() + num);
+                                                    }
+                                                    d.setDate(d.getDate() - 3);
+                                                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                                    return `${String(d.getDate()).padStart(2, '0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
+                                                })()}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Stipend Details</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>Unpaid (Performance-Based Internship)</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Location & Model</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>Remote / Virtual</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 600, color: '#475569', width: '35%' }}>College / University</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 700, color: '#0f172a' }}>{result.college || 'Anna University, Chennai'}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
 
-                                    {/* Certificate of Completion Section */}
-                                    <div className="space-y-1 section">
-                                        <h3 className="text-[11px] font-black text-[#0b2545] uppercase tracking-wide section-title">Certificate of Completion</h3>
-                                        <p className="text-[9.5px] text-slate-600 leading-relaxed font-medium">
-                                            Upon successful completion of the internship and fulfillment of all assigned tasks, you will receive a <strong>Certificate of Internship</strong> with QR-code verification for authenticity.
-                                        </p>
-                                    </div>
-
-                                    {/* Terms & Conditions Section */}
-                                    <div className="space-y-1 section pb-4">
-                                        <h3 className="text-[11px] font-black text-[#0b2545] uppercase tracking-wide section-title">Terms & Conditions</h3>
-                                        <ul className="list-disc pl-4 text-[9.5px] text-slate-600 space-y-0.5 leading-relaxed font-sans font-medium">
-                                            <li>This internship is conducted remotely and offers flexible working hours.</li>
-                                            <li>Interns are expected to maintain regular communication and submit assigned work within deadlines.</li>
-                                            <li>Successful completion will be determined based on performance, project submission, and adherence to internship guidelines.</li>
-                                        </ul>
-                                        <p className="text-[9.5px] text-slate-650 font-medium mt-1">
-                                            We are excited to have you join our team and wish you a rewarding learning experience with VINIX.
-                                        </p>
-                                        <p className="text-[10px] text-slate-700 font-black mt-1.5 leading-none">
-                                            Congratulations and Welcome to the Team!
-                                        </p>
+                                {/* General Terms & Conditions */}
+                                <div className="terms-card" style={{ border: '1px solid #e2e8f0', borderRadius: '6px', padding: '10px 12px', marginBottom: '10px', backgroundColor: '#f8fafc' }}>
+                                    <span className="card-title" style={{ color: '#0f2942', fontSize: '0.72rem', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>General Terms &amp; Conditions of Internship:</span>
+                                    <div className="terms-list" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>1. Task Execution:</strong> You will be evaluated based on the functional completeness of the assigned tasks. You must submit weekly progress updates.</div>
+                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>2. Code of Conduct:</strong> Plagiarism or any forms of professional misconduct will lead to immediate cancellation of your internship program.</div>
+                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>3. Confidentiality:</strong> Any documentation, source code, or mock datasets shared during this program are strictly confidential.</div>
+                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334555' }}><strong>4. Certification:</strong> An official Certificate of Internship Completion will be issued only upon successful submission and mentoring approval of all milestone tasks.</div>
                                     </div>
                                 </div>
 
-                                {/* Signature Row */}
-                                <div className="flex justify-between items-end select-none px-4 signature-section mt-auto pb-10">
-                                    {/* Company Seal Stamp */}
-                                    <div className="flex flex-col items-center justify-center text-center">
-                                        <div style={{ width: '24mm', height: '24mm' }} className="flex items-center justify-center mb-1">
-                                            <img
-                                                src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
-                                                alt="Official Stamp"
-                                                className="w-full h-full object-contain opacity-90 mix-blend-multiply filter contrast-125 rotate-[4deg]"
-                                            />
-                                        </div>
-                                        <div className="w-16 h-[1px] bg-slate-200"></div>
-                                        <p className="text-[7px] text-slate-400 font-bold uppercase mt-1 tracking-wider font-sans">Company Seal</p>
-                                    </div>
-
-                                    {/* Director Sign */}
-                                    <div className="flex flex-col items-center text-center">
-                                        <span className="font-['Great_Vibes'] text-2xl text-slate-700 select-none transform -rotate-1 font-medium inline-block mb-1">
-                                            Vishal R.
-                                        </span>
-                                        <div className="w-24 h-[1px] bg-slate-200"></div>
-                                        <h4 className="text-[9px] font-bold text-slate-900 mt-1 font-sans">Vishal R</h4>
-                                        <p className="text-[7px] text-slate-400 font-bold uppercase tracking-wider font-sans mt-0.5">Director – Academic Operations</p>
+                                {/* Certificate Section */}
+                                <div className="cert-completion-card" style={{ border: '1px solid #cbd5e1', borderRadius: '6px', padding: '10px 12px', marginBottom: '10px', backgroundColor: '#ffffff' }}>
+                                    <span className="card-title" style={{ color: '#0f2942', fontSize: '0.72rem', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>CERTIFICATE OF COMPLETION</span>
+                                    <div className="completion-text" style={{ fontSize: '0.71rem', lineHeight: '1.45', color: '#334155', textAlign: 'justify' }}>
+                                        Upon successful completion of the internship and fulfillment of all assigned tasks, you will receive a Certificate of Internship with QR-code verification for authenticity.
                                     </div>
                                 </div>
 
-                                {/* Footer section */}
-                                <div className="footer-section offer-footer">
-                                    <div className="w-full h-[1.5px] bg-[#0b2545] mb-2"></div>
-                                    <div className="flex justify-between items-center text-[7.5px] text-slate-450 font-bold font-sans px-1 select-none">
-                                        {/* MSME details */}
-                                        <div className="flex items-center space-x-1.5 flex-shrink-0">
-                                            <img src={`${import.meta.env.BASE_URL}msme-logo.png`} alt="MSME Logo" style={{ height: '14.5px', width: 'auto' }} className="object-contain filter grayscale opacity-80 bg-transparent" />
-                                            <span className="font-mono text-slate-400">MSME: UDYAM-TN-17-0076606</span>
-                                        </div>
-                                        {/* academic@vinix.com | www.vinixtech.com */}
-                                        <div className="font-sans text-slate-400 font-bold">
-                                            <span>academic@vinix.com | www.vinixtech.com</span>
-                                        </div>
-                                    </div>
+                                <div className="outro-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '8px' }}>
+                                    Please return the signed copy of this letter as a token of your formal acceptance of this offer. We look forward to a mutually rewarding learning experience.
                                 </div>
+                            </div>
+
+                            {/* Signatures Section */}
+                            <div className="signatures-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', width: '100%', paddingBottom: '12px', zIndex: 2 }}>
+                                {/* Company Seal (Left) */}
+                                <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-start' }}>
+                                    <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px' }}>
+                                        <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Official Seal" className="stamp-overlay" style={{ width: '80px', height: '80px', objectFit: 'contain', opacity: 0.9 }} />
+                                    </div>
+                                    <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>COMPANY SEAL</span>
+                                </div>
+
+                                {/* Director Signatory (Right) */}
+                                <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-end', textAlign: 'right', marginLeft: 'auto' }}>
+                                    <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px', justifyContent: 'flex-end' }}>
+                                        <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Director Signature" className="sig-image" style={{ maxHeight: '42px', objectFit: 'contain' }} />
+                                    </div>
+                                    <span className="sig-name" style={{ fontWeight: 700, fontSize: '0.72rem', color: '#0f172a' }}>Vishal R</span>
+                                    <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>DIRECTOR – ACADEMIC OPERATIONS</span>
+                                </div>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="doc-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontSize: '0.6rem', color: '#475569', fontWeight: 700, letterSpacing: '0.3px', zIndex: 2, borderTop: '1px solid #cbd5e1', paddingTop: '6px' }}>
+                                <div className="footer-logo-wrap" style={{ height: '50px', display: 'flex', alignItems: 'center' }}>
+                                    <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Logo" style={{ height: '50px' }} />
+                                </div>
+                                <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.4, color: '#64748b' }}>
+                                    <strong>VINIX Technologies Private Limited</strong><br />
+                                    UDYAM Registry: UDYAM-TN-17-0076606<br />
+                                    academic@vinix.com | www.vinix.online
+                                </div>
+                                <div style={{ width: '60px', height: '1px', visibility: 'hidden' }}></div>
                             </div>
                         </div>
 
