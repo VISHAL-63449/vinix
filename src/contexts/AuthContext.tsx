@@ -162,17 +162,50 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         };
 
+        const handleUnload = () => {
+            const url = 'https://ioppccrnbuqgcynmjpaa.supabase.co/rest/v1/profiles?id=eq.' + user.id;
+            const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvcHBjY3JuYnVxZ2N5bm1qcGFhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzMyNjUyNywiZXhwIjoyMTAyOTAyNTI3fQ.dC2HhQgzBrE5uF4uKqbtU9rPL_4vfyKKhujWIZgxBb0';
+
+            fetch(url, {
+                method: 'PATCH',
+                headers: {
+                    'apikey': serviceRoleKey,
+                    'Authorization': 'Bearer ' + serviceRoleKey,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    updated_at: '2000-01-01T00:00:00Z'
+                }),
+                keepalive: true
+            });
+        };
+
         // Send immediately on login/load
         sendHeartbeat();
 
         // Send every 60 seconds to keep session active/online
         const interval = setInterval(sendHeartbeat, 60 * 1000);
 
-        return () => clearInterval(interval);
+        window.addEventListener('beforeunload', handleUnload);
+
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('beforeunload', handleUnload);
+        };
     }, [user?.id]);
 
     const signOut = async () => {
         setLoading(true);
+        if (user?.id) {
+            try {
+                await supabaseAdmin
+                    .from('profiles')
+                    .update({ updated_at: '2000-01-01T00:00:00Z' })
+                    .eq('id', user.id);
+            } catch (err) {
+                console.error('Failed to set status offline on sign out:', err);
+            }
+        }
         await supabase.auth.signOut();
         setUser(null);
         setSession(null);
