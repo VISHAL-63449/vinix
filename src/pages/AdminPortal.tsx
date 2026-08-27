@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, supabaseAdmin } from '../utils/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { useToast, ToastContainer } from '../components/Toast';
 import {
     LayoutDashboard, CheckSquare, Search, ShieldCheck, User, FolderOpen,
     Award, FileSpreadsheet, Plus, Trash2, Edit3, X, Megaphone, Mail,
@@ -113,6 +114,7 @@ const formatLastActive = (updatedAtStr?: string) => {
 
 const AdminPortal: React.FC = () => {
     const { user, profile } = useAuth();
+    const { toasts, showToast, dismiss } = useToast();
     const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'submissions' | 'certificates' | 'domains' | 'students' | 'student-detail'>('overview');
     const [subTab, setSubTab] = useState<'domains' | 'internships'>('domains');
     const [selectedStudentForDetail, setSelectedStudentForDetail] = useState<Enrollment | null>(null);
@@ -399,10 +401,10 @@ const AdminPortal: React.FC = () => {
                 await supabaseAdmin.from('task_progress').insert(progressInserts);
             }
 
-            alert('Internship application approved. Offer credentials generated successfully!');
+            showToast('Internship application approved. Offer credentials generated successfully!', 'success');
             loadData();
         } catch (err: any) {
-            alert(`Approval error: ${err.message}`);
+            showToast(`Approval error: ${err.message}`, 'error');
         }
     };
 
@@ -415,10 +417,10 @@ const AdminPortal: React.FC = () => {
                 .update({ status: 'rejected' })
                 .eq('id', enrollId);
 
-            alert('Application status marked as rejected.');
+            showToast('Application status marked as rejected.', 'warning');
             loadData();
         } catch (err: any) {
-            alert(`Reject error: ${err.message}`);
+            showToast(`Reject error: ${err.message}`, 'error');
         }
     };
 
@@ -510,12 +512,12 @@ const AdminPortal: React.FC = () => {
                 }
             }
 
-            alert(`Milestone marked as ${status}.`);
+            showToast(`Milestone marked as ${status}.`, 'success');
             setSelectedSubForReview(null);
             setAdminFeedback('');
             loadData();
         } catch (err: any) {
-            alert(`Failed to grade task: ${err.message}`);
+            showToast(`Failed to grade task: ${err.message}`, 'error');
         } finally {
             setReviewLoading(false);
         }
@@ -525,7 +527,7 @@ const AdminPortal: React.FC = () => {
     const handleSaveDomain = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!domainName.trim()) {
-            alert('Domain Name is required.');
+            showToast('Domain Name is required.', 'warning');
             return;
         }
         setSavingDomain(true);
@@ -551,7 +553,7 @@ const AdminPortal: React.FC = () => {
                     .eq('id', editingDomainId);
 
                 if (error) throw error;
-                alert('Domain category updated successfully!');
+                showToast('Domain category updated successfully!', 'success');
             } else {
                 // Insert new
                 const { error } = await supabaseAdmin
@@ -567,7 +569,7 @@ const AdminPortal: React.FC = () => {
                     });
 
                 if (error) throw error;
-                alert('Domain category created successfully!');
+                showToast('Domain category created successfully!', 'success');
             }
 
             // Reset Form Fields
@@ -581,7 +583,7 @@ const AdminPortal: React.FC = () => {
             setDomainDesc('');
             loadData();
         } catch (err: any) {
-            alert(`Domain operation failed: ${err.message}`);
+            showToast(`Domain operation failed: ${err.message}`, 'error');
         } finally {
             setSavingDomain(false);
         }
@@ -597,7 +599,7 @@ const AdminPortal: React.FC = () => {
             if (error) throw error;
             loadData();
         } catch (err: any) {
-            alert(`Failed to toggle state: ${err.message}`);
+            showToast(`Failed to toggle state: ${err.message}`, 'error');
         }
     };
 
@@ -610,10 +612,10 @@ const AdminPortal: React.FC = () => {
                 .delete()
                 .eq('id', id);
             if (error) throw error;
-            alert('Domain deleted successfully');
+            showToast('Domain deleted successfully', 'success');
             loadData();
         } catch (err: any) {
-            alert(`Failed to delete: ${err.message}`);
+            showToast(`Failed to delete: ${err.message}`, 'error');
         }
     };
 
@@ -621,7 +623,7 @@ const AdminPortal: React.FC = () => {
     const handleCreateInternship = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!domainTitle.trim() || !selectedDomainId) {
-            alert('Please specify a Title and choose a Domain category');
+            showToast('Please specify a Title and choose a Domain category', 'warning');
             return;
         }
 
@@ -668,13 +670,13 @@ const AdminPortal: React.FC = () => {
                 await supabaseAdmin.from('internship_tasks').insert(defaultTasks);
             }
 
-            alert('Virtual internship track initialized with 6 milestones!');
+            showToast('Virtual internship track initialized with 6 milestones!', 'success');
             setDomainTitle('');
             setSelectedDomainId('');
             setDomainDesc('');
             loadData();
         } catch (err: any) {
-            alert(`Failed to save internship: ${err.message}`);
+            showToast(`Failed to save internship: ${err.message}`, 'error');
         } finally {
             setSavingInternship(false);
         }
@@ -700,12 +702,12 @@ const AdminPortal: React.FC = () => {
 
             if (error) throw error;
 
-            alert(`Certificate issued: ${certNo}`);
+            showToast(`Certificate issued: ${certNo}`, 'success');
             setCertStudentId('');
             setCertCourseName('');
             loadData();
         } catch (err: any) {
-            alert(`Failed to issue certificate: ${err.message}`);
+            showToast(`Failed to issue certificate: ${err.message}`, 'error');
         } finally {
             setIssuingCert(false);
         }
@@ -726,6 +728,7 @@ const AdminPortal: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-805 dark:text-slate-100 flex flex-col md:flex-row transition-all duration-300">
+            <ToastContainer toasts={toasts} dismiss={dismiss} />
 
             {/* Sidebar navigation */}
             <aside className="w-full md:w-64 bg-white dark:bg-slate-900 border-r border-slate-205 dark:border-slate-805 flex flex-col justify-between p-4 flex-shrink-0 select-none">
@@ -1658,10 +1661,10 @@ const AdminPortal: React.FC = () => {
                                                                                     .delete()
                                                                                     .eq('id', track.id);
                                                                                 if (error) throw error;
-                                                                                alert('Internship track deleted successfully.');
+                                                                                showToast('Internship track deleted successfully.', 'success');
                                                                                 loadData();
                                                                             } catch (err: any) {
-                                                                                alert(`Delete error: ${err.message}`);
+                                                                                showToast(`Delete error: ${err.message}`, 'error');
                                                                             }
                                                                         }}
                                                                         className="text-slate-400 hover:text-red-650 transition p-1"

@@ -4,6 +4,7 @@ import { supabase, supabaseAdmin } from '../utils/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import { useToast, ToastContainer } from '../components/Toast';
 import {
     LayoutDashboard, BookOpen, Layers, FileCode, Award, User,
     CheckCircle2, XCircle, ExternalLink, FileDown, Play, CheckCheck,
@@ -69,6 +70,7 @@ interface CertificateData {
 const Dashboard: React.FC = () => {
     const { user, profile, studentProfile, refreshProfile } = useAuth();
     const navigate = useNavigate();
+    const { toasts, showToast, dismiss } = useToast();
 
     const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'idcard' | 'certificates' | 'settings'>('overview');
     const [loading, setLoading] = useState(true);
@@ -254,9 +256,9 @@ const Dashboard: React.FC = () => {
             }
 
             await refreshProfile();
-            alert('Your profile and engineering bio were updated successfully!');
+            showToast('Your profile and engineering bio were updated successfully!', 'success');
         } catch (err: any) {
-            alert(`Error updating profile: ${err.message}`);
+            showToast(`Error updating profile: ${err.message}`, 'error');
         } finally {
             setSaveLoading(false);
         }
@@ -270,7 +272,7 @@ const Dashboard: React.FC = () => {
                 .eq('id', offerId);
 
             if (error) throw error;
-            alert(`Offer letter ${status.toLowerCase()} successfully.`);
+            showToast(`Offer letter ${status.toLowerCase()} successfully.`, 'success');
 
             // If accepted, let's trigger seeding task progress for task 1 (LinkedIn post)
             // or subsequent milestones if not already generated!
@@ -306,7 +308,7 @@ const Dashboard: React.FC = () => {
 
             loadDashboardData();
         } catch (err: any) {
-            alert(`Error: ${err.message}`);
+            showToast(`Error: ${err.message}`, 'error');
         }
     };
 
@@ -334,14 +336,14 @@ const Dashboard: React.FC = () => {
 
             if (error) throw error;
 
-            alert('Milestone submission recorded! Evaluators will grade your code shortly.');
+            showToast('Milestone submission recorded! Evaluators will grade your code shortly.', 'success');
             setSelectedTaskForSubmission(null);
             setGithubUrl('');
             setStudentNote('');
             setProjectImageUrl('');
             loadDashboardData();
         } catch (err: any) {
-            alert(`Failed to submit task: ${err.message}`);
+            showToast(`Failed to submit task: ${err.message}`, 'error');
         } finally {
             setSubmittingTask(false);
         }
@@ -365,11 +367,11 @@ const Dashboard: React.FC = () => {
 
             if (error) throw error;
 
-            alert('LinkedIn profile verification post submitted for mentor approval!');
+            showToast('LinkedIn profile verification post submitted for mentor approval!', 'success');
             setLinkedinUrl('');
             loadDashboardData();
         } catch (err: any) {
-            alert(`Failed to submit: ${err.message}`);
+            showToast(`Failed to submit: ${err.message}`, 'error');
         } finally {
             setSubmittingLinkedin(false);
         }
@@ -429,7 +431,7 @@ const Dashboard: React.FC = () => {
                 pdf.save(`${activeOffer.offer_letter_id || 'Offer_Letter'}.pdf`);
             }
         } catch (err: any) {
-            alert(`Direct download failed: ${err.message}. Navigating to verification page for download.`);
+            showToast(`PDF download failed: ${err.message}`, 'error');
             navigate('/verify/offer/' + activeOffer.offer_letter_id);
         } finally {
             setDownloadingOffer(false);
@@ -483,7 +485,7 @@ const Dashboard: React.FC = () => {
                 pdf.save(`${cert.certificate_number || 'Certificate'}.pdf`);
             }
         } catch (err: any) {
-            alert(`Direct download failed: ${err.message}. Navigating to verification page for download.`);
+            showToast(`PDF download failed: ${err.message}`, 'error');
             navigate('/verify/' + cert.certificate_number);
         } finally {
             setActiveCertForDownload(null);
@@ -602,6 +604,7 @@ const Dashboard: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-brand-bgLight dark:bg-brand-bgDark text-slate-800 dark:text-slate-100 transition-colors duration-300 flex flex-col md:flex-row">
+            <ToastContainer toasts={toasts} dismiss={dismiss} />
             {/* Left navigation Center Sidebar */}
             <div className="w-full md:w-64 flex-shrink-0 bg-white dark:bg-brand-cardDark border-r border-slate-200 dark:border-slate-800/80 p-6 flex flex-col select-none no-print">
                 <div className="space-y-6 text-left">
@@ -621,7 +624,7 @@ const Dashboard: React.FC = () => {
                             <button
                                 onClick={() => {
                                     if (activeEnrollment) setActiveTab('workspace');
-                                    else alert('Please register/enroll in an active internship track first.');
+                                    else showToast('Please register/enroll in an active internship track first.', 'warning');
                                 }}
                                 className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'workspace'
                                     ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
@@ -641,7 +644,7 @@ const Dashboard: React.FC = () => {
                             <button
                                 onClick={() => {
                                     if (activeEnrollment) setActiveTab('workspace');
-                                    else alert('Please register/enroll in an active internship track first.');
+                                    else showToast('Please register/enroll in an active internship track first.', 'warning');
                                 }}
                                 className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                             >
@@ -651,7 +654,7 @@ const Dashboard: React.FC = () => {
                             <button
                                 onClick={() => {
                                     if (activeEnrollment) setActiveTab('certificates');
-                                    else alert('Please register/enroll in an active internship track first.');
+                                    else showToast('Please register/enroll in an active internship track first.', 'warning');
                                 }}
                                 className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'certificates'
                                     ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
@@ -664,7 +667,7 @@ const Dashboard: React.FC = () => {
                             <button
                                 onClick={() => {
                                     if (activeEnrollment) setActiveTab('overview');
-                                    else alert('Please register/enroll in an active internship track first.');
+                                    else showToast('Please register/enroll in an active internship track first.', 'warning');
                                 }}
                                 className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
                             >
@@ -735,7 +738,7 @@ const Dashboard: React.FC = () => {
                                     <button
                                         onClick={() => {
                                             navigator.clipboard.writeText(window.location.origin);
-                                            alert('Vinix Portal referral link copied to clipboard!');
+                                            showToast('Referral link copied to clipboard!', 'success');
                                         }}
                                         className="px-4 py-2 border border-blue-200 dark:border-blue-800 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 font-bold rounded-xl hover:bg-blue-50/50 text-xs transition flex items-center gap-1.5"
                                     >
@@ -794,7 +797,7 @@ const Dashboard: React.FC = () => {
                                                 </button>
                                                 <button
                                                     onClick={() => {
-                                                        alert("You have no pending offer letter. Please register or enroll in an internship track first!");
+                                                        showToast('No offer letter issued yet. Please register or enroll first.', 'warning');
                                                     }}
                                                     className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-blue-500/25 flex items-center gap-1.5"
                                                 >
