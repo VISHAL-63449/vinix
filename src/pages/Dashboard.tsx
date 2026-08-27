@@ -1332,9 +1332,9 @@ const Dashboard: React.FC = () => {
                                         <div className="flex items-center justify-between z-10 border-b border-slate-100 pb-2">
                                             <div className="flex items-center space-x-1.5">
                                                 <img
-                                                    src={`${import.meta.env.BASE_URL}vinix-logo-title.jpeg`}
+                                                    src={`${import.meta.env.BASE_URL}vinix-title.png`}
                                                     alt="VINIX Logo"
-                                                    className="h-5.5 w-auto object-contain"
+                                                    className="h-6 w-auto object-contain"
                                                 />
                                             </div>
                                             <span className="text-[6px] font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200 uppercase tracking-widest leading-none">
