@@ -118,7 +118,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                     </div>
 
                     {/* Right Controls */}
-                    <div className="hidden lg:flex items-center space-x-4">
+                    <div className="hidden sm:flex items-center space-x-4">
                         {/* Theme Toggle */}
                         <button
                             onClick={() => setDarkMode(!darkMode)}
@@ -195,7 +195,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="flex lg:hidden items-center space-x-2">
+                    <div className="flex md:hidden items-center space-x-2">
                         {/* Theme Toggle */}
                         <button
                             onClick={() => setDarkMode(!darkMode)}
@@ -222,7 +222,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                             backgroundColor: darkMode ? '#0D0E12' : '#FFFFFF',
                             borderColor: darkMode ? '#1E293B' : '#E2E8F0',
                         }}
-                        className="lg:hidden border-t py-3 px-4 space-y-2"
+                        className="md:hidden border-t py-3 px-4 space-y-2"
                     >
                         {navLinks.map((link) => {
                             const Icon = link.icon;

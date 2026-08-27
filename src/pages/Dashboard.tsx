@@ -1317,30 +1317,34 @@ const Dashboard: React.FC = () => {
 
                                     <div
                                         id="id-card-print-area"
-                                        className="w-72 aspect-[0.63] rounded-3xl bg-[#090b11] border border-slate-800 shadow-2xl p-[14px] flex flex-col justify-between relative overflow-hidden select-none select-none"
+                                        className="w-72 aspect-[0.63] rounded-3xl bg-white border border-slate-200/80 shadow-2xl p-[14px] flex flex-col justify-between relative overflow-hidden select-none"
                                     >
-                                        {/* Diagonal styling stripes */}
-                                        <div className="absolute -top-12 -left-12 w-32 h-32 bg-brand-primary/10 rounded-full blur-2xl"></div>
-                                        <div className="absolute top-1/2 -right-8 w-24 h-24 bg-brand-secondary/15 rounded-full blur-2xl"></div>
+                                        {/* Double border frame line (matches the certificate and offer letter) */}
+                                        <div className="absolute top-1.5 left-1.5 right-1.5 bottom-1.5 border border-[#0f2942]/10 rounded-[22px] pointer-events-none z-0"></div>
+                                        <div className="absolute top-[9px] left-[9px] right-[9px] bottom-[9px] border-[0.5px] border-[#cca353]/35 rounded-[19px] pointer-events-none z-0"></div>
 
-                                        {/* Accent design stripes */}
-                                        <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-bl from-brand-primary via-indigo-900 to-transparent opacity-30" style={{ clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }}></div>
-                                        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-brand-primary via-brand-secondary to-brand-accent"></div>
+                                        {/* Elegant inner background glows */}
+                                        <div className="absolute -top-12 -left-12 w-32 h-32 bg-blue-50/40 rounded-full blur-2xl pointer-events-none"></div>
+                                        <div className="absolute top-1/2 -right-8 w-24 h-24 bg-indigo-50/30 rounded-full blur-2xl pointer-events-none"></div>
+                                        <div className="absolute inset-0 bg-[radial-gradient(#e0e7ff_1px,transparent_1px)] [background-size:16px_16px] opacity-15 pointer-events-none"></div>
 
                                         {/* Header logo */}
-                                        <div className="flex items-center justify-between z-10 border-b border-slate-800/80 pb-2">
-                                            <div className="flex items-center space-x-1">
-                                                <GraduationCap className="h-4.5 w-4.5 text-brand-accent" />
-                                                <span className="text-[11px] font-bold text-white tracking-widest">VINIX</span>
+                                        <div className="flex items-center justify-between z-10 border-b border-slate-100 pb-2">
+                                            <div className="flex items-center space-x-1.5">
+                                                <img
+                                                    src={`${import.meta.env.BASE_URL}vinix-logo.png`}
+                                                    alt="VINIX Logo"
+                                                    className="h-5.5 w-auto object-contain"
+                                                />
                                             </div>
-                                            <span className="text-[6px] font-extrabold text-brand-accent uppercase tracking-widest leading-none bg-brand-primary/20 px-2 py-0.5 rounded-full border border-brand-primary/30">
+                                            <span className="text-[6px] font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200 uppercase tracking-widest leading-none">
                                                 INTERN IDENTITY
                                             </span>
                                         </div>
 
                                         {/* Main Photo Preset */}
                                         <div className="flex flex-col items-center justify-center text-center mt-3 z-10 space-y-2">
-                                            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-brand-primary/20 to-brand-secondary/20 border border-slate-850 p-1 flex items-center justify-center relative overflow-hidden">
+                                            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-50 to-indigo-50 border border-slate-200 p-1 flex items-center justify-center relative overflow-hidden shadow-sm">
                                                 {profile?.avatar_url ? (
                                                     <img
                                                         src={profile.avatar_url}
@@ -1348,53 +1352,79 @@ const Dashboard: React.FC = () => {
                                                         className="w-full h-full object-cover rounded-[12px]"
                                                     />
                                                 ) : (
-                                                    <div className="w-full h-full bg-[#0a0f1d] rounded-[12px] flex items-center justify-center text-slate-500 font-serif font-black text-3xl">
+                                                    <div className="w-full h-full bg-blue-50/50 text-blue-900 rounded-[12px] flex items-center justify-center font-sans font-bold text-3xl">
                                                         {(profile?.full_name || 'U').charAt(0).toUpperCase()}
                                                     </div>
                                                 )}
                                             </div>
                                             <div>
-                                                <h4 className="text-slate-100 font-extrabold text-sm tracking-wide capitalize select-all">
+                                                <h4 className="text-[#0f2942] font-black text-sm tracking-wide capitalize select-all">
                                                     {profile?.full_name || 'Vinix Candidate'}
                                                 </h4>
-                                                <p className="text-[8px] font-bold text-brand-accent uppercase tracking-widest">
+                                                <p className="text-[8px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">
                                                     {activeEnrollment ? activeEnrollment.internship.title.split(' ')[0] : 'Junior'} Developer
                                                 </p>
                                             </div>
                                         </div>
 
-                                        {/* Metadata list */}
-                                        <div className="bg-[#0b0c15]/60 hover:bg-[#0b0c15]/90 border border-slate-850/80 rounded-xl p-2.5 space-y-2 text-left z-10 text-[8px] font-medium font-sans">
+                                        {/* Details Box */}
+                                        <div className="bg-slate-50/80 border border-slate-200/50 rounded-xl p-2.5 space-y-1.5 text-left z-10 text-[8.5px] font-medium font-sans">
                                             <div className="flex justify-between items-center">
-                                                <span className="text-slate-500 uppercase font-bold tracking-widest">INTERN ID</span>
-                                                <span className="text-slate-300 font-mono select-all">
+                                                <span className="text-slate-500 uppercase font-bold tracking-wider">INTERN ID</span>
+                                                <span className="text-slate-800 font-mono font-bold select-all">
                                                     {activeOffer ? activeOffer.offer_letter_id : 'VINIX-PENDING'}
                                                 </span>
                                             </div>
-                                            <div className="flex justify-between items-center border-t border-slate-850/40 pt-1.5">
-                                                <span className="text-slate-500 uppercase font-bold tracking-widest">COLLEGE</span>
-                                                <span className="text-slate-300 truncate max-w-[130px] font-semibold">{studentProfile?.college || 'Pending Info'}</span>
+                                            <div className="flex justify-between items-center border-t border-slate-200/40 pt-1.5">
+                                                <span className="text-slate-400 uppercase font-bold tracking-wider">COLLEGE</span>
+                                                <span className="text-slate-800 truncate max-w-[130px] font-bold">{studentProfile?.college || 'Pending Info'}</span>
                                             </div>
-                                            <div className="flex justify-between items-center border-t border-slate-850/40 pt-1.5">
-                                                <span className="text-slate-500 uppercase font-bold tracking-widest">DURATION</span>
-                                                <span className="text-slate-300 font-semibold">{activeEnrollment ? activeEnrollment.internship.duration : '3 Months'}</span>
+                                            <div className="flex justify-between items-center border-t border-slate-200/40 pt-1.5">
+                                                <span className="text-slate-400 uppercase font-bold tracking-wider">DURATION</span>
+                                                <span className="text-slate-800 font-bold">{activeEnrollment ? activeEnrollment.internship.duration : '3 Months'}</span>
                                             </div>
                                         </div>
 
-                                        {/* Scanning Barcode footer */}
-                                        <div className="flex justify-between items-center z-10 pt-2 border-t border-slate-800/80">
-                                            <div className="flex items-center space-x-1 bg-white p-0.5 rounded shadow">
-                                                <img
-                                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=40x40&data=${encodeURIComponent(
-                                                        window.location.origin + `/verify/offer/${activeOffer?.offer_letter_id || 'verification'}`
-                                                    )}`}
-                                                    alt="verify QR"
-                                                    className="w-6 h-6 object-contain"
-                                                />
+                                        {/* Footer signature and MSME block */}
+                                        <div className="z-10 pt-2 border-t border-slate-100 flex flex-col gap-2.5">
+                                            {/* Row 1: QR Code, Signature, and MSME Logo */}
+                                            <div className="flex justify-between items-end">
+                                                {/* Left: QR Code */}
+                                                <div className="bg-white p-0.5 rounded border border-slate-200 shadow-sm flex-shrink-0">
+                                                    <img
+                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=45x45&data=${encodeURIComponent(
+                                                            window.location.origin + `/verify/offer/${activeOffer?.offer_letter_id || 'verification'}`
+                                                        )}`}
+                                                        alt="verify QR"
+                                                        className="w-9 h-9 object-contain"
+                                                    />
+                                                </div>
+
+                                                {/* Center: Founder Signature */}
+                                                <div className="flex flex-col items-center">
+                                                    <img
+                                                        src={`${import.meta.env.BASE_URL}founder-sign.png`}
+                                                        alt="Founder Signature"
+                                                        className="h-6 w-auto object-contain"
+                                                    />
+                                                    <div className="w-16 h-[0.75px] bg-[#0f2942]/40 mt-1 mb-0.5"></div>
+                                                    <span className="text-[5.5px] font-bold text-[#0f2942]/60 uppercase tracking-widest leading-none">Founder's Sign</span>
+                                                </div>
+
+                                                {/* Right: MSME Logo (Big Size) */}
+                                                <div className="flex-shrink-0 flex items-center justify-end">
+                                                    <img
+                                                        src={`${import.meta.env.BASE_URL}msme.jpeg`}
+                                                        alt="MSME Logo"
+                                                        className="h-10 w-auto object-contain"
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="text-right">
-                                                <h5 className="text-[6.5px] font-bold text-slate-400">VINIX TECHNOLOGIES</h5>
-                                                <p className="text-[5px] text-slate-500 leading-none">Database active record</p>
+
+                                            {/* Row 2: Final Company Active Record Brand Footer */}
+                                            <div className="flex justify-between items-center text-[5.5px] uppercase font-bold tracking-widest text-[#0f2942]/40 border-t border-slate-100/60 pt-1">
+                                                <span>VINIX TECHNOLOGIES</span>
+                                                <span className="text-[#cca353]">DATABASE ACTIVE RECORD</span>
                                             </div>
                                         </div>
 
