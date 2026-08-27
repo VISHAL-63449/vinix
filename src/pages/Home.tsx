@@ -109,8 +109,8 @@ interface FAQItem {
 
 const FAQ_ITEMS: FAQItem[] = [
     {
-        question: "What is the Skyrovix internship program?",
-        answer: "The Skyrovix internship program offers self-paced, domain-based virtual internships designed to give students practical skillsets through project-based learning."
+        question: "What is the Vinix internship program?",
+        answer: "The Vinix internship program offers self-paced, domain-based virtual internships designed to give students practical skillsets through project-based learning."
     },
     {
         question: "Is there any application fee?",
@@ -802,7 +802,7 @@ export const Home: React.FC = () => {
                             Frequently Asked Questions
                         </h2>
                         <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
-                            Everything you need to know about the Skyrovix internship program.
+                            Everything you need to know about the Vinix internship program.
                         </p>
                     </div>
 
