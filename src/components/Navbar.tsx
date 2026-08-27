@@ -71,7 +71,10 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
     };
 
     return (
-        <nav className="sticky top-0 z-50 w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/80 transition-colors duration-300 no-print">
+        <nav className={`sticky top-0 z-50 w-full border-b transition-all duration-300 no-print ${isScrolled
+                ? 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-900 shadow-md'
+                : 'bg-white/80 backdrop-blur-md border-slate-200/80 dark:bg-slate-950/80 dark:border-slate-800/80'
+            }`}>
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo & Brand */}
