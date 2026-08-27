@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react';
 import {
     ArrowRight, Code2, Users, Award, Globe, Play,
     Star, Sparkles, Send, CheckCircle, MessageSquare,
-    BookOpen, Calendar, FolderOpen, ShieldCheck
+    BookOpen, Calendar, FolderOpen, ShieldCheck, ChevronDown
 } from 'lucide-react';
 
 /* ─── Floating Tech Icons ─── */
@@ -101,8 +101,46 @@ interface Testimonial {
     rating: number;
 }
 
+/* ─── FAQ Schema ─── */
+interface FAQItem {
+    question: string;
+    answer: string;
+}
+
+const FAQ_ITEMS: FAQItem[] = [
+    {
+        question: "What is the Skyrovix internship program?",
+        answer: "The Skyrovix internship program offers self-paced, domain-based virtual internships designed to give students practical skillsets through project-based learning."
+    },
+    {
+        question: "Is there any application fee?",
+        answer: "No, there is absolutely ₹0 application fee. The internship program is completely open-access and free of cost to help students build real portfolio work."
+    },
+    {
+        question: "How long does the internship take?",
+        answer: "Duration options range from 1 to 3 months depending on the domain track selected. It is 100% remote layout, which means you can complete assignments flexibly."
+    },
+    {
+        question: "What domains are available?",
+        answer: "We offer tracks in Full Stack Development, Data Science & AI, Java Development, Python Development, Cyber Security, SQL & Database Development, and UI/UX Design."
+    },
+    {
+        question: "Will I get an offer letter and ID card?",
+        answer: "Yes, you receive an instant digital student ID card and official verification of enrollment via an offer letter upon starting your select track."
+    },
+    {
+        question: "Is the certificate verifiable?",
+        answer: "Yes, every completion certificate has a custom, tamper-proof QR code that redirects to our official verification portal where employers can authenticate credentials."
+    },
+    {
+        question: "Who reviews my task submissions?",
+        answer: "Our system review boards and dedicated mentors evaluate your GitHub link submissions and provide structured, domain-specific feedback logs."
+    }
+];
+
 export const Home: React.FC = () => {
     const navigate = useNavigate();
+    const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(null);
 
     /* Typewriter */
     const TARGET = 'Get Certified.';
@@ -756,128 +794,46 @@ export const Home: React.FC = () => {
                 </div>
             </section>
 
-            {/* ═══════ CONTACT SECTION ═══════ */}
-            <section id="contact" className="py-20 border-t border-slate-100 dark:border-slate-900 relative z-10">
-                <div className="max-w-7xl mx-auto px-6 lg:px-12">
-
+            {/* ═══════ FREQUENTLY ASKED QUESTIONS ═══════ */}
+            <section id="faq" className="py-20 border-t border-slate-100 dark:border-slate-900 relative z-10">
+                <div className="max-w-4xl mx-auto px-6">
                     <div className="text-center space-y-3 mb-14">
-                        <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-amber-50/60 dark:bg-amber-955/20 border border-amber-100/50 dark:border-amber-900/30 rounded-full text-[10px] font-extrabold text-amber-650 dark:text-amber-300 uppercase tracking-widest">
-                            <Users size={11} className="text-amber-500" />
-                            <span>Connect Now</span>
-                        </div>
-                        <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Get in Touch</h2>
-                        <p className="text-slate-500 dark:text-slate-400 text-sm max-w-lg mx-auto font-medium">
-                            Have query about domains, tasks, reviews, or verification? Drop us a prompt line.
+                        <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                            Frequently Asked Questions
+                        </h2>
+                        <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
+                            Everything you need to know about the Skyrovix internship program.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start max-w-5xl mx-auto">
-
-                        {/* Left Info tiles */}
-                        <div className="lg:col-span-5 space-y-6">
-
-                            <div className="p-6 bg-slate-50/50 dark:bg-slate-900/30 border border-slate-150/80 dark:border-slate-800/80 rounded-2xl space-y-2 flex items-start gap-4">
-                                <span className="p-3 bg-blue-100/50 text-blue-700 rounded-xl flex items-center justify-center text-sm">✉</span>
-                                <div>
-                                    <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider">Email Inquiry</h4>
-                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 mt-1">info@vinix.com</p>
-                                    <p className="text-[10px] text-slate-400">Response within 12-24 business hours.</p>
-                                </div>
-                            </div>
-
-                            <div className="p-6 bg-slate-50/50 dark:bg-slate-900/30 border border-slate-150/80 dark:border-slate-800/80 rounded-2xl space-y-2 flex items-start gap-4">
-                                <span className="p-3 bg-emerald-100/50 text-emerald-700 rounded-xl flex items-center justify-center text-sm">📍</span>
-                                <div>
-                                    <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider">Office Address</h4>
-                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 mt-1">Chennai, Tamil Nadu, India</p>
-                                    <p className="text-[10px] text-slate-400">Registered Tech and MSME Platforms.</p>
-                                </div>
-                            </div>
-
-                            <div className="p-6 bg-slate-50/50 dark:bg-slate-900/30 border border-slate-150/80 dark:border-slate-800/80 rounded-2xl space-y-2 flex items-start gap-4">
-                                <span className="p-3 bg-amber-100/50 text-amber-700 rounded-xl flex items-center justify-center text-sm">🕒</span>
-                                <div>
-                                    <h4 className="text-xs font-black uppercase text-slate-400 tracking-wider">Operation Hours</h4>
-                                    <p className="text-sm font-bold text-slate-800 dark:text-slate-100 mt-1">Mon - Sat | 9:00 AM - 7:00 PM IST</p>
-                                    <p className="text-[10px] text-slate-400">Support tickets are closed on national holidays.</p>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        {/* Right Contact form */}
-                        <div className="lg:col-span-7 bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-3xl p-8 shadow-xl">
-                            {contactSent ? (
-                                <div className="text-center py-10 space-y-4">
-                                    <div className="w-16 h-16 bg-green-100 border border-green-200 text-green-600 rounded-full flex items-center justify-center mx-auto text-2xl animate-float">
-                                        ✓
+                    <div className="space-y-4">
+                        {FAQ_ITEMS.map((item, idx) => {
+                            const isOpen = faqOpenIndex === idx;
+                            return (
+                                <div
+                                    key={idx}
+                                    onClick={() => setFaqOpenIndex(isOpen ? null : idx)}
+                                    className="bg-white dark:bg-slate-900 border border-slate-150/80 dark:border-slate-800/80 rounded-2xl p-5 md:p-6 shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer select-none"
+                                >
+                                    <div className="flex justify-between items-center gap-4">
+                                        <h4 className="text-xs sm:text-sm font-black text-slate-800 dark:text-white leading-normal">
+                                            {item.question}
+                                        </h4>
+                                        <span className={`text-slate-400 dark:text-slate-500 transition-transform duration-300 flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`}>
+                                            <ChevronDown size={18} />
+                                        </span>
                                     </div>
-                                    <h4 className="text-base font-extrabold text-slate-900 dark:text-white">Message Dispatched Successfully!</h4>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400 max-w-xs mx-auto leading-relaxed">We will review your submission and connect with you on the registered email address.</p>
-                                </div>
-                            ) : (
-                                <form onSubmit={handleSendMessage} className="space-y-4">
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Full Name</label>
-                                            <input
-                                                type="text"
-                                                required
-                                                placeholder="e.g. Harish"
-                                                value={contactName}
-                                                onChange={(e) => setContactName(e.target.value)}
-                                                className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-3 focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white"
-                                            />
+                                    {isOpen && (
+                                        <div className="mt-3.5 pt-3.5 border-t border-slate-100 dark:border-slate-800/80 animate-fade-in-up">
+                                            <p className="text-xs text-slate-650 dark:text-slate-450 leading-relaxed font-semibold">
+                                                {item.answer}
+                                            </p>
                                         </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Email Address</label>
-                                            <input
-                                                type="email"
-                                                required
-                                                placeholder="e.g. info@vinix.com"
-                                                value={contactEmail}
-                                                onChange={(e) => setContactEmail(e.target.value)}
-                                                className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-3 focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider font-mono">Subject</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            placeholder="e.g. Inquiry regarding Course Assignments"
-                                            value={contactSubject}
-                                            onChange={(e) => setContactSubject(e.target.value)}
-                                            className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-3 focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider font-mono">Your Message</label>
-                                        <textarea
-                                            required
-                                            rows={5}
-                                            placeholder="Write detail coordinates to help our support managers answer accurately..."
-                                            value={contactMsg}
-                                            onChange={(e) => setContactMsg(e.target.value)}
-                                            className="w-full text-xs font-semibold bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-3 focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white resize-none"
-                                        />
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        className="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs  rounded-xl transition shadow active:scale-[0.98]"
-                                    >
-                                        Send Message
-                                    </button>
-                                </form>
-                            )}
-                        </div>
-
+                                    )}
+                                </div>
+                            );
+                        })}
                     </div>
-
                 </div>
             </section>
 
