@@ -128,7 +128,7 @@ export const Home: React.FC = () => {
     const [testimonials, setTestimonials] = useState<Testimonial[]>([
         {
             id: 1,
-            name: 'Aravind Swamy',
+            name: 'Harish',
             domain: 'Full Stack Development',
             college: 'SRM University',
             text: 'Vinix completely changed how I learn programming. The task-based module is excellent. Getting my offer letter instantly and having practical items to show in my GitHub portfolio got me selected at my tier-1 developer job.',
@@ -136,7 +136,7 @@ export const Home: React.FC = () => {
         },
         {
             id: 2,
-            name: 'Pooja Hegde',
+            name: 'Kavin',
             domain: 'Data Science & AI',
             college: 'VIT Chennai',
             text: 'I worked on 8 major assignments including AI model evaluation and python tasks. The custom QR verification on the completion certificate is flawless! Highly recommend this remote self-paced internship for developers.',
@@ -144,7 +144,7 @@ export const Home: React.FC = () => {
         },
         {
             id: 3,
-            name: 'Rohan Sharma',
+            name: 'Dinesh',
             domain: 'Java Development',
             college: 'Delhi Technological University',
             text: 'I really appreciated the flexibility. 100% remote layout meant I could finish assignments during semesters. The official MSME registered stamp on LOR document makes it very reliable for professional use.',
@@ -152,7 +152,7 @@ export const Home: React.FC = () => {
         },
         {
             id: 4,
-            name: 'Neha Roy',
+            name: 'Mugilan',
             domain: 'Python Development',
             college: 'Jadavpur University',
             text: 'Best practical learning experience ever. Implementing code tasks and getting them reviewed. The instant ID card gave me verified intern community access. A complete package!',
@@ -644,7 +644,7 @@ export const Home: React.FC = () => {
                                     <input
                                         type="text"
                                         required
-                                        placeholder="e.g. Aravind Swamy"
+                                        placeholder="e.g. Harish"
                                         value={newName}
                                         onChange={(e) => setNewName(e.target.value)}
                                         className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-3 focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white"
@@ -793,7 +793,7 @@ export const Home: React.FC = () => {
                                             <input
                                                 type="text"
                                                 required
-                                                placeholder="e.g. Vishal R"
+                                                placeholder="e.g. Harish"
                                                 value={contactName}
                                                 onChange={(e) => setContactName(e.target.value)}
                                                 className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-3 focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white"

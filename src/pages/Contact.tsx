@@ -148,7 +148,7 @@ export const Contact: React.FC = () => {
                                             <input
                                                 type="text"
                                                 required
-                                                placeholder="e.g. Vishal R"
+                                                placeholder="e.g. Harish"
                                                 value={contactName}
                                                 onChange={(e) => setContactName(e.target.value)}
                                                 className="w-full text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-black transition-all duration-200 text-slate-800 dark:text-white shadow-inner"
