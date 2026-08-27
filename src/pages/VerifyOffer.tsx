@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase, supabaseAdmin } from '../utils/supabase';
 import { Search, ShieldCheck, Calendar, User, Award, ShieldAlert, CheckCircle, FileText, CheckCircle2, Printer, FileDown, GraduationCap, Clock, Layers, MapPin, Mail, Globe, Shield, BookOpen, Code, Sparkles } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface OfferLetterVerificationResult {
     verified: boolean;
@@ -108,8 +110,6 @@ const VerifyOffer: React.FC = () => {
         if (!result) return;
         setLoading(true);
         try {
-            const { jsPDF } = await import('jspdf');
-            const html2canvas = (await import('html2canvas')).default;
             const element = document.getElementById('offer-letter-print-area');
             if (element) {
                 // Save current scroll position

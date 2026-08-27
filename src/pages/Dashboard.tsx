@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase, supabaseAdmin } from '../utils/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import {
     LayoutDashboard, BookOpen, Layers, FileCode, Award, User,
     CheckCircle2, XCircle, ExternalLink, FileDown, Play, CheckCheck,
@@ -379,8 +381,6 @@ const Dashboard: React.FC = () => {
         if (!activeOffer) return;
         setDownloadingOffer(true);
         try {
-            const { jsPDF } = await import('jspdf');
-            const html2canvas = (await import('html2canvas')).default;
             const element = document.getElementById('offer-letter-download-area');
             if (element) {
                 // Set fixed temporary styling for pixel-perfect standard A4 DPI capture
@@ -434,9 +434,6 @@ const Dashboard: React.FC = () => {
         setDownloadingCert(true);
         setActiveCertForDownload(cert);
         try {
-            const { jsPDF } = await import('jspdf');
-            const html2canvas = (await import('html2canvas')).default;
-
             // Give React a moment to render the offscreen certificate container with cert details
             await new Promise(resolve => setTimeout(resolve, 300));
 

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase, supabaseAdmin } from '../utils/supabase';
 import { Search, ShieldCheck, Calendar, User, Award, ShieldAlert, FileDown, Printer, GraduationCap, Briefcase, FileCode, CalendarDays } from 'lucide-react';
+import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 
 interface VerificationResult {
     verified: boolean;
@@ -97,8 +99,6 @@ const VerifyCertificate: React.FC = () => {
         if (!result) return;
         setLoading(true);
         try {
-            const { jsPDF } = await import('jspdf');
-            const html2canvas = (await import('html2canvas')).default;
             const element = document.getElementById('certificate-print-area');
             if (element) {
                 // Save current scroll position
