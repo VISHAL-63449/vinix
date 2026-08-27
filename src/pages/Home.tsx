@@ -797,13 +797,22 @@ export const Home: React.FC = () => {
             {/* ═══════ FREQUENTLY ASKED QUESTIONS ═══════ */}
             <section id="faq" className="py-20 border-t border-slate-100 dark:border-slate-900 relative z-10">
                 <div className="max-w-4xl mx-auto px-6">
-                    <div className="text-center space-y-3 mb-14">
+                    <div className="text-center space-y-3 mb-14 relative">
                         <h2 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                             Frequently Asked Questions
                         </h2>
                         <p className="text-slate-500 dark:text-slate-400 text-xs sm:text-sm font-medium">
                             Everything you need to know about the Vinix internship program.
                         </p>
+
+                        {/* Decorative Background Stamp Watermark */}
+                        <div className="absolute top-[80%] left-1/2 -translate-x-1/2 -translate-y-1/3 pointer-events-none -z-10 opacity-[0.09] dark:opacity-[0.05] transition duration-500 select-none">
+                            <img
+                                src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`}
+                                alt="Watermark Seal"
+                                className="w-24 h-24 object-contain rotate-[-12deg] mix-blend-multiply dark:invert"
+                            />
+                        </div>
                     </div>
 
                     <div className="space-y-4">
