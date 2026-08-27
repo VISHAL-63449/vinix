@@ -32,6 +32,7 @@ interface Enrollment {
         state?: string;
         district?: string;
         city?: string;
+        updated_at?: string;
     };
     internships?: {
         title: string;
@@ -95,6 +96,20 @@ interface Domain {
     is_active: boolean;
     created_at?: string;
 }
+
+const formatLastActive = (updatedAtStr?: string) => {
+    if (!updatedAtStr) return '—';
+    const date = new Date(updatedAtStr);
+    const diffMs = Date.now() - date.getTime();
+    if (diffMs < 0) return 'Just now';
+    const diffSecs = Math.floor(diffMs / 1000);
+    if (diffSecs < 60) return 'Just now';
+    const diffMins = Math.floor(diffSecs / 60);
+    if (diffMins < 60) return `${diffMins} min${diffMins > 1 ? 's' : ''} ago`;
+    const diffHrs = Math.floor(diffMins / 60);
+    if (diffHrs < 24) return `${diffHrs} hr${diffHrs > 1 ? 's' : ''} ago`;
+    return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).replace(',', '');
+};
 
 const AdminPortal: React.FC = () => {
     const { user, profile } = useAuth();
@@ -198,11 +213,11 @@ const AdminPortal: React.FC = () => {
             const allUserIds = Array.from(new Set([...enrolledUserIds, ...subUserIds, ...certUserIds].filter(Boolean)));
 
             // Fetch profiles in bulk
-            let profilesMap: Record<string, { full_name: string; email: string; college?: string }> = {};
+            let profilesMap: Record<string, { full_name: string; email: string; college?: string; updated_at?: string }> = {};
             if (allUserIds.length > 0) {
                 const { data: profiles } = await supabaseAdmin
                     .from('profiles')
-                    .select('id, full_name, email, college')
+                    .select('id, full_name, email, college, updated_at')
                     .in('id', allUserIds);
 
                 if (profiles) {
@@ -210,7 +225,8 @@ const AdminPortal: React.FC = () => {
                         profilesMap[p.id] = {
                             full_name: p.full_name || 'Alumnus',
                             email: p.email || '',
-                            college: p.college || ''
+                            college: p.college || '',
+                            updated_at: p.updated_at
                         };
                     });
                 }
@@ -257,7 +273,8 @@ const AdminPortal: React.FC = () => {
                         course_branch: appDetail?.course_branch || '',
                         state: appDetail?.state || '',
                         district: appDetail?.district || '',
-                        city: appDetail?.city || ''
+                        city: appDetail?.city || '',
+                        updated_at: profileDetail?.updated_at || e.updated_at
                     }
                 };
             });
@@ -1700,6 +1717,12 @@ const AdminPortal: React.FC = () => {
                                                     const initials = enroll.profiles?.full_name?.charAt(0).toUpperCase() || 'S';
                                                     const internId = offerLetters.find(o => o.student_email === enroll.profiles?.email)?.offer_letter_id || `SKX-2026-${Math.floor(1000 + Math.random() * 9500)}`;
                                                     const joinedDate = enroll.joined_at ? new Date(enroll.joined_at).toLocaleDateString('en-GB') : '23/8/2026';
+                                                    const profilUpdatedAt = enroll.profiles?.updated_at;
+                                                    const isOnline = (() => {
+                                                        if (!profilUpdatedAt) return false;
+                                                        const lastSeen = new Date(profilUpdatedAt).getTime();
+                                                        return Math.abs(Date.now() - lastSeen) < 3 * 60 * 1000;
+                                                    })();
 
                                                     return (
                                                         <tr key={enroll.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50 transition">
@@ -1715,10 +1738,17 @@ const AdminPortal: React.FC = () => {
                                                                 </div>
                                                             </td>
                                                             <td className="px-6 py-4">
-                                                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
-                                                                    <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>
-                                                                    Offline
-                                                                </span>
+                                                                {isOnline ? (
+                                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-300">
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
+                                                                        Online
+                                                                    </span>
+                                                                ) : (
+                                                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[10px] font-bold bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                                                                        <span className="w-1.5 h-1.5 rounded-full bg-slate-400 mr-1.5"></span>
+                                                                        Offline
+                                                                    </span>
+                                                                )}
                                                             </td>
                                                             <td className="px-6 py-4">
                                                                 <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
@@ -1731,8 +1761,8 @@ const AdminPortal: React.FC = () => {
                                                             <td className="px-6 py-4 text-xs font-mono font-semibold text-slate-700 dark:text-slate-300">
                                                                 {internId}
                                                             </td>
-                                                            <td className="px-6 py-4 text-xs text-slate-400">
-                                                                —
+                                                            <td className="px-6 py-4 text-xs text-slate-500 font-mono">
+                                                                {formatLastActive(enroll.profiles?.updated_at)}
                                                             </td>
                                                             <td className="px-6 py-4 text-xs font-medium text-slate-500">
                                                                 {joinedDate}
@@ -1810,14 +1840,31 @@ const AdminPortal: React.FC = () => {
                                             {selectedStudentForDetail.profiles?.email}
                                         </span>
 
-                                        <div className="mt-4 flex flex-wrap gap-2 justify-center">
-                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                                                {selectedStudentForDetail.status || 'Active'}
-                                            </span>
-                                            <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-350">
-                                                Offline
-                                            </span>
-                                        </div>
+                                        {(() => {
+                                            const profilUpdatedAt = selectedStudentForDetail.profiles?.updated_at;
+                                            const isOnline = (() => {
+                                                if (!profilUpdatedAt) return false;
+                                                const lastSeen = new Date(profilUpdatedAt).getTime();
+                                                return Math.abs(Date.now() - lastSeen) < 3 * 60 * 1000;
+                                            })();
+                                            return (
+                                                <div className="mt-4 flex flex-wrap gap-2 justify-center">
+                                                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                                                        {selectedStudentForDetail.status || 'Active'}
+                                                    </span>
+                                                    {isOnline ? (
+                                                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-105 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-300 flex items-center gap-1">
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                                                            Online
+                                                        </span>
+                                                    ) : (
+                                                        <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-350">
+                                                            Offline
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            );
+                                        })()}
 
                                         <div className="w-full mt-6 pt-6 border-t border-slate-100 dark:border-slate-800 space-y-3 text-left">
                                             <div className="flex justify-between items-center text-xs">

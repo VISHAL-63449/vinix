@@ -148,6 +148,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         };
     }, []);
 
+    useEffect(() => {
+        if (!user?.id) return;
+
+        const sendHeartbeat = async () => {
+            try {
+                await supabase
+                    .from('profiles')
+                    .update({ updated_at: new Date().toISOString() })
+                    .eq('id', user.id);
+            } catch (err) {
+                console.error('Failed to send heartbeat:', err);
+            }
+        };
+
+        // Send immediately on login/load
+        sendHeartbeat();
+
+        // Send every 60 seconds to keep session active/online
+        const interval = setInterval(sendHeartbeat, 60 * 1000);
+
+        return () => clearInterval(interval);
+    }, [user?.id]);
+
     const signOut = async () => {
         setLoading(true);
         await supabase.auth.signOut();
