@@ -80,7 +80,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                             <img
                                 src={`${import.meta.env.BASE_URL}vinix-title.png`}
                                 alt="Vinix"
-                                className="h-8.5 w-auto object-contain transition-all duration-300 dark:invert dark:brightness-200"
+                                className="h-8 w-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:invert transition-all duration-300"
                             />
                         </Link>
                     </div>
