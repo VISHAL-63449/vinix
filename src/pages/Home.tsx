@@ -391,9 +391,9 @@ export const Home: React.FC = () => {
                                 />
 
                                 {/* Overlay/floating cards: only display on screens that can fit them nicely */}
-                                <div className="absolute inset-0 select-none pointer-events-auto hidden sm:block">
+                                <div className="absolute inset-0 select-none pointer-events-auto block">
                                     {/* Card 1: Your Progress */}
-                                    <div className="absolute -top-6 -left-8 lg:-left-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-lg w-52 animate-float pointer-events-auto">
+                                    <div className="absolute -top-4 -left-2 sm:-top-6 sm:-left-8 lg:-left-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-lg w-52 animate-float pointer-events-auto scale-[0.65] sm:scale-100 origin-top-left">
                                         <div className="flex items-center justify-between mb-1.5">
                                             <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Your Progress</span>
                                             <div className="grid grid-cols-3 gap-0.5 opacity-60">
@@ -430,7 +430,7 @@ export const Home: React.FC = () => {
                                     </div>
 
                                     {/* Card 2: Live Projects */}
-                                    <div className="absolute -bottom-6 -left-12 lg:-left-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-lg w-48 animate-float-delayed pointer-events-auto">
+                                    <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-12 lg:-left-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-lg w-48 animate-float-delayed pointer-events-auto scale-[0.65] sm:scale-100 origin-bottom-left">
                                         <div className="flex items-center justify-between mb-1.5">
                                             <div className="flex items-center gap-1">
                                                 <span className="p-1 bg-blue-500 text-white rounded flex items-center justify-center text-[8px]">
@@ -453,7 +453,7 @@ export const Home: React.FC = () => {
                                     </div>
 
                                     {/* Card 3: Certificate Earned */}
-                                    <div className="absolute -top-6 -right-6 lg:-right-12 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white p-3.5 rounded-2xl border border-slate-800 shadow-xl w-56 animate-float-delayed pointer-events-auto">
+                                    <div className="absolute -top-4 -right-2 sm:-top-6 sm:-right-6 lg:-right-12 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white p-3.5 rounded-2xl border border-slate-800 shadow-xl w-56 animate-float-delayed pointer-events-auto scale-[0.65] sm:scale-100 origin-top-right">
                                         <div className="flex justify-between items-start mb-2">
                                             <div className="space-y-0.5">
                                                 <span className="text-[8px] font-bold text-teal-405 uppercase tracking-wider leading-none">Certificate Earned</span>
@@ -480,7 +480,7 @@ export const Home: React.FC = () => {
                                     </div>
 
                                     {/* Card 4: Skills Gained */}
-                                    <div className="absolute -bottom-6 -right-8 lg:-right-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-lg w-48 animate-float pointer-events-auto">
+                                    <div className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-8 lg:-right-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-lg w-48 animate-float pointer-events-auto scale-[0.65] sm:scale-100 origin-bottom-right">
                                         <div className="flex items-center justify-between mb-1.5">
                                             <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Skills Gained</span>
                                             <span className="w-3.5 h-3.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[7px] text-slate-455">→</span>
