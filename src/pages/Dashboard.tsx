@@ -94,6 +94,7 @@ const Dashboard: React.FC = () => {
     const [selectedTaskForSubmission, setSelectedTaskForSubmission] = useState<TaskProgress | null>(null);
     const [githubUrl, setGithubUrl] = useState('');
     const [studentNote, setStudentNote] = useState('');
+    const [projectImageUrl, setProjectImageUrl] = useState('');
     const [submittingTask, setSubmittingTask] = useState(false);
 
     // Submit LinkedIn Verification Form
@@ -316,14 +317,19 @@ const Dashboard: React.FC = () => {
         setSubmittingTask(true);
 
         try {
+            const updatePayload: Record<string, any> = {
+                status: 'submitted',
+                github_url: githubUrl,
+                student_note: studentNote,
+                submitted_at: new Date().toISOString()
+            };
+            if (projectImageUrl.trim()) {
+                updatePayload.submission_url = projectImageUrl.trim();
+            }
+
             const { error } = await supabaseAdmin
                 .from('task_progress')
-                .update({
-                    status: 'submitted',
-                    github_url: githubUrl,
-                    student_note: studentNote,
-                    submitted_at: new Date().toISOString()
-                })
+                .update(updatePayload)
                 .eq('id', selectedTaskForSubmission.id);
 
             if (error) throw error;
@@ -332,6 +338,7 @@ const Dashboard: React.FC = () => {
             setSelectedTaskForSubmission(null);
             setGithubUrl('');
             setStudentNote('');
+            setProjectImageUrl('');
             loadDashboardData();
         } catch (err: any) {
             alert(`Failed to submit task: ${err.message}`);
@@ -1601,6 +1608,36 @@ const Dashboard: React.FC = () => {
                                     placeholder="Describe your design choices, database schema config, or features completed..."
                                     className="w-full px-3 py-2.5 border border-slate-205 bg-slate-50 dark:bg-slate-950 dark:border-slate-805 rounded-xl text-xs font-semibold focus:outline-none h-24"
                                 />
+                            </div>
+
+                            {/* Optional project image / preview URL */}
+                            <div>
+                                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1 flex items-center gap-1.5">
+                                    Project Screenshot / Preview Image URL
+                                    <span className="normal-case font-medium text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md text-[9px]">Optional</span>
+                                </label>
+                                <div className="relative">
+                                    <svg className="absolute left-3 top-[10px] w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    <input
+                                        type="url"
+                                        value={projectImageUrl}
+                                        onChange={(e) => setProjectImageUrl(e.target.value)}
+                                        placeholder="https://i.imgur.com/your-screenshot.png (optional)"
+                                        className="w-full pl-9 pr-3 py-2.5 border border-slate-205 bg-slate-50 dark:bg-slate-950 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none"
+                                    />
+                                </div>
+                                {projectImageUrl.trim() && (
+                                    <div className="mt-2 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 max-h-32">
+                                        <img
+                                            src={projectImageUrl}
+                                            alt="Project preview"
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                        />
+                                    </div>
+                                )}
                             </div>
 
                             <div className="flex space-x-3 pt-4 border-t border-slate-100 dark:border-slate-850">
