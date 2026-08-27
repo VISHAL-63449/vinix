@@ -76,20 +76,12 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo & Brand */}
                     <div className="flex items-center">
-                        <Link to="/" className="flex items-center space-x-1.5 text-2xl font-extrabold tracking-tight transition hover:opacity-90">
-                            <div className="flex items-center text-slate-900 dark:text-white">
-                                <span className="font-extrabold text-[23px] text-blue-600 dark:text-blue-400">vin</span>
-                                <span className="relative font-extrabold text-[23px] text-slate-800 dark:text-white inline-flex items-center">
-                                    <span className="relative inline-block">i
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-graduation-cap absolute -top-[5px] -left-[3px] h-3 w-3 text-blue-800 dark:text-white rotate-[12deg]" aria-hidden="true">
-                                            <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"></path>
-                                            <path d="M22 10v6"></path>
-                                            <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"></path>
-                                        </svg>
-                                    </span>
-                                    <span>x</span>
-                                </span>
-                            </div>
+                        <Link to="/" className="flex items-center hover:opacity-90 transition">
+                            <img
+                                src={`${import.meta.env.BASE_URL}vinix-title.png`}
+                                alt="Vinix"
+                                className="h-8.5 w-auto object-contain transition-all duration-300 dark:invert dark:brightness-200"
+                            />
                         </Link>
                     </div>
 
