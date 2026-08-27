@@ -443,7 +443,7 @@ const VerifyOffer: React.FC = () => {
                                 </div>
                                 <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.4, color: '#64748b' }}>
                                     <strong>VINIX Technologies Private Limited</strong><br />
-                                    UDYAM Registry: UDYAM-TN-17-0076606<br />
+                                    UDYAM Registry: UDYAM-TN-21-0066185<br />
                                     academic@vinix.com | www.vinix.online
                                 </div>
                                 <div style={{ width: '60px', height: '1px', visibility: 'hidden' }}></div>
