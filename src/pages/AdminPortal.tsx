@@ -863,7 +863,17 @@ const AdminPortal: React.FC = () => {
                                 <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm">
                                     <h3 className="font-extrabold text-sm uppercase tracking-wider text-slate-400 mb-4">Admissions Request Board</h3>
                                     {pendingApps.length === 0 ? (
-                                        <p className="text-xs text-slate-400 py-6 text-center italic">No pending admission requests.</p>
+                                        <div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl bg-slate-50/50 dark:bg-slate-900/10 border border-dashed border-slate-200 dark:border-slate-800 transition duration-300 hover:border-slate-350 dark:hover:border-slate-700">
+                                            <div className="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-950/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shadow-inner mb-3.5 transform transition hover:scale-105 duration-350">
+                                                <FolderOpen className="w-6 h-6 animate-pulse" />
+                                            </div>
+                                            <h4 className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest leading-none">
+                                                All Caught Up
+                                            </h4>
+                                            <p className="text-[11px] text-slate-400 dark:text-slate-505 mt-2 max-w-[280px] leading-normal font-medium">
+                                                There are no pending student enrollment applications. The admissions registry is fully clean.
+                                            </p>
+                                        </div>
                                     ) : (
                                         <div className="space-y-4">
                                             {pendingApps.map(app => (
@@ -896,7 +906,17 @@ const AdminPortal: React.FC = () => {
                                 <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm">
                                     <h3 className="font-extrabold text-sm uppercase tracking-wider text-slate-400 mb-4">Pending evaluations</h3>
                                     {submissions.length === 0 ? (
-                                        <p className="text-xs text-slate-400 py-6 text-center italic">No submissions awaiting reviews.</p>
+                                        <div className="flex flex-col items-center justify-center py-10 px-4 text-center rounded-xl bg-slate-50/50 dark:bg-slate-900/10 border border-dashed border-slate-200 dark:border-slate-800 transition duration-300 hover:border-slate-350 dark:hover:border-slate-700">
+                                            <div className="w-12 h-12 rounded-2xl bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-inner mb-3.5 transform transition hover:scale-105 duration-350">
+                                                <ShieldCheck className="w-6 h-6 animate-pulse" />
+                                            </div>
+                                            <h4 className="text-xs font-black text-slate-700 dark:text-slate-200 uppercase tracking-widest leading-none">
+                                                Queue Fully Graded
+                                            </h4>
+                                            <p className="text-[11px] text-slate-400 dark:text-slate-505 mt-2 max-w-[280px] leading-normal font-medium">
+                                                Zero student milestone submissions are pending grading. Outstanding work keeping up!
+                                            </p>
+                                        </div>
                                     ) : (
                                         <div className="space-y-4">
                                             {submissions.slice(0, 3).map(sub => (
