@@ -379,123 +379,123 @@ export const Home: React.FC = () => {
                         </div>
 
                         {/* ── RIGHT Side Image with Dynamic Floating Cards ── */}
-                        <div className="flex-1 relative z-10 w-full max-w-[550px] lg:max-w-none flex justify-center items-center py-6">
+                        <div className="flex-1 relative z-10 w-full min-w-[320px] max-w-[550px] lg:max-w-none flex justify-center items-center py-6">
                             {/* Glowing blue backdrops */}
                             <div className="w-[100%] h-[100%] bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 rounded-full filter blur-[70px] absolute -z-10 animate-pulse"></div>
 
-                            <div className="relative w-full max-w-[340px] sm:w-[480px] h-[230px] sm:h-[320px] lg:w-[500px] lg:h-[340px] flex justify-center items-center">
+                            <div className="relative w-[340px] h-[230px] sm:w-[480px] sm:h-[320px] lg:w-[500px] lg:h-[340px] flex justify-center items-center">
                                 <img
                                     src={`${import.meta.env.BASE_URL}home-image.jpeg?v=2`}
                                     alt="Vinix Internships"
                                     className="w-full h-full object-cover rounded-3xl border border-slate-100/50 select-none transform hover:scale-[1.01] transition-transform duration-500"
                                 />
 
-                                {/* Overlay/floating cards: only display on screens that can fit them nicely */}
+                                {/* Overlay/floating cards: display on both mobile and desktop (resizes responsively) */}
                                 <div className="absolute inset-0 select-none pointer-events-auto block">
                                     {/* Card 1: Your Progress */}
-                                    <div className="absolute -top-4 -left-2 sm:-top-6 sm:-left-8 lg:-left-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-lg w-52 animate-float pointer-events-auto scale-[0.65] sm:scale-100 origin-top-left">
-                                        <div className="flex items-center justify-between mb-1.5">
-                                            <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Your Progress</span>
+                                    <div className="absolute -top-4 -left-6 sm:-top-6 sm:-left-8 lg:-left-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-36 sm:w-52 animate-float pointer-events-auto">
+                                        <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+                                            <span className="text-[7.5px] sm:text-[9px] font-black uppercase text-slate-400 tracking-wider">Your Progress</span>
                                             <div className="grid grid-cols-3 gap-0.5 opacity-60">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
-                                                <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                                                <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-400"></span>
+                                                <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-400"></span>
+                                                <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-400"></span>
+                                                <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-400"></span>
+                                                <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-400"></span>
+                                                <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-400"></span>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2.5">
-                                            <div className="relative w-10 h-10 flex-shrink-0">
-                                                <svg className="w-full h-full transform -rotate-90">
+                                        <div className="flex items-center gap-1.5 sm:gap-2.5">
+                                            <div className="relative w-7 h-7 sm:w-10 sm:h-10 flex-shrink-0">
+                                                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 40 40">
                                                     <circle cx="20" cy="20" r="16" className="text-slate-100 dark:text-slate-800" strokeWidth="3" fill="transparent" stroke="currentColor" />
                                                     <circle cx="20" cy="20" r="16" className="text-blue-600" strokeWidth="3" fill="transparent" strokeDasharray="100.5" strokeDashoffset="25.1" strokeLinecap="round" stroke="currentColor" />
                                                 </svg>
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                                                    <span className="text-[10px] font-black text-slate-800 dark:text-white leading-none">75%</span>
-                                                    <span className="text-[6px] text-slate-405 dark:text-slate-500 font-bold uppercase leading-none mt-0.5">Done</span>
+                                                    <span className="text-[7.5px] sm:text-[10px] font-black text-slate-800 dark:text-white leading-none">75%</span>
+                                                    <span className="text-[4.5px] sm:text-[6px] text-slate-405 dark:text-slate-500 font-bold uppercase leading-none mt-0.5">Done</span>
                                                 </div>
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-[11px] font-black text-blue-600 dark:text-blue-400 leading-tight">Great job!</p>
-                                                <p className="text-[9px] text-slate-500 dark:text-slate-400 leading-tight font-semibold">Keep going strong.</p>
+                                                <p className="text-[8px] sm:text-[11px] font-black text-blue-600 dark:text-blue-400 leading-tight">Great job!</p>
+                                                <p className="text-[6.5px] sm:text-[9px] text-slate-500 dark:text-slate-400 leading-tight font-semibold">Keep going strong.</p>
                                             </div>
                                         </div>
-                                        <div className="mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800">
-                                            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1.5 rounded-full overflow-hidden">
+                                        <div className="mt-1.5 sm:mt-2.5 pt-1.5 sm:pt-2 border-t border-slate-100 dark:border-slate-800">
+                                            <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 sm:h-1.5 rounded-full overflow-hidden">
                                                 <div className="bg-blue-600 h-full rounded-full" style={{ width: '75%' }}></div>
                                             </div>
-                                            <span className="text-[8px] font-extrabold text-slate-455 dark:text-slate-500 mt-1 block">3 of 4 milestones completed</span>
+                                            <span className="text-[6px] sm:text-[8px] font-extrabold text-slate-455 dark:text-slate-505 mt-1 block">3 of 4 milestones completed</span>
                                         </div>
                                     </div>
 
                                     {/* Card 2: Live Projects */}
-                                    <div className="absolute -bottom-4 -left-4 sm:-bottom-6 sm:-left-12 lg:-left-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-lg w-48 animate-float-delayed pointer-events-auto scale-[0.65] sm:scale-100 origin-bottom-left">
-                                        <div className="flex items-center justify-between mb-1.5">
+                                    <div className="absolute -bottom-4 -left-6 sm:-bottom-6 sm:-left-12 lg:-left-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-36 sm:w-48 animate-float-delayed pointer-events-auto">
+                                        <div className="flex items-center justify-between mb-1 sm:mb-1.5">
                                             <div className="flex items-center gap-1">
-                                                <span className="p-1 bg-blue-500 text-white rounded flex items-center justify-center text-[8px]">
-                                                    <Code2 size={10} className="stroke-[3]" />
+                                                <span className="p-0.5 sm:p-1 bg-blue-500 text-white rounded flex items-center justify-center">
+                                                    <Code2 size={9} className="stroke-[3] sm:w-[10px] sm:h-[10px]" />
                                                 </span>
-                                                <span className="text-[9px] font-extrabold text-slate-850 dark:text-white">Live Projects</span>
+                                                <span className="text-[7.5px] sm:text-[9px] font-extrabold text-slate-850 dark:text-white">Live Projects</span>
                                             </div>
-                                            <span className="w-3.5 h-3.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[7px] text-slate-405">→</span>
+                                            <span className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[5px] sm:text-[7px] text-slate-405">→</span>
                                         </div>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="w-4 h-4 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-450 flex items-center justify-center text-[8px] font-bold">✓</span>
-                                            <span className="text-base font-black text-slate-850 dark:text-white">12 Completed</span>
+                                        <div className="flex items-center gap-1 sm:gap-1.5">
+                                            <span className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-455 flex items-center justify-center text-[6.5px] sm:text-[8px] font-bold">✓</span>
+                                            <span className="text-xs sm:text-base font-black text-slate-850 dark:text-white">12 Completed</span>
                                         </div>
-                                        <p className="text-[8px] text-slate-550 dark:text-slate-400 mt-1.5 font-semibold leading-normal">
+                                        <p className="text-[6.5px] sm:text-[8px] text-slate-550 dark:text-slate-400 mt-1 sm:mt-1.5 font-semibold leading-normal">
                                             Keep building real-world projects and enhance your portfolio.
                                         </p>
-                                        <div className="absolute -bottom-2 -right-2 w-6 h-6 rounded-full bg-purple-650 text-white flex items-center justify-center shadow border border-purple-500 animate-bounce text-[10px]">
+                                        <div className="absolute -bottom-1.5 -right-1.5 sm:-bottom-2 sm:-right-2 w-4.5 h-4.5 sm:w-6 sm:h-6 rounded-full bg-purple-650 text-white flex items-center justify-center shadow border border-purple-500 animate-bounce text-[7px] sm:text-[10px]">
                                             🚀
                                         </div>
                                     </div>
 
                                     {/* Card 3: Certificate Earned */}
-                                    <div className="absolute -top-4 -right-2 sm:-top-6 sm:-right-6 lg:-right-12 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white p-3.5 rounded-2xl border border-slate-800 shadow-xl w-56 animate-float-delayed pointer-events-auto scale-[0.65] sm:scale-100 origin-top-right">
-                                        <div className="flex justify-between items-start mb-2">
+                                    <div className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 lg:-right-12 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-800 shadow-md w-36 sm:w-56 animate-float-delayed pointer-events-auto">
+                                        <div className="flex justify-between items-start mb-1 sm:mb-2">
                                             <div className="space-y-0.5">
-                                                <span className="text-[8px] font-bold text-teal-405 uppercase tracking-wider leading-none">Certificate Earned</span>
-                                                <h4 className="text-[11px] font-black text-white leading-tight font-sans">Full Stack Web Developer</h4>
-                                                <p className="text-[9px] text-indigo-200 opacity-90 leading-none">Virtual Internship</p>
+                                                <span className="text-[6.5px] sm:text-[8px] font-bold text-teal-405 uppercase tracking-wider leading-none">Certificate Earned</span>
+                                                <h4 className="text-[8px] sm:text-[11px] font-black text-white leading-tight font-sans">Full Stack Web Developer</h4>
+                                                <p className="text-[7.5px] sm:text-[9px] text-indigo-200 opacity-90 leading-none">Virtual Internship</p>
                                             </div>
-                                            <div className="w-[30px] h-[30px] rounded-full bg-gradient-to-tr from-yellow-400 to-amber-500 text-slate-900 flex items-center justify-center shadow text-xs">
+                                            <div className="w-6 h-6 sm:w-[30px] sm:h-[30px] rounded-full bg-gradient-to-tr from-yellow-400 to-amber-500 text-slate-900 flex items-center justify-center shadow text-[10px] sm:text-xs">
                                                 🏆
                                             </div>
                                         </div>
 
-                                        <div className="mt-3.5 pt-1.5 border-t border-slate-800/80 flex items-center justify-between animate-pulse-glow">
-                                            <div className="text-[8px] text-slate-400">
+                                        <div className="mt-2.5 sm:mt-3.5 pt-1 sm:pt-1.5 border-t border-slate-800/80 flex items-center justify-between animate-pulse-glow">
+                                            <div className="text-[6px] sm:text-[8px] text-slate-400">
                                                 Issued on 20 May 2025
                                             </div>
                                             <button
                                                 onClick={() => navigate('/verify')}
-                                                className="flex items-center gap-0.5 text-[8px] font-black text-blue-405 hover:text-blue-300 transition"
+                                                className="flex items-center gap-0.5 text-[6.5px] sm:text-[8px] font-black text-blue-405 hover:text-blue-300 transition"
                                             >
                                                 <span>View Certificate</span>
-                                                <span className="w-3.5 h-3.5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-[7px]">→</span>
+                                                <span className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-[5px] sm:text-[7px]">→</span>
                                             </button>
                                         </div>
                                     </div>
 
                                     {/* Card 4: Skills Gained */}
-                                    <div className="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-8 lg:-right-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-3.5 rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-lg w-48 animate-float pointer-events-auto scale-[0.65] sm:scale-100 origin-bottom-right">
-                                        <div className="flex items-center justify-between mb-1.5">
-                                            <span className="text-[9px] font-black uppercase text-slate-400 tracking-wider">Skills Gained</span>
-                                            <span className="w-3.5 h-3.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[7px] text-slate-455">→</span>
+                                    <div className="absolute -bottom-4 -right-6 sm:-bottom-6 sm:-right-8 lg:-right-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-34 sm:w-48 animate-float pointer-events-auto">
+                                        <div className="flex items-center justify-between mb-1 sm:mb-1.5">
+                                            <span className="text-[7.5px] sm:text-[9px] font-black uppercase text-slate-400 tracking-wider">Skills Gained</span>
+                                            <span className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[5px] sm:text-[7px] text-slate-455">→</span>
                                         </div>
-                                        <div className="flex flex-wrap gap-1 items-center my-1.5 font-sans">
-                                            <span className="px-1.5 py-0.5 bg-orange-100 text-orange-700 rounded text-[7px] font-black">HTML</span>
-                                            <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 rounded text-[7px] font-black">CSS</span>
-                                            <span className="px-1.5 py-0.5 bg-yellow-100 text-yellow-800 rounded text-[7px] font-black">JS</span>
-                                            <span className="px-1.5 py-0.5 bg-cyan-100 text-cyan-705 rounded text-[7px] font-black">React</span>
-                                            <span className="px-1.5 py-0.5 bg-purple-100 text-purple-750 rounded text-[7px] font-black">+8</span>
+                                        <div className="flex flex-wrap gap-0.5 sm:gap-1 items-center my-1 sm:my-1.5 font-sans">
+                                            <span className="px-1 py-0.5 bg-orange-100 text-orange-700 rounded text-[6px] sm:text-[7px] font-black">HTML</span>
+                                            <span className="px-1 py-0.5 bg-blue-100 text-blue-700 rounded text-[6px] sm:text-[7px] font-black">CSS</span>
+                                            <span className="px-1 py-0.5 bg-yellow-105 text-yellow-800 rounded text-[6px] sm:text-[7px] font-black">JS</span>
+                                            <span className="px-1 py-0.5 bg-cyan-100 text-cyan-705 rounded text-[6px] sm:text-[7px] font-black">React</span>
+                                            <span className="px-1 py-0.5 bg-purple-100 text-purple-750 rounded text-[6px] sm:text-[7px] font-black">+8</span>
                                         </div>
-                                        <p className="text-[8px] text-slate-500 dark:text-slate-400 leading-normal font-semibold">
-                                            HTML, CSS, JavaScript, React, Node.js, MongoDB, and more...
+                                        <p className="text-[6.5px] sm:text-[8px] text-slate-500 dark:text-slate-400 leading-normal font-semibold">
+                                            HTML, CSS, JS, React, Node, DB...
                                         </p>
-                                        <div className="absolute -bottom-2 -left-2 w-6 h-6 rounded-full bg-cyan-500 text-white flex items-center justify-center shadow border border-cyan-400/80 text-[10px]">
+                                        <div className="absolute -bottom-1.5 -left-1.5 sm:-bottom-2 sm:-left-2 w-4.5 h-4.5 sm:w-6 sm:h-6 rounded-full bg-cyan-500 text-white flex items-center justify-center shadow border border-cyan-400/80 text-[7px] sm:text-[10px]">
                                             🌐
                                         </div>
                                     </div>
