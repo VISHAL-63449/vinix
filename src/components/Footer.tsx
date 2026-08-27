@@ -179,13 +179,13 @@ const Footer: React.FC = () => {
                     </ul>
 
                     {/* MSME Badge */}
-                    <div className="pt-4 flex items-center gap-2">
+                    <div className="pt-4 flex items-center gap-3">
                         <img
                             src={`${import.meta.env.BASE_URL}msme.jpeg`}
                             alt="MSME Registered"
-                            className="h-10 w-auto object-contain rounded border border-slate-100 dark:border-slate-800"
+                            className="h-16 w-auto object-contain rounded-xl border border-slate-200/80 dark:border-slate-750 bg-white p-1.5 shadow-sm"
                         />
-                        <span className="text-[9px] font-black text-slate-400 uppercase tracking-wider leading-none">
+                        <span className="text-[10px] font-black text-slate-505 dark:text-slate-400 uppercase tracking-widest leading-none">
                             MSME Registered
                         </span>
                     </div>
