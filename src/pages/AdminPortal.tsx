@@ -341,10 +341,18 @@ const AdminPortal: React.FC = () => {
             })
             .subscribe();
 
+        const profileChan = supabase
+            .channel('public:profiles_admin')
+            .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles' }, () => {
+                loadData();
+            })
+            .subscribe();
+
         return () => {
             enrollChan.unsubscribe();
             subChan.unsubscribe();
             domChan.unsubscribe();
+            profileChan.unsubscribe();
         };
     }, []);
 

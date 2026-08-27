@@ -152,13 +152,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (!user?.id) return;
 
         const sendHeartbeat = async () => {
-            try {
-                await supabase
-                    .from('profiles')
-                    .update({ updated_at: new Date().toISOString() })
-                    .eq('id', user.id);
-            } catch (err) {
-                console.error('Failed to send heartbeat:', err);
+            const { error } = await supabaseAdmin
+                .from('profiles')
+                .update({ updated_at: new Date().toISOString() })
+                .eq('id', user.id);
+
+            if (error) {
+                console.error('Failed to send heartbeat:', error);
             }
         };
 
