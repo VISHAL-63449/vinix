@@ -68,19 +68,59 @@
 
 <body>
   <div id="root">
-    <!-- Static Fallback content accessible to Non-JavaScript Indexing engines -->
-    <header style="padding: 20px; border-bottom: 1px solid #eee;">
-      <a href="/" style="font-weight: bold; font-size: 24px; text-decoration: none; color: #0f2942;">VINIX</a>
-    </header>
-    <main style="padding: 40px 20px; font-family: sans-serif; max-width: 800px; margin: 0 auto;">
-      <h1 style="color: #0f2942; font-size: 32px;">Virtual Internships with Verified Certificates & LORs</h1>
-      <p style="color: #475569; font-size: 16px; line-height: 1.6;">
-        VINIX empowers fresh graduates and college students with task-driven remote engineering and design challenges.
-        Apply for 1, 2, or 3-month virtual internships across tracks including Web Development, Python Engineering, Data
-        Science, AI, and SQL Administration.
-      </p>
-      <section style="margin-top: 20px;">
-        <h2 style="font-size: 20px; color: #0f2942;">Available Internship Tracks:</h2>
+    <!-- Styled Premium Loading Fallback for both SEO bots and user experience -->
+    <div
+      style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: #0b1329; color: #f8fafc; font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 20px; text-align: center; box-sizing: border-box;">
+
+      <!-- Brand Logo Spinner -->
+      <div
+        style="position: relative; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
+        <div
+          style="width: 64px; height: 64px; border: 3.5px solid #1e293b; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;">
+        </div>
+        <div
+          style="position: absolute; font-weight: 900; font-size: 15px; letter-spacing: 1px; color: #3b82f6; font-family: 'Inter', sans-serif;">
+          VX</div>
+      </div>
+
+      <style>
+        @keyframes spin {
+          0% {
+            transform: rotate(0deg);
+          }
+
+          100% {
+            transform: rotate(360deg);
+          }
+        }
+
+        @keyframes pulse {
+
+          0%,
+          100% {
+            opacity: 1;
+          }
+
+          50% {
+            opacity: 0.5;
+          }
+        }
+      </style>
+
+      <h2
+        style="font-size: 20px; font-weight: 800; letter-spacing: -0.025em; margin: 0 0 10px 0; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: #ffffff;">
+        Loading VINIX Portal...</h2>
+      <p style="font-size: 13px; color: #94a3b8; max-width: 320px; margin: 0; line-height: 1.5;">Preparing virtual
+        workspace and assignments</p>
+
+      <!-- Invisible but fully crawlable metadata elements to protect SEO indexing without visual layout flash -->
+      <div
+        style="position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;">
+        <h1>Virtual Internships with Verified Certificates & LORs</h1>
+        <p>VINIX empowers fresh graduates and college students with task-driven remote engineering and design
+          challenges. Apply for 1, 2, or 3-month virtual internships across tracks including Web Development, Python
+          Engineering, Data Science, AI, and SQL Administration.</p>
+        <h2>Available Internship Tracks:</h2>
         <ul>
           <li>Full Stack Web Development</li>
           <li>Python Development & Scripts</li>
@@ -88,8 +128,8 @@
           <li>SQL & Database Systems</li>
           <li>Java Software Engineering</li>
         </ul>
-      </section>
-    </main>
+      </div>
+    </div>
   </div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
