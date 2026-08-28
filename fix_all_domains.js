@@ -183,35 +183,60 @@ async function getOrCreateInternship(domainId, duration) {
     const domain = DOMAINS[domainId];
     if (!domain) throw new Error(`Unknown domain: ${domainId}`);
 
+    const targetDuration = duration || '1 Month';
+
     const { data: existing } = await supabase
         .from('internships')
-        .select('id, title, category');
+        .select('id, title, category, duration');
 
     const match = (existing || []).find(i =>
-        i.category?.toLowerCase() === domain.label.toLowerCase() ||
-        i.title?.toLowerCase() === domain.title.toLowerCase()
+        (i.category?.toLowerCase() === domain.label.toLowerCase() ||
+            i.title?.toLowerCase() === domain.title.toLowerCase()) &&
+        i.duration === targetDuration
     );
 
     if (match) {
-        console.log(`  ✓ Found internship for "${domain.title}": ${match.id}`);
+        console.log(`  ✓ Found internship for "${domain.title}" (${targetDuration}): ${match.id}`);
         return match;
     }
 
-    console.log(`  + Creating internship for "${domain.title}"...`);
+    console.log(`  + Creating internship for "${domain.title}" (${targetDuration})...`);
+
+    // Fetch domains to link domain_id
+    const { data: dbDomains } = await supabase
+        .from('domains')
+        .select('id, name, slug');
+
+    const matchedDomainDb = (dbDomains || []).find(d =>
+        d.slug === domainId ||
+        d.name.toLowerCase() === domain.label.toLowerCase() ||
+        d.name.toLowerCase() === domain.title.toLowerCase()
+    );
+
+    const generatedSlug = `${domainId}-${targetDuration.toLowerCase().replace(/\s+/g, '-')}`;
+
     const { data: newIntern, error } = await supabase
         .from('internships')
-        .insert({ title: domain.title, category: domain.label, description: domain.description, duration: duration || '1 Month', status: 'active' })
+        .insert({
+            title: domain.title,
+            category: domain.label,
+            description: domain.description,
+            duration: targetDuration,
+            status: 'active',
+            domain_id: matchedDomainDb?.id || null,
+            slug: generatedSlug
+        })
         .select().single();
 
     if (error) throw error;
 
-    const taskNames = domain.tasks[duration] || domain.tasks['1 Month'];
+    const taskNames = domain.tasks[targetDuration] || domain.tasks['1 Month'];
     const taskRows = [
         { internship_id: newIntern.id, task_number: 1, title: 'LinkedIn Offer Post Requirement', description: 'Share your internship selection announcement on LinkedIn to unlock tasks.' },
         ...taskNames.map((title, idx) => ({ internship_id: newIntern.id, task_number: idx + 2, title, description: `Complete the ${domain.label} task: ${title}` }))
     ];
     await supabase.from('internship_tasks').insert(taskRows);
-    console.log(`  ✓ Created + seeded ${taskRows.length} tasks for "${domain.title}"`);
+    console.log(`  ✓ Created + seeded ${taskRows.length} tasks for "${domain.title}" (${targetDuration})`);
     return newIntern;
 }
 

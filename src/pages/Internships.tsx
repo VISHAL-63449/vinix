@@ -750,17 +750,31 @@ const Internships: React.FC = () => {
                 .select('id, title, category, duration');
             if (dbIntersErr) throw dbIntersErr;
 
-            // Match ONLY by the selected domain's category/title — never fall back to first DB record
+            // Match by the selected domain's category/title AND duration
             let matchedIntern = (dbInters || []).find(i =>
-                (i.category && i.category.toLowerCase() === snapshotDomain.label.toLowerCase()) ||
-                (i.title && i.title.toLowerCase() === snapshotDomain.title.toLowerCase())
+                ((i.category && i.category.toLowerCase() === snapshotDomain.label.toLowerCase()) ||
+                    (i.title && i.title.toLowerCase() === snapshotDomain.title.toLowerCase())) &&
+                (i.duration === snapshotDuration.label)
             );
 
             let internshipId = matchedIntern?.id;
             let internshipTitle = matchedIntern?.title || snapshotDomain.title;
 
-            // If no matching internship found for this domain, create one with correct domain tasks
+            // If no matching internship found for this domain and duration, create one
             if (!internshipId) {
+                // Fetch domains to link domain_id
+                const { data: dbDomains } = await supabaseAdmin
+                    .from('domains')
+                    .select('id, name, slug');
+
+                const matchedDomainDb = (dbDomains || []).find(d =>
+                    d.slug === snapshotDomain.id ||
+                    d.name.toLowerCase() === snapshotDomain.label.toLowerCase() ||
+                    d.name.toLowerCase() === snapshotDomain.title.toLowerCase()
+                );
+
+                const generatedSlug = `${snapshotDomain.id}-${snapshotDuration.label.toLowerCase().replace(/\s+/g, '-')}`;
+
                 const { data: newDbIntern, error: newDbInternErr } = await supabaseAdmin
                     .from('internships')
                     .insert({
@@ -768,7 +782,9 @@ const Internships: React.FC = () => {
                         category: snapshotDomain.label,
                         description: snapshotDomain.description,
                         duration: snapshotDuration.label,
-                        status: 'active'
+                        status: 'active',
+                        domain_id: matchedDomainDb?.id || null,
+                        slug: generatedSlug
                     })
                     .select()
                     .single();
