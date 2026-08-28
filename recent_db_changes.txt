@@ -1,0 +1,55 @@
+Querying all profiles...
+
+Querying all enrollments...
+
+Detailing all task progress for vr271028@gmail.com profiles...
+
+Profile: harini.R | ID: 16624892-b65c-42b9-86e0-90a54e6504c6 | Email: vr271028@gmail.com
+  Auth User Email: harini6385@gmail.com
+  Enrollments count: 1
+    Enroll ID: acfb9923-b3e2-4bae-b689-374392816da5 | Status: active | Progress: 0
+  Task Progress count: 5
+    Task Progress ID: df223452-a049-4af8-b2ca-9b7b93369daf | Task #1 - LinkedIn Offer Post Requirement | Status: not_submitted
+    Task Progress ID: 6f0eace4-33fb-4296-a882-80f81f03e81b | Task #2 - Create a Calculator | Status: locked
+    Task Progress ID: 3cc06a18-b9e9-4f2a-bf00-a34d00ab04c5 | Task #3 - Create a Number Guessing Game | Status: locked
+    Task Progress ID: 3cf90211-5e56-40f2-8dc8-7c2d4b885f8c | Task #4 - Create a To-Do List | Status: locked
+    Task Progress ID: f555255b-4d18-4050-852a-a1aad39dc734 | Task #5 - Create a Student Management System | Status: locked
+
+Profile: kr pain tamil | ID: 2a53a98c-3cff-4cf9-96bb-e018c3fe53f0 | Email: vr271028@gmail.com
+  Auth User Email: paintamilparithi9625@mountzion.ac.in
+  Enrollments count: 1
+    Enroll ID: ddcc246c-e337-4924-9738-2904ab96c0a0 | Status: active | Progress: 0
+  Task Progress count: 5
+    Task Progress ID: e0582038-6ae2-4879-b780-8456f728ede5 | Task #1 - LinkedIn Offer Post Requirement | Status: not_submitted
+    Task Progress ID: 3bbb11a5-19e1-4892-b35b-b3068d4e99d4 | Task #2 - Create a Mobile Login Screen | Status: locked
+    Task Progress ID: 7e3a7bf2-b3c9-4d72-840f-ab4bf41c09d7 | Task #3 - Create a Mobile Registration Screen | Status: locked
+    Task Progress ID: 63f8700e-899c-42e9-ad2f-2ad0178519ec | Task #4 - Create a To-Do List App | Status: locked
+    Task Progress ID: f627d228-c735-49e2-b4cf-9ede89401b0f | Task #5 - Create a Mobile Mini Project | Status: locked
+
+Profile: naga | ID: d93b6e6b-be69-471d-bc5e-7509cb405672 | Email: vr271028@gmail.com
+  Auth User Email: nagavallir85@gmail.com
+  Enrollments count: 1
+    Enroll ID: e1f9be4a-d3de-4ead-a923-8cea7e3d0c25 | Status: completed | Progress: 100
+  Task Progress count: 5
+    Task Progress ID: 57b35ba6-b97f-4e57-ac50-f5700df1afca | Task #1 - LinkedIn Offer Post Requirement | Status: not_submitted
+    Task Progress ID: a74895c4-b5c6-4512-9ad9-d6c0f97cd91b | Task #2 - Create a Calculator | Status: locked
+    Task Progress ID: f6713c23-fbc0-441f-a925-07b4afe00666 | Task #3 - Create a Student Grade Calculator | Status: locked
+    Task Progress ID: 4abe8a32-f9da-47da-9af5-4fc402b2e122 | Task #4 - Create a Bank Account System | Status: locked
+    Task Progress ID: 576d8ae5-ae51-4491-a48b-0b27d7a4ce8a | Task #5 - Create a Java Mini Project | Status: locked
+
+Profile: vishal | ID: 4d564805-ebf3-4208-8059-602b75eb3ee9 | Email: vr271028@gmail.com
+  Auth User Email: vr271028@gmail.com
+  Enrollments count: 1
+    Enroll ID: ff20b720-f535-499d-a35a-ec3b5b56b69d | Status: completed | Progress: 100
+  Task Progress count: 11
+    Task Progress ID: 3169e757-4bdb-4a1b-a11c-3d371707cc8e | Task #1 - LinkedIn Offer Post Requirement | Status: approved
+    Task Progress ID: 01c3c278-b863-42f2-b16d-ecc552880328 | Task #2 - Advanced Personal Portfolio | Status: approved
+    Task Progress ID: 133fc2ba-524d-45ba-aa37-4f0f2c389a8d | Task #3 - E-Commerce Website | Status: approved
+    Task Progress ID: 90e87b7a-fe6e-47c3-b0d8-a106c0ac021c | Task #4 - Student Management System | Status: approved
+    Task Progress ID: 00d56365-03f1-484f-8e82-92f4236433db | Task #5 - Online Quiz & Examination System | Status: approved
+    Task Progress ID: 61412d6b-344b-4d06-8daa-36673359aa84 | Task #6 - Blog & Content Management System | Status: approved
+    Task Progress ID: 2a4b5f6a-e1ea-4154-a688-fd2fce185a99 | Task #7 - Employee Management System | Status: approved
+    Task Progress ID: 082f5ec5-f421-42ae-a087-f10f85d00f62 | Task #8 - Job Portal Website | Status: approved
+    Task Progress ID: 7322eab6-6bd1-4d1a-b43b-9fba402f4caa | Task #9 - Online Food Ordering System | Status: approved
+    Task Progress ID: b1771bd9-4b52-4899-8dd6-2b43adf8efc1 | Task #10 - Project Management Dashboard | Status: approved
+    Task Progress ID: 67e0a735-e0fb-4493-988e-4a2cdc9a8e82 | Task #11 - Complete Full Stack Internship Management Platform | Status: approved

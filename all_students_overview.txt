@@ -1,0 +1,74 @@
+Fetching all student enrollments and applications...
+Total enrollments in internship_enrollments: 12
+
+Candidate: Vishal R (student@vinix.com)
+  Enrollment ID: 112d7fb3-388b-4baa-afa6-cd2ff528144a
+  Status: active
+  Progress: 100%
+  Tasks Stats: 11 approved, 0 pending grading, 11 total tasks generated
+
+Candidate: harini.R (vr271028@gmail.com)
+  Enrollment ID: acfb9923-b3e2-4bae-b689-374392816da5
+  Status: active
+  Progress: 0%
+  Tasks Stats: 0 approved, 0 pending grading, 5 total tasks generated
+
+Candidate: hariharan (hariharan9665@mountzion.ac.in)
+  Enrollment ID: 87af72ce-b735-477e-88e0-86bc5d41d4fa
+  Status: active
+  Progress: 0%
+  Tasks Stats: 0 approved, 0 pending grading, 5 total tasks generated
+
+Candidate: paintamilparithi (paintamilparithi9665@mountzion.ac.in)
+  Enrollment ID: b4549f9b-c28a-4513-a316-e29e642a2cd9
+  Status: active
+  Progress: 0%
+  Tasks Stats: 0 approved, 0 pending grading, 5 total tasks generated
+
+Candidate: kr pain tamil (vr271028@gmail.com)
+  Enrollment ID: ddcc246c-e337-4924-9738-2904ab96c0a0
+  Status: active
+  Progress: 0%
+  Tasks Stats: 0 approved, 0 pending grading, 5 total tasks generated
+
+Candidate: naga (vr271028@gmail.com)
+  Enrollment ID: e1f9be4a-d3de-4ead-a923-8cea7e3d0c25
+  Status: completed
+  Progress: 100%
+  Tasks Stats: 0 approved, 0 pending grading, 5 total tasks generated
+
+Candidate: sandhiya (sandhiya@gmail.com)
+  Enrollment ID: fd9cec4f-99a6-4f15-a7e0-2a2eb477dd23
+  Status: active
+  Progress: 60%
+  Tasks Stats: 0 approved, 0 pending grading, 5 total tasks generated
+
+Candidate: vishal (vr271028@gmail.com)
+  Enrollment ID: ff20b720-f535-499d-a35a-ec3b5b56b69d
+  Status: completed
+  Progress: 100%
+  Tasks Stats: 11 approved, 0 pending grading, 11 total tasks generated
+
+Candidate: Vishal  (vishal9932@mountzion.ac.in)
+  Enrollment ID: 7e5a4335-c497-4bfa-9ca6-8ad458b2e7a6
+  Status: active
+  Progress: 0%
+  Tasks Stats: 0 approved, 0 pending grading, 0 total tasks generated
+
+Candidate: Vishal Admin (vishal@vinix.com)
+  Enrollment ID: 9643645f-cb44-48bd-b13d-b0529d384dea
+  Status: active
+  Progress: 100%
+  Tasks Stats: 0 approved, 0 pending grading, 0 total tasks generated
+
+Candidate: E2E Test Student (student_1787472056651@vinix.test)
+  Enrollment ID: dcf66379-8d99-4383-bd99-e8d549d98a57
+  Status: active
+  Progress: 0%
+  Tasks Stats: 0 approved, 0 pending grading, 0 total tasks generated
+
+Candidate: E2E Test Student (student_1787472069392@vinix.test)
+  Enrollment ID: d44a4fd0-3ff8-489c-844c-b738b79f2fd9
+  Status: active
+  Progress: 0%
+  Tasks Stats: 0 approved, 0 pending grading, 0 total tasks generated

@@ -1,0 +1,45 @@
+Querying task_progress with direct table name join...
+Error 1: null
+Data 1 Sample: {
+  "id": "3169e757-4bdb-4a1b-a11c-3d371707cc8e",
+  "student_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+  "user_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+  "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+  "task_id": "4e30731f-aa6c-49e2-9ae3-adcfc1a73a89",
+  "status": "approved",
+  "submission_url": null,
+  "github_url": "https://github.com/vishal6385/vinix-project",
+  "linkedin_url": "https://linkedin.com/posts/vishal-rajesh-vinix-selection-announcement",
+  "student_note": "Solution document and functional modules for Milestone 1 completed. Built logic structures in compliance with core requirements.",
+  "admin_feedback": "Excellent implementation! Code quality is stellar, documentation aligns perfectly with criteria. Approved.",
+  "submitted_at": "2026-08-22T11:24:51.235+00:00",
+  "reviewed_at": "2026-08-23T04:32:32.605+00:00",
+  "internship_tasks": {
+    "title": "LinkedIn Offer Post Requirement",
+    "description": "Share your internship selection announcement on LinkedIn to unlock tasks.",
+    "task_number": 1
+  }
+}
+
+Querying task_progress with task_id column join...
+Error 2: null
+Data 2 Sample: {
+  "id": "3169e757-4bdb-4a1b-a11c-3d371707cc8e",
+  "student_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+  "user_id": "4d564805-ebf3-4208-8059-602b75eb3ee9",
+  "internship_id": "c37a2171-7412-488b-9ab1-ccf01f0fb90e",
+  "task_id": "4e30731f-aa6c-49e2-9ae3-adcfc1a73a89",
+  "status": "approved",
+  "submission_url": null,
+  "github_url": "https://github.com/vishal6385/vinix-project",
+  "linkedin_url": "https://linkedin.com/posts/vishal-rajesh-vinix-selection-announcement",
+  "student_note": "Solution document and functional modules for Milestone 1 completed. Built logic structures in compliance with core requirements.",
+  "admin_feedback": "Excellent implementation! Code quality is stellar, documentation aligns perfectly with criteria. Approved.",
+  "submitted_at": "2026-08-22T11:24:51.235+00:00",
+  "reviewed_at": "2026-08-23T04:32:32.605+00:00",
+  "internship_tasks": {
+    "title": "LinkedIn Offer Post Requirement",
+    "description": "Share your internship selection announcement on LinkedIn to unlock tasks.",
+    "task_number": 1
+  }
+}

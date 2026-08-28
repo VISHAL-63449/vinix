@@ -1,0 +1,65 @@
+Querying task submissions from Supabase...
+Found total 52 task progress rows in DB.
+
+--- STATUS COUNTS ---
+{
+  "not_submitted": 6,
+  "locked": 24,
+  "approved": 22
+}
+
+--- NON-LOCKED NON-APPROVED TASKS ---
+Student Match: harini.R (vr271028@gmail.com)
+  Task Progress ID: df223452-a049-4af8-b2ca-9b7b93369daf
+  User ID: 16624892-b65c-42b9-86e0-90a54e6504c6
+  Status: not_submitted
+  Task: #1 - LinkedIn Offer Post Requirement
+  GitHub: null
+  LinkedIn: null
+  Submitted At: null
+-----------------------------------------------
+Student Match: hariharan (hariharan9665@mountzion.ac.in)
+  Task Progress ID: d06aee0e-2a19-4bcf-8c39-8a7b3df83cb6
+  User ID: b2423c72-cd4f-4e32-a00b-d3994ac6ab58
+  Status: not_submitted
+  Task: #1 - LinkedIn Offer Post Requirement
+  GitHub: null
+  LinkedIn: null
+  Submitted At: null
+-----------------------------------------------
+Student Match: paintamilparithi (paintamilparithi9665@mountzion.ac.in)
+  Task Progress ID: eb809b2e-1329-433d-83e3-693bbf9469ce
+  User ID: d29f0cab-c850-43f8-9bc7-de0e8b8ea36e
+  Status: not_submitted
+  Task: #1 - LinkedIn Offer Post Requirement
+  GitHub: null
+  LinkedIn: null
+  Submitted At: null
+-----------------------------------------------
+Student Match: kr pain tamil (vr271028@gmail.com)
+  Task Progress ID: e0582038-6ae2-4879-b780-8456f728ede5
+  User ID: 2a53a98c-3cff-4cf9-96bb-e018c3fe53f0
+  Status: not_submitted
+  Task: #1 - LinkedIn Offer Post Requirement
+  GitHub: null
+  LinkedIn: null
+  Submitted At: null
+-----------------------------------------------
+Student Match: naga (vr271028@gmail.com)
+  Task Progress ID: 57b35ba6-b97f-4e57-ac50-f5700df1afca
+  User ID: d93b6e6b-be69-471d-bc5e-7509cb405672
+  Status: not_submitted
+  Task: #1 - LinkedIn Offer Post Requirement
+  GitHub: null
+  LinkedIn: null
+  Submitted At: null
+-----------------------------------------------
+Student Match: sandhiya (sandhiya@gmail.com)
+  Task Progress ID: de4aca25-bd03-4a95-960c-3fc1fb837061
+  User ID: 9b14e013-52db-42ca-8050-13b819f0b62d
+  Status: not_submitted
+  Task: #1 - LinkedIn Offer Post Requirement
+  GitHub: null
+  LinkedIn: null
+  Submitted At: null
+-----------------------------------------------

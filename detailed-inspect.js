@@ -37,7 +37,34 @@ async function check() {
     console.log('Certs Data:', certsData);
     console.log('Certs Err:', certErr);
 
-    fs.writeFileSync('detailed-inspect.txt', JSON.stringify({ enrollData, enrollErr, offerData, offerErr, certsData, certErr }, null, 2));
+    console.log('Fetching task progress...');
+    const { data: progressData, error: progressErr } = await supabase
+        .from('task_progress')
+        .select('*, internship_tasks(task_number, title)')
+        .eq('user_id', studentUserId);
+
+    console.log('Progress Data Count:', progressData ? progressData.length : 0);
+    if (progressData) {
+        progressData.forEach(p => {
+            console.log(`Task #${p.internship_tasks?.task_number || '?'} (${p.internship_tasks?.title || 'No Task'}): ${p.status}`);
+        });
+    }
+
+    console.log('Fetching all internship tasks for c37a2171-7412-488b-9ab1-ccf01f0fb90e...');
+    const { data: tasksData, error: tasksErr } = await supabase
+        .from('internship_tasks')
+        .select('*')
+        .eq('internship_id', 'c37a2171-7412-488b-9ab1-ccf01f0fb90e')
+        .order('task_number');
+
+    console.log('Tasks Count:', tasksData ? tasksData.length : 0);
+    if (tasksData) {
+        tasksData.forEach(t => {
+            console.log(`Task #${t.task_number}: ${t.title}`);
+        });
+    }
+
+    fs.writeFileSync('detailed-inspect.txt', JSON.stringify({ enrollData, enrollErr, offerData, offerErr, certsData, certErr, progressData, progressErr, tasksData }, null, 2));
 }
 
 check();

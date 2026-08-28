@@ -1,0 +1,72 @@
+Fetching from standard enrollments...
+Total enrollments in enrollments table: 10
+
+Candidate: kr pain tamil (vr271028@gmail.com)
+  Enrollment ID: 11ef5f0f-8fb8-4f0d-bb74-d8eac412033a
+  User ID: 2a53a98c-3cff-4cf9-96bb-e018c3fe53f0
+  Internship ID: 776f8894-49b0-44f1-bc4c-7a74615cc8ea
+  Status: active
+  Progress: 0%
+
+Candidate: naga (vr271028@gmail.com)
+  Enrollment ID: 3e0ff3cd-68ad-420c-aa55-a4436bebaec8
+  User ID: d93b6e6b-be69-471d-bc5e-7509cb405672
+  Internship ID: ca600a93-45ca-48db-920d-49d6f23463a7
+  Status: completed
+  Progress: 100%
+
+Candidate: sandhiya (sandhiya@gmail.com)
+  Enrollment ID: 7a572d4b-435f-4a1f-8be2-bf674d55c189
+  User ID: 9b14e013-52db-42ca-8050-13b819f0b62d
+  Internship ID: f75aba63-5989-484a-83f3-c68f7a67f464
+  Status: active
+  Progress: 60%
+
+Candidate: vishal (vr271028@gmail.com)
+  Enrollment ID: 5f5422b7-a888-42c3-83dd-5f9f21cfce1c
+  User ID: 4d564805-ebf3-4208-8059-602b75eb3ee9
+  Internship ID: c37a2171-7412-488b-9ab1-ccf01f0fb90e
+  Status: completed
+  Progress: 100%
+
+Candidate: Vishal  (vishal9932@mountzion.ac.in)
+  Enrollment ID: 5ef678e2-fd08-48ac-90ef-b3bfe0613fe7
+  User ID: 6b2ce26f-ef17-4ee8-98f1-4d6fe9e1e109
+  Internship ID: c37a2171-7412-488b-9ab1-ccf01f0fb90e
+  Status: active
+  Progress: 0%
+
+Candidate: Vishal Admin (vishal@vinix.com)
+  Enrollment ID: ca1edc41-d294-4c6c-8356-de8c813ab1d4
+  User ID: 7cef3fb3-4f69-42dc-ae1b-faf0fb86c564
+  Internship ID: c37a2171-7412-488b-9ab1-ccf01f0fb90e
+  Status: active
+  Progress: 100%
+
+Candidate: Vishal R (student@vinix.com)
+  Enrollment ID: f5eefd36-df5c-45c5-9b41-92779b41a0e6
+  User ID: 361d25f1-6ed9-4ff0-88da-3ee09789a639
+  Internship ID: c37a2171-7412-488b-9ab1-ccf01f0fb90e
+  Status: active
+  Progress: 100%
+
+Candidate: harini.R (vr271028@gmail.com)
+  Enrollment ID: 5fbd4c94-99f7-4178-9f41-83edb93af0a2
+  User ID: 16624892-b65c-42b9-86e0-90a54e6504c6
+  Internship ID: 3af0cd52-af0d-4d74-926e-6890c876fe11
+  Status: active
+  Progress: 0%
+
+Candidate: hariharan (hariharan9665@mountzion.ac.in)
+  Enrollment ID: ebdb3570-06ef-4334-88f6-06a399661144
+  User ID: b2423c72-cd4f-4e32-a00b-d3994ac6ab58
+  Internship ID: 141124c2-cf77-4022-9b9b-18796585527e
+  Status: active
+  Progress: 0%
+
+Candidate: paintamilparithi (paintamilparithi9665@mountzion.ac.in)
+  Enrollment ID: 7f07c271-a5ca-4b75-a8bc-9aeca2eb8e72
+  User ID: d29f0cab-c850-43f8-9bc7-de0e8b8ea36e
+  Internship ID: 25bddada-1e53-4c82-b172-92474cd2a193
+  Status: active
+  Progress: 0%
