@@ -508,6 +508,18 @@ const AdminPortal: React.FC = () => {
                                 status: 'issued',
                                 issue_date: new Date().toISOString()
                             });
+
+                        // Trigger server-side PDF generation & email delivery
+                        fetch('/api/generate-certificate', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                studentId: selectedSubForReview.user_id,
+                                courseName: courseName,
+                                certificateNumber: certNo,
+                                internshipId: selectedSubForReview.internship_id
+                            })
+                        }).catch(err => console.error('Failed to trigger server-side certificate generation:', err));
                     }
                 }
             }
@@ -701,6 +713,17 @@ const AdminPortal: React.FC = () => {
                 });
 
             if (error) throw error;
+
+            // Trigger server-side PDF generation & email delivery
+            fetch('/api/generate-certificate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    studentId: certStudentId,
+                    courseName: certCourseName,
+                    certificateNumber: certNo
+                })
+            }).catch(err => console.error('Failed to trigger server-side certificate generation:', err));
 
             showToast(`Certificate issued: ${certNo}`, 'success');
             setCertStudentId('');

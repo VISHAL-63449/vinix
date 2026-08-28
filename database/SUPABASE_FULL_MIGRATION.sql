@@ -500,7 +500,12 @@ CREATE TABLE IF NOT EXISTS public.certificates (
     verification_status TEXT DEFAULT 'VALID',
     issue_date TIMESTAMPTZ DEFAULT now(),
     issued_at TIMESTAMPTZ DEFAULT now(),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    certificate_path TEXT,
+    certificate_email_status TEXT DEFAULT 'pending',
+    certificate_email_sent_at TIMESTAMPTZ,
+    certificate_email_error TEXT,
+    completion_date TIMESTAMPTZ
 );
 
 -- Safe unique constraints (idempotent)
@@ -583,7 +588,14 @@ CREATE TABLE IF NOT EXISTS public.offer_letters (
     status TEXT DEFAULT 'SENT',
     verification_token TEXT UNIQUE,
     issue_date TIMESTAMPTZ DEFAULT now(),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+    application_id UUID REFERENCES public.internship_applications(id) ON DELETE SET NULL,
+    offer_letter_path TEXT,
+    offer_letter_url TEXT,
+    offer_letter_generated_at TIMESTAMPTZ,
+    offer_email_status TEXT DEFAULT 'pending',
+    offer_email_sent_at TIMESTAMPTZ,
+    offer_email_error TEXT
 );
 
 ALTER TABLE public.offer_letters ENABLE ROW LEVEL SECURITY;

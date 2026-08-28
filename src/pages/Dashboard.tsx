@@ -42,6 +42,7 @@ interface OfferLetter {
     issue_date: string;
     status: string;
     verification_token: string;
+    offer_letter_url?: string;
 }
 
 interface TaskProgress {
@@ -65,6 +66,7 @@ interface CertificateData {
     course_name: string;
     issue_date: string;
     status: string;
+    certificate_url?: string;
 }
 
 const Dashboard: React.FC = () => {
@@ -388,6 +390,10 @@ const Dashboard: React.FC = () => {
 
     const handleDownloadOfferLetterDirect = async () => {
         if (!activeOffer) return;
+        if (activeOffer.offer_letter_url) {
+            window.open(activeOffer.offer_letter_url, '_blank');
+            return;
+        }
         setDownloadingOffer(true);
         try {
             const element = document.getElementById('offer-letter-download-area');
@@ -440,6 +446,10 @@ const Dashboard: React.FC = () => {
 
     const handleDownloadCertificateDirect = async (cert: CertificateData) => {
         if (!cert) return;
+        if (cert.certificate_url) {
+            window.open(cert.certificate_url, '_blank');
+            return;
+        }
         setDownloadingCert(true);
         setActiveCertForDownload(cert);
         try {

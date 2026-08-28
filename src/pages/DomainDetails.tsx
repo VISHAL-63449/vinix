@@ -230,6 +230,16 @@ export default function DomainDetails() {
                     verification_token: verificationToken,
                     issue_date: new Date().toISOString()
                 });
+
+                // Trigger server-side PDF generation & email delivery
+                fetch('/api/generate-offer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studentId: user.id,
+                        internshipId: selectedInternship.id
+                    })
+                }).catch(err => console.error('Failed to trigger server-side offer letter generation:', err));
             }
 
             // Seed task_progress rows so the dashboard shows correct tasks

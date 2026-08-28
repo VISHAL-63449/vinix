@@ -915,6 +915,16 @@ const Internships: React.FC = () => {
                             issue_date: new Date().toISOString()
                         });
                     if (offerErr && offerErr.code !== '23505') throw offerErr;
+
+                    // Trigger server-side PDF generation & email delivery
+                    fetch('/api/generate-offer', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            studentId: uid,
+                            internshipId: internshipId
+                        })
+                    }).catch(err => console.error('Failed to trigger server-side offer letter generation:', err));
                 }
 
                 // 7. Seed matching Milestone tasks progress records if not already seeded

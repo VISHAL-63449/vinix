@@ -1,0 +1,7 @@
+Internship ID: c37a2171-7412-488b-9ab1-ccf01f0fb90e | Title: Full Stack Development | Category: Full Stack Development | Duration: 3 Months | Tasks Count: 11
+Internship ID: 3af0cd52-af0d-4d74-926e-6890c876fe11 | Title: Python Development | Category: Python Development | Duration: 1 Month | Tasks Count: 5
+Internship ID: 141124c2-cf77-4022-9b9b-18796585527e | Title: SQL & Database Development | Category: SQL & Database Development | Duration: 1 Month | Tasks Count: 5
+Internship ID: 25bddada-1e53-4c82-b172-92474cd2a193 | Title: AI & Machine Learning | Category: Artificial Intelligence & Machine Learning | Duration: 1 Month | Tasks Count: 5
+Internship ID: ca600a93-45ca-48db-920d-49d6f23463a7 | Title: Java Development | Category: Java Development | Duration: 1 Month | Tasks Count: 5
+Internship ID: f75aba63-5989-484a-83f3-c68f7a67f464 | Title: UI/UX Design | Category: UI/UX Design | Duration: 1 Month | Tasks Count: 5
+Internship ID: 776f8894-49b0-44f1-bc4c-7a74615cc8ea | Title: Mobile App Development | Category: Mobile App Development | Duration: 1 Month | Tasks Count: 5
