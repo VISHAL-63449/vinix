@@ -94,45 +94,43 @@ async function seedVishal() {
         .select('*')
         .eq('internship_id', internship.id);
 
-    if (!tasks || tasks.length < 11) {
-        console.log('Deleting existing tasks and seeding 11 fresh tasks...');
-        if (tasks && tasks.length > 0) {
-            await client.from('internship_tasks').delete().eq('internship_id', internship.id);
-        }
+    console.log('Resetting and seeding 11 fresh tasks...');
+    await client.from('internship_tasks').delete().eq('internship_id', internship.id);
 
-        const taskTitles = [
-            'LinkedIn Offer Post Requirement',
-            'Advanced Frontend UI / UX Redesign',
-            'REST API Implementation & Integration',
-            'Database Schema & Migrations Configuration',
-            'Middleware, JWT & Authentication flow',
-            'State Management & Performance Optimization',
-            'Automated Unit Testing & Mocking',
-            'Docker Containerization setup',
-            'CI/CD GitHub Actions devops pipeline',
-            'Performance Tuning & Caching layers',
-            'Production Release & Final Review'
-        ];
+    const taskTitles = [
+        'LinkedIn Offer Post Requirement',
+        'Advanced Personal Portfolio',
+        'E-Commerce Website',
+        'Student Management System',
+        'Online Quiz & Examination System',
+        'Blog & Content Management System',
+        'Employee Management System',
+        'Job Portal Website',
+        'Online Food Ordering System',
+        'Project Management Dashboard',
+        'Complete Full Stack Internship Management Platform'
+    ];
 
-        const taskInserts = taskTitles.map((title, index) => ({
-            internship_id: internship.id,
-            title,
-            description: `Complete technical tasks and requirements for Milestone ${index + 1}: ${title}.`,
-            task_number: index + 1,
-            deadline: '7 Days',
-            points: 100
-        }));
+    const taskInserts = taskTitles.map((title, index) => ({
+        internship_id: internship.id,
+        title,
+        description: index === 0
+            ? 'Share your internship selection announcement on LinkedIn to unlock tasks.'
+            : `Complete the Full Stack Development task: ${title}`,
+        task_number: index + 1,
+        deadline: '7 Days',
+        points: 100
+    }));
 
-        const { data: newTasks, error: tErr } = await client
-            .from('internship_tasks')
-            .insert(taskInserts)
-            .select();
-        if (tErr) {
-            console.error('Failed to create internship tasks:', tErr);
-            return;
-        }
-        tasks = newTasks;
+    const { data: newTasks, error: tErr } = await client
+        .from('internship_tasks')
+        .insert(taskInserts)
+        .select();
+    if (tErr) {
+        console.error('Failed to create internship tasks:', tErr);
+        return;
     }
+    tasks = newTasks;
     console.log('✅ Seeding complete for', tasks.length, 'tasks.');
 
     // 4. Authenticate or Sign Up Student "Vishal R"

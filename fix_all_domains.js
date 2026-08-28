@@ -12,9 +12,34 @@ const DOMAINS = {
         label: 'Full Stack Development', title: 'Full Stack Development',
         description: 'Build web apps with React, Express, and databases.',
         tasks: {
-            '1 Month': ['Modular Structure and Validation Implementation', 'Performance Optimization & Code Refactoring', 'Security Auditing & Penetration Tests', 'CI/CD Pipeline Setup & Verification', 'Final Production Deployment & Capstone Submission'],
-            '2 Months': ['Modular Structure and Validation Implementation', 'Performance Optimization & Code Refactoring', 'Security Auditing & Penetration Tests', 'CI/CD Pipeline Setup & Verification', 'Final Production Deployment & Capstone Submission', 'API Gateway Integration & Microservices Configuration', 'Advanced Database Query Tuning & Caching Orchestration', 'End-to-End Testing with Cypress & Automated Coverage Reporting'],
-            '3 Months': ['Modular Structure and Validation Implementation', 'Performance Optimization & Code Refactoring', 'Security Auditing & Penetration Tests', 'CI/CD Pipeline Setup & Verification', 'Final Production Deployment & Capstone Submission', 'API Gateway Integration & Microservices Configuration', 'Advanced Database Query Tuning & Caching Orchestration', 'End-to-End Testing with Cypress & Automated Coverage Reporting', 'Multi-Tenant RBAC & Advanced Security Guardrails', 'Distributed Logging, Observability & Analytics Dashboards'],
+            '1 Month': [
+                'Personal Portfolio Website',
+                'Responsive E-Commerce Website',
+                'Student Management System',
+                'REST API Based To-Do Application'
+            ],
+            '2 Months': [
+                'Personal Portfolio Website',
+                'E-Commerce Product Catalog',
+                'To-Do Task Management App',
+                'Student Management System',
+                'Online Quiz Application',
+                'Blog Management System',
+                'Employee Management System',
+                'Full Stack Event Booking System'
+            ],
+            '3 Months': [
+                'Advanced Personal Portfolio',
+                'E-Commerce Website',
+                'Student Management System',
+                'Online Quiz & Examination System',
+                'Blog & Content Management System',
+                'Employee Management System',
+                'Job Portal Website',
+                'Online Food Ordering System',
+                'Project Management Dashboard',
+                'Complete Full Stack Internship Management Platform'
+            ]
         }
     },
     python: {
