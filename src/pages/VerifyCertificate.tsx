@@ -82,11 +82,21 @@ const VerifyCertificate: React.FC = () => {
     };
 
     useEffect(() => {
+        document.title = "Verify Internship Certificate | VINIX Credentials";
+    }, []);
+
+    useEffect(() => {
         if (certNo) {
             setInputVal(certNo);
             fetchVerify(certNo);
         }
     }, [certNo]);
+
+    useEffect(() => {
+        if (result) {
+            document.title = `Verify Certificate: ${result.studentName} - ${result.courseName} | VINIX`;
+        }
+    }, [result]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();

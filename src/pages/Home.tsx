@@ -142,6 +142,34 @@ export const Home: React.FC = () => {
     const navigate = useNavigate();
     const [faqOpenIndex, setFaqOpenIndex] = useState<number | null>(null);
 
+    useEffect(() => {
+        document.title = "VINIX | Free Task-Based Virtual Internships & Certificates";
+        const scriptId = "faq-schema-markup";
+        let script = document.getElementById(scriptId) as HTMLScriptElement;
+        if (!script) {
+            script = document.createElement("script");
+            script.id = scriptId;
+            script.type = "application/ld+json";
+            script.innerHTML = JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "FAQPage",
+                "mainEntity": FAQ_ITEMS.map(item => ({
+                    "@type": "Question",
+                    "name": item.question,
+                    "acceptedAnswer": {
+                        "@type": "Answer",
+                        "text": item.answer
+                    }
+                }))
+            });
+            document.head.appendChild(script);
+        }
+        return () => {
+            const existingScript = document.getElementById(scriptId);
+            if (existingScript) existingScript.remove();
+        };
+    }, []);
+
     /* Typewriter */
     const TARGET = 'Get Certified.';
     const [typed, setTyped] = useState('');
@@ -296,7 +324,7 @@ export const Home: React.FC = () => {
                             </div>
 
                             {/* Main Headings */}
-                            <div className="font-extrabold text-slate-900 dark:text-white leading-[1.08] tracking-tight text-3.5xl sm:text-5xl md:text-6xl">
+                            <h1 className="font-extrabold text-slate-900 dark:text-white leading-[1.08] tracking-tight text-3.5xl sm:text-5xl md:text-6xl">
                                 <div>Build Skills.</div>
                                 <div>Gain Experience.</div>
                                 <div className="text-blue-600 dark:text-blue-400 flex items-center min-h-[4.5rem]">
@@ -309,7 +337,7 @@ export const Home: React.FC = () => {
                                         }}
                                     />
                                 </div>
-                            </div>
+                            </h1>
 
                             {/* Hero Subtitle */}
                             <p className="text-slate-550 dark:text-slate-400 text-sm sm:text-base leading-relaxed max-w-lg font-medium">

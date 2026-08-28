@@ -93,11 +93,21 @@ const VerifyOffer: React.FC = () => {
     };
 
     useEffect(() => {
+        document.title = "Verify Offer Letter | VINIX Gateway";
+    }, []);
+
+    useEffect(() => {
         if (token) {
             setInputVal(token);
             fetchVerify(token);
         }
     }, [token]);
+
+    useEffect(() => {
+        if (result) {
+            document.title = `Verify Offer: ${result.studentName} - ${result.internshipTitle} | VINIX`;
+        }
+    }, [result]);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
