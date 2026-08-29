@@ -33,6 +33,20 @@ export default defineConfig({
             }
           } catch (e) { }
 
+          try {
+            if (req.url) {
+              let reqUrl = req.url;
+              if (reqUrl.startsWith('/vinix/')) {
+                reqUrl = reqUrl.replace('/vinix/', '/');
+              }
+              if (reqUrl.startsWith('/api/admin/internships/') && reqUrl.endsWith('/resend-offer-letter')) {
+                const parts = reqUrl.split('/');
+                const appId = parts[4];
+                req.url = `/api/admin/resend-offer?applicationId=${encodeURIComponent(appId)}`;
+              }
+            }
+          } catch (e) { }
+
           if (req.url && (req.url.startsWith('/api/') || req.url.startsWith('/vinix/api/'))) {
             const cleanUrl = req.url.replace('/vinix/api/', '/api/').split('?')[0];
             const functionName = cleanUrl.replace('/api/', '');
@@ -57,28 +71,32 @@ export default defineConfig({
                 }
 
                 const apiReq = Object.assign(req, { body });
+                const originalSetHeader = res.setHeader.bind(res);
+                const originalEnd = res.end.bind(res);
                 const apiRes = Object.assign(res, {
                   status(code: number) {
                     res.statusCode = code;
                     return apiRes;
                   },
                   json(data: any) {
-                    res.setHeader('Content-Type', 'application/json');
-                    res.end(JSON.stringify(data));
+                    originalSetHeader('Content-Type', 'application/json');
+                    originalEnd(JSON.stringify(data));
                     return apiRes;
                   },
                   setHeader(name: string, val: string) {
-                    res.setHeader(name, val);
+                    originalSetHeader(name, val);
                     return apiRes;
                   },
                   end(data: any) {
-                    res.end(data);
+                    originalEnd(data);
                     return apiRes;
                   }
                 });
 
+                // Convert absolute Windows path to file:// URL scheme for ESM compatibility
+                const importPath = apiPath.startsWith('file:') ? apiPath : `file://${apiPath.replace(/\\/g, '/')}`;
                 // Dynamic import with cache-busting to bypass node ESM module caching in dev
-                const { default: handler } = await import(`${apiPath}?t=${Date.now()}`);
+                const { default: handler } = await import(`${importPath}?t=${Date.now()}`);
                 await handler(apiReq, apiRes);
                 return;
               } catch (err: any) {

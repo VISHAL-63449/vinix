@@ -815,158 +815,37 @@ const Internships: React.FC = () => {
                 }
             }
 
-            // 4. Update/Insert Internship applications with approved status
-            try {
-                const { error: appErr } = await supabaseAdmin.from('internship_applications').insert({
-                    student_id: uid,
-                    internship_id: internshipId,
-                    student_name: form.fullName,
-                    email: form.email,
+            // 4. Submit application to backend registration & automation API endpoint
+            const response = await fetch('/api/internships/apply', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    studentId: uid,
+                    internshipId: internshipId,
+                    studentName: form.fullName,
+                    studentEmail: form.email,
                     phone: form.phone,
                     college: form.college,
-                    year_of_study: form.yearOfStudy,
-                    course_branch: form.courseBranch,
+                    department: form.courseBranch,
+                    yearOfStudy: form.yearOfStudy,
                     country: form.country,
                     state: form.state,
                     district: form.district,
                     city: form.city,
-                    pin_code: form.pin,
-                    domain: snapshotDomain.id,
+                    pinCode: form.pin,
+                    internshipDomain: snapshotDomain.id,
                     duration: snapshotDuration.label,
-                    promo_code: form.promo || null,
-                    status: 'approved',
-                });
-                if (appErr && appErr.code !== '42703' && appErr.code !== 'PGRST205' && appErr.code !== '42P01') {
-                    throw appErr;
-                }
-            } catch (e) {
-                console.warn('Bypassing missing internship_applications table:', e);
+                    promoCode: form.promo || null
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.error || errData.message || 'Server error registering internship.');
             }
 
-            // 5. Establish Active Student Enrollments
-            if (internshipId) {
-                // Check if already enrolled in this internship
-                const { data: existingEnroll } = await supabaseAdmin
-                    .from('enrollments')
-                    .select('id')
-                    .eq('student_id', uid)
-                    .eq('internship_id', internshipId)
-                    .maybeSingle();
-
-                if (!existingEnroll) {
-                    const { error: enrollErr } = await supabaseAdmin
-                        .from('enrollments')
-                        .insert({
-                            student_id: uid,
-                            user_id: uid,
-                            internship_id: internshipId,
-                            status: 'active',
-                            progress: 0
-                        });
-                    if (enrollErr && enrollErr.code !== '23505') throw enrollErr;
-                }
-
-                // Check if already enrolled in internship_enrollments
-                const { data: existingInternEnroll } = await supabaseAdmin
-                    .from('internship_enrollments')
-                    .select('id')
-                    .eq('student_id', uid)
-                    .eq('internship_id', internshipId)
-                    .maybeSingle();
-
-                if (!existingInternEnroll) {
-                    const { error: internEnrollErr } = await supabaseAdmin
-                        .from('internship_enrollments')
-                        .insert({
-                            student_id: uid,
-                            user_id: uid,
-                            internship_id: internshipId,
-                            status: 'active',
-                            progress: 0
-                        });
-                    if (internEnrollErr && internEnrollErr.code !== '23505') throw internEnrollErr;
-                }
-
-                // 6. Generate and insert Offer Letter record if not already created
-                const { data: existingOffer } = await supabaseAdmin
-                    .from('offer_letters')
-                    .select('id')
-                    .eq('student_id', uid)
-                    .eq('internship_id', internshipId)
-                    .maybeSingle();
-
-                if (!existingOffer) {
-                    const offerLetterId = `VINIX-OFFER-${Math.floor(1000 + Math.random() * 9000)}`;
-                    const verificationToken = `tok_offer_${Math.floor(100000 + Math.random() * 900000)}`;
-
-                    const { error: offerErr } = await supabaseAdmin
-                        .from('offer_letters')
-                        .insert({
-                            user_id: uid,
-                            student_id: uid,
-                            offer_letter_id: offerLetterId,
-                            student_name: form.fullName,
-                            student_email: form.email,
-                            internship_title: internshipTitle,
-                            internship_id: internshipId,
-                            duration: snapshotDuration.label,
-                            status: 'ACCEPTED',
-                            verification_token: verificationToken,
-                            issue_date: new Date().toISOString()
-                        });
-                    if (offerErr && offerErr.code !== '23505') throw offerErr;
-
-                    // Trigger server-side PDF generation & email delivery
-                    fetch('/api/generate-offer', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            studentId: uid,
-                            internshipId: internshipId
-                        })
-                    }).catch(err => console.error('Failed to trigger server-side offer letter generation:', err));
-                }
-
-                // 7. Seed matching Milestone tasks progress records if not already seeded
-                const { data: dbTasks, error: tasksErr } = await supabaseAdmin
-                    .from('internship_tasks')
-                    .select('id, task_number')
-                    .eq('internship_id', internshipId);
-                if (tasksErr) throw tasksErr;
-
-                if (dbTasks && dbTasks.length > 0) {
-                    const { data: existingProgress } = await supabaseAdmin
-                        .from('task_progress')
-                        .select('task_id')
-                        .eq('student_id', uid)
-                        .eq('internship_id', internshipId);
-
-                    const existingTaskIds = new Set((existingProgress || []).map(p => p.task_id));
-
-                    const progressInserts = dbTasks
-                        .filter(t => !existingTaskIds.has(t.id))
-                        .map(t => ({
-                            user_id: uid,
-                            student_id: uid,
-                            internship_id: internshipId,
-                            task_id: t.id,
-                            status: t.task_number === 1 ? 'not_submitted' : 'locked',
-                            github_url: null,
-                            linkedin_url: null,
-                            student_note: null,
-                            admin_feedback: null,
-                            submitted_at: null,
-                            reviewed_at: null
-                        }));
-
-                    if (progressInserts.length > 0) {
-                        const { error: progressErr } = await supabaseAdmin
-                            .from('task_progress')
-                            .insert(progressInserts);
-                        if (progressErr && progressErr.code !== '23505') throw progressErr;
-                    }
-                }
-            }
+            const resData = await response.json();
+            console.log('[REGISTRATION SUCCESS]', resData);
 
             setSuccess(true);
             setTimeout(() => navigate('/dashboard'), 2000);

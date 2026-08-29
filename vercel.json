@@ -1,6 +1,14 @@
 {
     "rewrites": [
         {
+            "source": "/api/internships/apply",
+            "destination": "/api/internships/apply.js"
+        },
+        {
+            "source": "/api/admin/internships/:applicationId/resend-offer-letter",
+            "destination": "/api/admin/resend-offer.js?applicationId=:applicationId"
+        },
+        {
             "source": "/(.*)",
             "destination": "/index.html"
         }

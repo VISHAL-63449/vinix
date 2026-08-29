@@ -90,6 +90,23 @@ export default async function handler(req, res) {
         const internshipTitle = internship?.title || 'Virtual Internship Program';
         sDuration = sDuration || internship?.duration || '1 Month';
 
+        // Update application status to 'Approved'
+        if (app) {
+            console.log(`[GEN_OFFER] Updating application status to Approved for AppID: ${app.id}`);
+            const { error: updateAppErr1 } = await supabaseAdmin
+                .from('internship_applications')
+                .update({ status: 'Approved', updated_at: new Date().toISOString() })
+                .eq('id', app.id);
+            if (updateAppErr1) {
+                console.warn(`[GEN_OFFER] Error updating application to Approved: ${updateAppErr1.message}`);
+                // Fallback to lowercase 'approved' if 'Approved' check constraint fails
+                await supabaseAdmin
+                    .from('internship_applications')
+                    .update({ status: 'approved', updated_at: new Date().toISOString() })
+                    .eq('id', app.id);
+            }
+        }
+
         // 2. IDEMPOTENCY CHECK
         // Check if offer letter already generated
         const { data: existingOffer, error: oErr } = await supabaseAdmin
@@ -107,8 +124,8 @@ export default async function handler(req, res) {
 
         console.log(`[GEN_OFFER] Generating new Offer Letter PDF for ${sName} (${sEmail})...`);
 
-        // Generate Offer Letter IDs
-        const tokenOffer = existingOffer?.offer_letter_id || `VINIX-OFFER-${Math.floor(1000 + Math.random() * 9000)}`;
+        // Generate Offer Letter IDs (6 digits to match VINIX-XXXXXX)
+        const tokenOffer = existingOffer?.offer_letter_id || `VINIX-${Math.floor(100000 + Math.random() * 900000)}`;
         const verificationToken = existingOffer?.verification_token || `tok_offer_${Math.floor(100000 + Math.random() * 900000)}`;
         const issueDate = existingOffer?.issue_date || new Date().toISOString();
 
@@ -357,7 +374,7 @@ export default async function handler(req, res) {
         doc.line(15, footY, 195, footY);
 
         if (msmeBase64) {
-            doc.addImage(msmeBase64, 'JPEG', 15, footY + 2, 10, 10);
+            doc.addImage(msmeBase64, 'JPEG', 15, footY + 2, 14, 10);
         }
 
         doc.setTextColor(100, 116, 139);
@@ -397,18 +414,21 @@ export default async function handler(req, res) {
         console.log(`[GEN_OFFER] Uploaded to storage. Public URL: ${publicUrl}`);
 
         // 6. Send Email to student with attachment
-        const emailSubject = `Internship Offer Letter - Virtual Intern: ${internshipTitle} - VINIX Technologies`;
+        const emailSubject = `🎉 Internship Offer Letter – Vinix Technology`;
+
+        const durationText = sDuration.toLowerCase().includes('month')
+            ? `${parseInt(sDuration) * 30} Days`
+            : sDuration;
+
         const emailBody = `Dear ${sName},\n\n` +
-            `Congratulations! We are pleased to offer you the position of Virtual Intern in ${internshipTitle} at VINIX Technologies.\n\n` +
-            `Please find your official Internship Offer Letter attached to this email. You can verify your credentials or view your offer letter status anytime at ${publicUrl} or via the Vinix Student Portal.\n\n` +
-            `Particulars:\n` +
-            `- Intern ID: ${tokenOffer}\n` +
-            `- Duration: ${sDuration}\n` +
-            `- Start Date: ${formattedIssueDate}\n\n` +
-            `We look forward to having you work with us!\n\n` +
-            `Best regards,\n` +
-            `Academic Council\n` +
-            `VINIX Technologies`;
+            `Congratulations! Your application for the Vinix Technology Virtual Internship Program has been approved.\n\n` +
+            `Please find your official Internship Offer Letter attached to this email.\n\n` +
+            `Application ID: ${tokenOffer}\n` +
+            `Domain: ${internshipTitle}\n` +
+            `Duration: ${durationText}\n\n` +
+            `Best Regards,\n` +
+            `Vinix Technology\n` +
+            `Virtual Internship Team`;
 
         let mailResult;
         let mailErrorStr = null;
@@ -430,6 +450,23 @@ export default async function handler(req, res) {
             console.error('[GEN_OFFER] Email dispatch failed:', mErr.message);
             mailStatus = 'failed';
             mailErrorStr = mErr.message;
+        }
+
+        // Update status of internship_applications to 'Offer Letter Sent'
+        if (app) {
+            console.log(`[GEN_OFFER] Updating application status to Offer Letter Sent for AppID: ${app.id}`);
+            const { error: updateAppErr2 } = await supabaseAdmin
+                .from('internship_applications')
+                .update({ status: 'Offer Letter Sent', updated_at: new Date().toISOString() })
+                .eq('id', app.id);
+            if (updateAppErr2) {
+                console.warn(`[GEN_OFFER] Error updating application to Offer Letter Sent: ${updateAppErr2.message}`);
+                // Fallback to lowercase 'approved' if 'Offer Letter Sent' check constraint fails
+                await supabaseAdmin
+                    .from('internship_applications')
+                    .update({ status: 'approved', updated_at: new Date().toISOString() })
+                    .eq('id', app.id);
+            }
         }
 
         // 7. Update offer_letters table
