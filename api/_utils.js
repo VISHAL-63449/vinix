@@ -61,7 +61,7 @@ export async function getImageBase64(fileName, req) {
 
     // 3. Last resort: Try fetching from standard production base URL
     try {
-        const fallBackUrl = `https://vinix.online/${fileName}`;
+        const fallBackUrl = `https://www.vinix.online/${fileName}`;
         const response = await fetch(fallBackUrl);
         if (response.ok) {
             const arrayBuffer = await response.arrayBuffer();

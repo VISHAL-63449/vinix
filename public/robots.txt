@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /dashboard
 
-Sitemap: https://vinix.online/sitemap.xml
+Sitemap: https://www.vinix.online/sitemap.xml
