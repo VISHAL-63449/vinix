@@ -247,6 +247,11 @@ async function fixStudent(uid, studentName, domainId, duration) {
 
     const internship = await getOrCreateInternship(domainId, duration);
 
+    // Update internship_applications
+    const { error: e0 } = await supabase.from('internship_applications').update({ internship_id: internship.id }).eq('student_id', uid);
+    if (e0) console.log('  ✗ internship_applications update failed:', e0.message);
+    else console.log(`  ✓ internship_applications → "${domain.title}"`);
+
     // Update internship_enrollments
     const { error: e1 } = await supabase.from('internship_enrollments').update({ internship_id: internship.id }).eq('user_id', uid);
     if (e1) console.log('  ✗ internship_enrollments update failed:', e1.message);

@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { supabaseAdmin, getImageBase64, sendEmail, ensureBucketExists } from '../_utils.js';
+import { supabaseAdmin, getImageBase64, sendEmail, ensureBucketExists, getOrCreateInternship } from '../_utils.js';
 
 export default async function handler(req, res) {
     // CORS headers
@@ -103,7 +103,7 @@ export default async function handler(req, res) {
         const internshipDomain = app.internshipDomain || app.domain;
         const finalDuration = app.duration || '1 Month';
         const studentId = app.studentId || app.student_id;
-        const internshipId = app.internship_id;
+        let resolvedInternshipId = app.internship_id;
 
         // Verify email presence
         if (!studentEmail) {
@@ -116,12 +116,28 @@ export default async function handler(req, res) {
 
         console.log(`[RESEND_API] Resolving details for resend: Email: ${studentEmail}, Name: ${studentName}, AppID: ${appId}`);
 
-        // Fetch internship track details
-        const { data: internship } = await supabaseAdmin
-            .from('internships')
-            .select('title')
-            .eq('id', internshipId)
-            .maybeSingle();
+        // Fetch internship track details or resolve dynamically
+        let internship = null;
+        if (resolvedInternshipId) {
+            const { data: instData } = await supabaseAdmin
+                .from('internships')
+                .select('id, title, duration')
+                .eq('id', resolvedInternshipId)
+                .maybeSingle();
+            internship = instData;
+        }
+
+        if (!internship && internshipDomain) {
+            console.log(`[RESEND_API] Internship track not found for ID: ${resolvedInternshipId}. Resolving via domain: ${internshipDomain} (${finalDuration})`);
+            const resolved = await getOrCreateInternship(internshipDomain, finalDuration);
+            internship = resolved;
+            resolvedInternshipId = resolved.id;
+            // Update the application record so it keeps this ID in the database
+            await supabaseAdmin
+                .from('internship_applications')
+                .update({ internship_id: resolvedInternshipId })
+                .eq('id', app.id);
+        }
 
         const internshipTitle = internship?.title || 'Virtual Internship Program';
 
@@ -488,7 +504,7 @@ export default async function handler(req, res) {
                 .from('offer_letters')
                 .select('id')
                 .eq('student_id', studentId)
-                .eq('internship_id', internshipId)
+                .eq('internship_id', resolvedInternshipId)
                 .maybeSingle();
 
             if (legacyOffer) {

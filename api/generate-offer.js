@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { supabaseAdmin, getImageBase64, sendEmail, ensureBucketExists } from './_utils.js';
+import { supabaseAdmin, getImageBase64, sendEmail, ensureBucketExists, getOrCreateInternship } from './_utils.js';
 
 export default async function handler(req, res) {
     // CORS headers
@@ -79,13 +79,30 @@ export default async function handler(req, res) {
             }
         }
 
-        // Fetch internship track details
-        const { data: internship, error: iErr } = await supabaseAdmin
-            .from('internships')
-            .select('title, duration')
-            .eq('id', finalInternshipId)
-            .maybeSingle();
-        if (iErr) throw iErr;
+        // Fetch internship track details or resolve it dynamically
+        let internship = null;
+        if (finalInternshipId) {
+            const { data: instData } = await supabaseAdmin
+                .from('internships')
+                .select('id, title, duration')
+                .eq('id', finalInternshipId)
+                .maybeSingle();
+            internship = instData;
+        }
+
+        if (!internship && sDomain) {
+            console.log(`[GEN_OFFER] Internship track not found for ID: ${finalInternshipId}. Resolving via domain: ${sDomain} (${sDuration})`);
+            const resolved = await getOrCreateInternship(sDomain, sDuration);
+            internship = resolved;
+            finalInternshipId = resolved.id;
+            // Update the application record so it keeps this ID in the database
+            if (app) {
+                await supabaseAdmin
+                    .from('internship_applications')
+                    .update({ internship_id: finalInternshipId })
+                    .eq('id', app.id);
+            }
+        }
 
         const internshipTitle = internship?.title || 'Virtual Internship Program';
         sDuration = sDuration || internship?.duration || '1 Month';

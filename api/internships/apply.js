@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import { supabaseAdmin, getImageBase64, sendEmail, ensureBucketExists } from '../_utils.js';
+import { supabaseAdmin, getImageBase64, sendEmail, ensureBucketExists, getOrCreateInternship } from '../_utils.js';
 
 export default async function handler(req, res) {
     // CORS headers
@@ -40,8 +40,8 @@ export default async function handler(req, res) {
         promoCode
     } = req.body;
 
-    // 1. Validate student information
-    if (!studentId || !internshipId || !studentName || !studentEmail || !college || !department || !internshipDomain || !duration) {
+    // 1. Validate student information (internshipId is optional here as it will be resolved server-side)
+    if (!studentId || !studentName || !studentEmail || !college || !department || !internshipDomain || !duration) {
         res.status(400).json({ error: 'Missing required student registration parameters.' });
         return;
     }
@@ -55,23 +55,19 @@ export default async function handler(req, res) {
     try {
         console.log(`[APPLY_API] Processing registration for ${studentName} - Domain: ${internshipDomain}`);
 
-        // Get internship track details
-        const { data: internship, error: iErr } = await supabaseAdmin
-            .from('internships')
-            .select('title, duration')
-            .eq('id', internshipId)
-            .maybeSingle();
-
-        if (iErr) throw iErr;
-        const internshipTitle = internship?.title || 'Virtual Internship Program';
-        const finalDuration = duration || internship?.duration || '1 Month';
+        // Resolve or create internship track details server-side to guarantee consistency and avoid null internship_id
+        console.log(`[APPLY_API] Resolving internship track for: ${internshipDomain} (${duration})`);
+        const resolvedInternship = await getOrCreateInternship(internshipDomain, duration);
+        const finalInternshipId = resolvedInternship.id;
+        const internshipTitle = resolvedInternship.title;
+        const finalDuration = resolvedInternship.duration || duration || '1 Month';
 
         // 2. Duplicate Protection
         const { data: existingApp, error: appLookError } = await supabaseAdmin
             .from('internship_applications')
             .select('*')
             .eq('student_id', studentId)
-            .eq('internship_id', internshipId)
+            .eq('internship_id', finalInternshipId)
             .maybeSingle();
 
         if (existingApp) {
@@ -81,7 +77,7 @@ export default async function handler(req, res) {
                     .from('offer_letters')
                     .select('offer_letter_id')
                     .eq('student_id', studentId)
-                    .eq('internship_id', internshipId)
+                    .eq('internship_id', finalInternshipId)
                     .maybeSingle();
                 resolvedAppId = offerData?.offer_letter_id || existingApp.id;
             }
@@ -126,7 +122,7 @@ export default async function handler(req, res) {
         // Try inserting using the full status=Registered & camelCase columns schema first
         const appPayload = {
             student_id: studentId,
-            internship_id: internshipId,
+            internship_id: finalInternshipId,
             status: 'Registered',
             student_name: studentName,
             email: studentEmail,
@@ -175,7 +171,7 @@ export default async function handler(req, res) {
             // Fallback: Inserting only fields that exist in standard schema, and setting status to 'pending' to satisfy CHECK Constraint
             const legacyPayload = {
                 student_id: studentId,
-                internship_id: internshipId,
+                internship_id: finalInternshipId,
                 student_name: studentName,
                 email: studentEmail,
                 phone: phone || null,
@@ -212,14 +208,14 @@ export default async function handler(req, res) {
             .from('enrollments')
             .select('id')
             .eq('student_id', studentId)
-            .eq('internship_id', internshipId)
+            .eq('internship_id', finalInternshipId)
             .maybeSingle();
 
         if (!existingEnroll) {
             await supabaseAdmin.from('enrollments').insert({
                 student_id: studentId,
                 user_id: studentId,
-                internship_id: internshipId,
+                internship_id: finalInternshipId,
                 status: 'active',
                 progress: 0
             });
@@ -229,14 +225,14 @@ export default async function handler(req, res) {
             .from('internship_enrollments')
             .select('id')
             .eq('student_id', studentId)
-            .eq('internship_id', internshipId)
+            .eq('internship_id', finalInternshipId)
             .maybeSingle();
 
         if (!existingInternEnroll) {
             await supabaseAdmin.from('internship_enrollments').insert({
                 student_id: studentId,
                 user_id: studentId,
-                internship_id: internshipId,
+                internship_id: finalInternshipId,
                 status: 'active',
                 progress: 0
             });
@@ -246,13 +242,13 @@ export default async function handler(req, res) {
         const { data: dbTasks } = await supabaseAdmin
             .from('internship_tasks')
             .select('id, task_number')
-            .eq('internship_id', internshipId);
+            .eq('internship_id', finalInternshipId);
 
         if (dbTasks && dbTasks.length > 0) {
             const taskInserts = dbTasks.map(t => ({
                 user_id: studentId,
                 student_id: studentId,
-                internship_id: internshipId,
+                internship_id: finalInternshipId,
                 task_id: t.id,
                 status: t.task_number === 1 ? 'available' : 'locked'
             }));
@@ -594,7 +590,7 @@ export default async function handler(req, res) {
                 student_name: studentName,
                 student_email: studentEmail,
                 internship_title: internshipTitle,
-                internship_id: internshipId,
+                internship_id: finalInternshipId,
                 duration: finalDuration,
                 status: 'ACCEPTED',
                 verification_token: fallbackToken,
@@ -611,7 +607,7 @@ export default async function handler(req, res) {
                 .from('offer_letters')
                 .select('id')
                 .eq('student_id', studentId)
-                .eq('internship_id', internshipId)
+                .eq('internship_id', finalInternshipId)
                 .maybeSingle();
 
             if (legacyOffer) {
