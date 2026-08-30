@@ -287,7 +287,7 @@ const VerifyCertificate: React.FC = () => {
                                     {/* Top branding elements */}
                                     <div className="cert-top-row">
                                         <div className="cert-logo-left">
-                                            <img src={`${import.meta.env.BASE_URL}vinix-logo.png`} alt="VINIX Logo" />
+                                            <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" />
                                         </div>
 
                                         <div className="cert-brand-center">

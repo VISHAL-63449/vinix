@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import { Lock, Mail, Rocket, ArrowRight, Award, ShieldAlert } from 'lucide-react';
+import { useToast, ToastContainer } from '../components/Toast';
 
 const Login: React.FC = () => {
     const navigate = useNavigate();
@@ -11,6 +12,8 @@ const Login: React.FC = () => {
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const { toasts, showToast, dismiss } = useToast();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,31 +40,37 @@ const Login: React.FC = () => {
 
                 const role = profile?.role || 'student';
 
-                // Handle redirect queries if present
-                const redirectPath = searchParams.get('redirect');
-                if (redirectPath) {
-                    navigate(redirectPath);
-                    return;
-                }
+                // Display custom toast notification
+                showToast('Welcome back!', 'success');
 
-                if (role === 'admin') {
-                    navigate('/admin');
-                } else if (role === 'mentor') {
-                    navigate('/mentor');
-                } else {
-                    navigate('/dashboard');
-                }
+                // Allow 1 second for the toast animation to render
+                setTimeout(() => {
+                    // Handle redirect queries if present
+                    const redirectPath = searchParams.get('redirect');
+                    if (redirectPath) {
+                        navigate(redirectPath);
+                        return;
+                    }
+
+                    if (role === 'admin') {
+                        navigate('/admin');
+                    } else if (role === 'mentor') {
+                        navigate('/mentor');
+                    } else {
+                        navigate('/dashboard');
+                    }
+                }, 1000);
             }
         } catch (err: any) {
             console.error('Login failed:', err);
             setError(err?.message || 'Invalid email or password.');
-        } finally {
             setLoading(false);
         }
     };
 
     return (
         <div className="flex min-h-screen items-center justify-center p-4 bg-brand-bgLight dark:bg-brand-bgDark transition-colors duration-300">
+            <ToastContainer toasts={toasts} dismiss={dismiss} />
             <div className="w-full max-w-5xl bg-white dark:bg-brand-cardDark rounded-[24px] overflow-hidden border border-slate-200/50 dark:border-slate-800/40 shadow-2xl grid grid-cols-1 md:grid-cols-2">
 
                 {/* Left Side: Premium Aesthetic Panel */}
@@ -131,40 +140,43 @@ const Login: React.FC = () => {
 
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div>
-                                <label className="block text-[13px] font-bold text-slate-800 dark:text-slate-200 mb-1.5">
+                                <label htmlFor="email-input" className="block text-[13px] font-bold text-slate-800 dark:text-slate-200 mb-1.5">
                                     Email Address
                                 </label>
                                 <div className="relative">
                                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                                     <input
+                                        id="email-input"
                                         type="email"
                                         required
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="name@college.edu"
-                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-950 dark:focus:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-[13px] font-bold text-slate-850 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-955 dark:focus:bg-slate-955 border border-slate-200 dark:border-slate-805 rounded-xl text-[13px] font-bold text-slate-850 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-[13px] font-bold text-slate-800 dark:text-slate-200 mb-1.5">
+                                <label htmlFor="password-input" className="block text-[13px] font-bold text-slate-800 dark:text-slate-200 mb-1.5">
                                     Password
                                 </label>
                                 <div className="relative">
                                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                                     <input
+                                        id="password-input"
                                         type="password"
                                         required
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="••••••••"
-                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-950 dark:focus:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-[13px] font-bold text-slate-850 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-955 dark:focus:bg-slate-955 border border-slate-200 dark:border-slate-805 rounded-xl text-[13px] font-bold text-slate-850 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
                                     />
                                 </div>
                             </div>
 
                             <button
+                                id="login-btn"
                                 type="submit"
                                 disabled={loading}
                                 className="w-full mt-2 py-3 bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-95 text-white rounded-xl font-extrabold transition shadow-lg text-sm flex items-center justify-center space-x-1.5 active:scale-[0.98] transform duration-100"
@@ -173,15 +185,6 @@ const Login: React.FC = () => {
                                 <ArrowRight className="w-4 h-4" />
                             </button>
                         </form>
-
-                        <div className="pt-6 border-t border-slate-100 dark:border-slate-800 text-[10px] text-slate-400 font-semibold space-y-1">
-                            <p>💡 Live Test Credentials (if already registered):</p>
-                            <p>Student: <span className="text-slate-500 dark:text-slate-300">student@vinix.com</span> | PW: <span className="text-slate-500 dark:text-slate-350">student123</span></p>
-                            <p>Admin: <span className="text-slate-500 dark:text-slate-300">vishal@vinix.com</span> | PW: <span className="text-slate-500 dark:text-slate-355">vis@2007</span></p>
-                            <p className="text-[9px] text-brand-primary dark:text-brand-accent mt-2">
-                                * Note: If credentials don't exist yet, simply use the "Register" tab to create them!
-                            </p>
-                        </div>
                     </div>
                 </div>
 

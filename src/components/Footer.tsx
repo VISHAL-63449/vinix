@@ -166,7 +166,7 @@ const Footer: React.FC = () => {
                     <ul className="space-y-3">
                         <li className="flex items-center gap-2 text-[12px] text-slate-500 dark:text-slate-400 font-semibold">
                             <Mail className="w-3.5 h-3.5 flex-shrink-0 text-blue-600 dark:text-blue-400" />
-                            <a href="mailto:info@vinix.com" className="hover:text-blue-600">info@vinix.com</a>
+                            <a href="mailto:info@vinix.online" className="hover:text-blue-600">info@vinix.online</a>
                         </li>
                         <li className="flex items-center gap-2 text-[12px] text-slate-500 dark:text-slate-400 font-semibold">
                             <MapPin className="w-3.5 h-3.5 flex-shrink-0 text-rose-500" />

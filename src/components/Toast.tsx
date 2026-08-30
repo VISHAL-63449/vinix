@@ -123,7 +123,7 @@ interface ToastContainerProps {
 export const ToastContainer: React.FC<ToastContainerProps> = ({ toasts, dismiss }) => {
     if (toasts.length === 0) return null;
     return (
-        <div className="fixed bottom-5 right-5 z-[9999] flex flex-col gap-2.5 items-end pointer-events-none">
+        <div className="fixed top-5 right-5 z-[9999] flex flex-col gap-2.5 items-end pointer-events-none">
             {toasts.map(t => (
                 <div key={t.id} className="pointer-events-auto">
                     <ToastCard toast={t} onDismiss={dismiss} />

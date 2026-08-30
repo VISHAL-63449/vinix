@@ -66,7 +66,7 @@ export const Contact: React.FC = () => {
                                 <div className="space-y-1">
                                     <span className="text-[10px] font-black uppercase text-slate-400 dark:text-slate-500 tracking-wider">Email Inquiry</span>
                                     <p className="text-base font-extrabold text-slate-900 dark:text-white mt-1 group-hover:text-blue-650 dark:group-hover:text-[#4fc3f7] transition duration-200">
-                                        info@vinix.com
+                                        info@vinix.online
                                     </p>
                                     <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">Response within 12-24 business hours.</p>
                                 </div>
@@ -131,7 +131,7 @@ export const Contact: React.FC = () => {
                                     <div className="space-y-2">
                                         <h4 className="text-lg font-black text-slate-900 dark:text-white">Message Dispatched!</h4>
                                         <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto leading-relaxed font-semibold">
-                                            Thank you for reaching out. We will review your message and contact you at <span className="text-slate-800 dark:text-slate-200 font-bold">info@vinix.com</span> or via your registered email.
+                                            Thank you for reaching out. We will review your message and contact you at <span className="text-slate-800 dark:text-slate-200 font-bold">info@vinix.online</span> or via your registered email.
                                         </p>
                                     </div>
                                 </div>
@@ -159,7 +159,7 @@ export const Contact: React.FC = () => {
                                             <input
                                                 type="email"
                                                 required
-                                                placeholder="e.g. info@vinix.com"
+                                                placeholder="e.g. info@vinix.online"
                                                 value={contactEmail}
                                                 onChange={(e) => setContactEmail(e.target.value)}
                                                 className="w-full text-xs font-semibold bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-black transition-all duration-200 text-slate-800 dark:text-white shadow-inner"

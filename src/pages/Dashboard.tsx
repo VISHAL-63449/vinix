@@ -1126,7 +1126,7 @@ const Dashboard: React.FC = () => {
                                 )}
 
                                 {/* Quick Access Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
 
                                     {/* Left Column: Recent Milestone Feedback */}
                                     <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
@@ -1731,17 +1731,18 @@ const Dashboard: React.FC = () => {
                         {/* Header Section */}
                         <div className="doc-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', marginBottom: '2px', zIndex: 2 }}>
                             <div className="header-left" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                <div className="header-logo-container" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                    <span className="header-logo" style={{ height: '54px', display: 'flex', alignItems: 'center' }}>
-                                        <img src={`${import.meta.env.BASE_URL}vinix-logo.png`} alt="VINIX Logo" style={{ height: '100%', objectFit: 'contain' }} />
+                                <div className="header-logo-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span className="header-logo" style={{ height: '36px', display: 'flex', alignItems: 'center' }}>
+                                        <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" style={{ height: '100%', objectFit: 'contain' }} />
                                     </span>
+                                    <div style={{ width: '1.5px', height: '28px', backgroundColor: '#cbd5e1' }}></div>
                                     <div className="header-branding-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
                                         <span className="company-name" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: '1.25rem', color: '#0f2942', lineHeight: 1.1, letterSpacing: '0.5px' }}>VINIX</span>
-                                        <span className="company-tagline" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '0.62rem', fontWeight: 700, color: '#cca353', letterSpacing: '0.5px', marginTop: '1px' }}>Empowering Future Innovators</span>
+                                        <span className="company-tagline" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '0.62rem', fontWeight: 700, color: '#0284c7', letterSpacing: '0.5px', marginTop: '1px' }}>Empowering Future Innovators</span>
                                     </div>
                                 </div>
                                 <div className="company-contact-row" style={{ fontSize: '0.62rem', color: '#64748b', marginTop: '5px', fontWeight: 550 }}>
-                                    www.vinixtech.com | academic@vinix.com
+                                    www.vinix.online | academic@vinix.online
                                 </div>
                             </div>
                             <div className="header-right" style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -1887,16 +1888,23 @@ const Dashboard: React.FC = () => {
                         </div>
 
                         {/* Footer */}
-                        <div className="doc-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontSize: '0.6rem', color: '#475569', fontWeight: 700, letterSpacing: '0.3px', zIndex: 2, borderTop: '1px solid #cbd5e1', paddingTop: '6px' }}>
-                            <div className="footer-logo-wrap" style={{ height: '50px', display: 'flex', alignItems: 'center' }}>
-                                <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Logo" style={{ height: '50px' }} />
+                        <div className="doc-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontSize: '0.6rem', color: '#475569', fontWeight: 700, letterSpacing: '0.3px', zIndex: 2, borderTop: '1px solid #cbd5e1', paddingTop: '8px' }}>
+                            {/* Left Column: MSME + Skyrovix */}
+                            <div className="footer-left-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Logo" style={{ height: '36px', objectFit: 'contain' }} />
+                                <div style={{ width: '1px', height: '30px', backgroundColor: '#cbd5e1' }}></div>
+                                <img src={`${import.meta.env.BASE_URL}skyrovix.jpeg`} alt="Skyrovix Logo" style={{ height: '32px', objectFit: 'contain' }} />
                             </div>
-                            <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.4, color: '#64748b' }}>
-                                <strong>VINIX Technologies Private Limited</strong><br />
-                                UDYAM Registry: UDYAM-TN-21-0066185<br />
-                                academic@vinix.com | www.vinix.online
+                            {/* Center Column: Text */}
+                            <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.45, color: '#64748b' }}>
+                                <strong style={{ color: '#0f2942' }}>VINIX Technologies Private Limited</strong><br />
+                                UDYAM Registry: UDYAM-TN-17-0076606<br />
+                                academic@vinix.online | www.vinix.online
                             </div>
-                            <div style={{ width: '60px', height: '1px', visibility: 'hidden' }}></div>
+                            {/* Right Column: Yrnovatech */}
+                            <div className="footer-right-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                <img src={`${import.meta.env.BASE_URL}yrnovatech.png`} alt="Yrnovatech Logo" style={{ height: '35px', objectFit: 'contain' }} />
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1916,7 +1924,7 @@ const Dashboard: React.FC = () => {
                         {/* Top branding elements */}
                         <div className="cert-top-row">
                             <div className="cert-logo-left">
-                                <img src={`${import.meta.env.BASE_URL}vinix-logo.png`} alt="VINIX Logo" />
+                                <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" />
                             </div>
 
                             <div className="cert-brand-center">

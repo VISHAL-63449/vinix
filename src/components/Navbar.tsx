@@ -72,8 +72,8 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
 
     return (
         <nav className={`sticky top-0 z-50 w-full border-b transition-all duration-300 no-print ${isScrolled
-                ? 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-900 shadow-md'
-                : 'bg-white/80 backdrop-blur-md border-slate-200/80 dark:bg-slate-950/80 dark:border-slate-800/80'
+            ? 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-900 shadow-md'
+            : 'bg-white/80 backdrop-blur-md border-slate-200/80 dark:bg-slate-950/80 dark:border-slate-800/80'
             }`}>
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
@@ -113,7 +113,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                     </div>
 
                     {/* Right Controls */}
-                    <div className="hidden sm:flex items-center space-x-4">
+                    <div className="hidden lg:flex items-center space-x-4">
                         {/* Theme Toggle */}
                         <button
                             onClick={() => setDarkMode(!darkMode)}
@@ -190,7 +190,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                     </div>
 
                     {/* Mobile Menu Button */}
-                    <div className="flex md:hidden items-center space-x-2">
+                    <div className="flex lg:hidden items-center space-x-2">
                         {/* Theme Toggle */}
                         <button
                             onClick={() => setDarkMode(!darkMode)}
@@ -217,7 +217,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                             backgroundColor: darkMode ? '#0D0E12' : '#FFFFFF',
                             borderColor: darkMode ? '#1E293B' : '#E2E8F0',
                         }}
-                        className="md:hidden border-t py-3 px-4 space-y-2"
+                        className="lg:hidden border-t py-3 px-4 space-y-2"
                     >
                         {navLinks.map((link) => {
                             const Icon = link.icon;

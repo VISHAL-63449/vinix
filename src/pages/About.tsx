@@ -159,7 +159,7 @@ export const About: React.FC = () => {
                                 <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-100 hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-lg transition dark:bg-slate-800 dark:text-slate-355 dark:hover:bg-slate-700">
                                     <Github size={14} />
                                 </a>
-                                <a href="mailto:ceo@vinix.com" className="p-2 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-650 rounded-lg transition dark:bg-slate-800 dark:text-slate-355 dark:hover:bg-slate-700">
+                                <a href="mailto:ceo@vinix.online" className="p-2 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-650 rounded-lg transition dark:bg-slate-800 dark:text-slate-355 dark:hover:bg-slate-700">
                                     <Mail size={14} />
                                 </a>
                             </div>
