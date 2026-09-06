@@ -20,6 +20,7 @@ import Reviews from './pages/Reviews';
 import Contact from './pages/Contact';
 import Domains from './pages/Domains';
 import DomainDetails from './pages/DomainDetails';
+import CCBookPortal from './pages/CCBookPortal';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -75,6 +76,20 @@ function App() {
                     <AdminPortal />
                   </ProtectedRoute>
                 }
+              />
+
+              {/* CC Book Portal / Student Counselling */}
+              <Route
+                path="/cc-book"
+                element={
+                  <ProtectedRoute>
+                    <CCBookPortal />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/counselling"
+                element={<Navigate to="/cc-book" replace />}
               />
 
               {/* Verification Route paths */}
