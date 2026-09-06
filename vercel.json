@@ -10,7 +10,7 @@
         },
         {
             "source": "/favicon.ico",
-            "destination": "/vinix-logo.png"
+            "destination": "/favicon.png"
         },
         {
             "source": "/(.*)",
