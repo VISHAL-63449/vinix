@@ -2,3 +2,4 @@ User-agent: *
 Allow: /
 
 Sitemap: https://www.vinix.online/sitemap.xml
+Sitemap: https://tech.vinix.online/sitemap-tech.xml
