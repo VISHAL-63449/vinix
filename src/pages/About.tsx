@@ -22,6 +22,20 @@ const Github = ({ size = 18 }: { size?: number }) => (
 export const About: React.FC = () => {
     const navigate = useNavigate();
 
+    // Inject canonical URL manually
+    React.useEffect(() => {
+        let canonical = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
+        const originalHref = canonical ? canonical.href : '';
+        if (canonical) {
+            canonical.href = "https://vinix.online/about";
+        }
+        return () => {
+            if (canonical) {
+                canonical.href = originalHref;
+            }
+        };
+    }, []);
+
     const milestones = [
         { number: '25+', label: 'Domains' },
         { number: '300+', label: 'Projects' },

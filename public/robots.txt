@@ -1,5 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /dashboard
+Disallow: /cc-book
+Disallow: /counselling
+Disallow: /codelab
 
-Sitemap: https://www.vinix.online/sitemap.xml
-Sitemap: https://tech.vinix.online/sitemap-tech.xml
+Sitemap: https://vinix.online/sitemap.xml

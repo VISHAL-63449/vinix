@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import { GraduationCap, Lock, Mail, User, ShieldAlert, Award, Rocket, Check, ArrowRight } from 'lucide-react';
@@ -58,6 +58,20 @@ const Register: React.FC = () => {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        let meta = document.querySelector('meta[name="robots"]');
+        if (!meta) {
+            meta = document.createElement('meta');
+            meta.setAttribute('name', 'robots');
+            document.head.appendChild(meta);
+        }
+        meta.setAttribute('content', 'noindex, follow');
+
+        return () => {
+            meta?.remove();
+        };
+    }, []);
 
     return (
         <div className="flex min-h-screen items-center justify-center p-4 bg-brand-bgLight dark:bg-brand-bgDark transition-colors duration-300">

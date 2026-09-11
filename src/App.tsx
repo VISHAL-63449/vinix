@@ -21,6 +21,7 @@ import Contact from './pages/Contact';
 import Domains from './pages/Domains';
 import DomainDetails from './pages/DomainDetails';
 import CCBookPortal from './pages/CCBookPortal';
+import Founder from './pages/Founder';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -52,6 +53,7 @@ function App() {
               <Route path="/internships" element={<Internships />} />
               <Route path="/internship" element={<Internships />} />
               <Route path="/about" element={<About />} />
+              <Route path="/founder" element={<Founder />} />
               <Route path="/reviews" element={<Reviews />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/codelab" element={<CodeLab />} />
