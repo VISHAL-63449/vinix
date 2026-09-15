@@ -10,7 +10,7 @@ import {
     CheckCircle2, XCircle, ExternalLink, FileDown, Play, CheckCheck,
     MessageSquare, Printer, GraduationCap, Briefcase, Settings, Code,
     QrCode, Linkedin, Github, CreditCard, Shield, Send, ArrowRight,
-    Sparkles, Clock, CalendarDays, FileText, CheckCircle
+    Sparkles, Clock, CalendarDays, FileText, CheckCircle, LogOut, Home, ClipboardList
 } from 'lucide-react';
 
 interface Enrollment {
@@ -74,7 +74,7 @@ const Dashboard: React.FC = () => {
     const navigate = useNavigate();
     const { toasts, showToast, dismiss } = useToast();
 
-    const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'idcard' | 'certificates' | 'settings'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'idcard' | 'certificates' | 'settings' | 'payment'>('overview');
     const [loading, setLoading] = useState(true);
 
     // Database Data States
@@ -93,6 +93,11 @@ const Dashboard: React.FC = () => {
     const [editLinkedin, setEditLinkedin] = useState('');
     const [editSkills, setEditSkills] = useState('');
     const [saveLoading, setSaveLoading] = useState(false);
+
+    // Filter and Search States
+    const [taskSearchQuery, setTaskSearchQuery] = useState('');
+    const [taskFilter, setTaskFilter] = useState<'all' | 'completed' | 'ongoing' | 'pending' | 'overdue'>('all');
+    const [taskSort, setTaskSort] = useState<'asc' | 'desc'>('asc');
 
     // Submit Task Form
     const [selectedTaskForSubmission, setSelectedTaskForSubmission] = useState<TaskProgress | null>(null);
@@ -612,92 +617,135 @@ const Dashboard: React.FC = () => {
         </div>
     );
 
+    const filteredTasks = taskProgresses.filter((task) => {
+        // filter by search query
+        if (taskSearchQuery) {
+            const query = taskSearchQuery.toLowerCase();
+            const titleMatch = task.internship_tasks?.title?.toLowerCase().includes(query) || false;
+            const descMatch = task.internship_tasks?.description?.toLowerCase().includes(query) || false;
+            if (!titleMatch && !descMatch) return false;
+        }
+
+        // filter by status
+        if (taskFilter === 'all') return true;
+        if (taskFilter === 'completed') return task.status === 'approved';
+        if (taskFilter === 'pending') return task.status === 'submitted' || task.status === 'resubmission_required';
+        if (taskFilter === 'ongoing') return task.status !== 'approved' && task.status !== 'submitted';
+        if (taskFilter === 'overdue') return false; // Overdue is mocked empty
+
+        return true;
+    }).sort((a, b) => {
+        const numA = a.internship_tasks?.task_number || 0;
+        const numB = b.internship_tasks?.task_number || 0;
+        return taskSort === 'asc' ? numA - numB : numB - numA;
+    });
+
     return (
-        <div className="min-h-screen bg-brand-bgLight dark:bg-brand-bgDark text-slate-800 dark:text-slate-100 transition-colors duration-300 flex flex-col md:flex-row">
+        <div className="min-h-screen bg-brand-bgLight dark:bg-brand-bgDark text-slate-800 dark:text-slate-100 transition-colors duration-300 flex flex-col">
             <ToastContainer toasts={toasts} dismiss={dismiss} />
-            {/* Left navigation Center Sidebar */}
-            <div className="w-full md:w-64 flex-shrink-0 bg-white dark:bg-brand-cardDark border-r border-slate-200 dark:border-slate-800/80 p-6 flex flex-col select-none no-print">
-                <div className="space-y-6 text-left">
-                    <div>
-                        <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-4">Navigation Center</p>
-                        <nav className="space-y-1">
-                            <button
-                                onClick={() => setActiveTab('overview')}
-                                className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'overview'
-                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                                    : 'text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850'
-                                    }`}
-                            >
-                                <LayoutDashboard className="w-4 h-4" />
-                                <span>Dashboard</span>
+
+            {/* Top Navigation Bar / Replaced Sidebar */}
+            <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md border-slate-200/80 dark:bg-slate-950/80 dark:border-slate-800/80 shadow-sm no-print">
+                <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
+                    <div className="flex h-16 items-center justify-between">
+                        {/* Logo & Brand */}
+                        <div className="flex items-center gap-6">
+                            <button onClick={() => navigate('/')} className="flex items-center hover:opacity-90 transition cursor-pointer shrink-0">
+                                <img
+                                    src={`${import.meta.env.BASE_URL}vinix-title.png`}
+                                    alt="Vinix"
+                                    className="h-7 sm:h-8 w-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:invert transition-all duration-300"
+                                />
                             </button>
-                            <button
-                                onClick={() => {
-                                    if (activeEnrollment) setActiveTab('workspace');
-                                    else showToast('Please register/enroll in an active internship track first.', 'warning');
-                                }}
-                                className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'workspace'
-                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                                    : 'text-slate-650 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-850'
-                                    }`}
-                            >
-                                <Layers className="w-4 h-4" />
-                                <span>My Workspace</span>
+
+                            {/* Desktop Nav Links */}
+                            <div className="hidden lg:flex items-center space-x-7 ml-8">
+                                <button onClick={() => setActiveTab('overview')} className={`flex items-center space-x-2 text-sm font-semibold transition-colors ${activeTab === 'overview' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'}`}>
+                                    <Home className="w-[18px] h-[18px]" />
+                                    <span>Home</span>
+                                </button>
+
+                                <button onClick={() => setActiveTab('overview')} className={`flex items-center space-x-2 text-sm font-semibold transition-colors text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400`}>
+                                    <ClipboardList className="w-[18px] h-[18px]" />
+                                    <span>My Tasks</span>
+                                </button>
+
+                                <button onClick={() => navigate('/internships')} className={`flex items-center space-x-2 text-sm font-semibold transition-colors text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400`}>
+                                    <Briefcase className="w-[18px] h-[18px]" />
+                                    <span>My Internships</span>
+                                </button>
+
+                                <button onClick={() => setActiveTab('payment')} className={`flex items-center space-x-2 text-sm font-semibold transition-colors ${activeTab === 'payment' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'}`}>
+                                    <CreditCard className="w-[18px] h-[18px]" />
+                                    <span>Payment</span>
+                                </button>
+
+                                <button onClick={() => { if (activeEnrollment) setActiveTab('certificates'); else showToast('Please register/enroll in an active internship track first.', 'warning'); }} className={`flex items-center space-x-2 text-sm font-semibold transition-colors ${activeTab === 'certificates' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'}`}>
+                                    <Award className="w-[18px] h-[18px]" />
+                                    <span>Certificates</span>
+                                </button>
+
+                                <button onClick={() => setActiveTab('settings')} className={`flex items-center space-x-2 text-sm font-semibold transition-colors ${activeTab === 'settings' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'}`}>
+                                    <User className="w-[18px] h-[18px]" />
+                                    <span>Profile</span>
+                                </button>
+
+                                <button className="flex items-center space-x-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-[20px] text-sm font-bold transition shadow-md shadow-blue-500/20 ml-2">
+                                    <MessageSquare className="w-4 h-4" />
+                                    <span>Review</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Right side actions */}
+                        <div className="flex items-center gap-3 sm:gap-4">
+                            <button onClick={async () => { await supabase.auth.signOut(); navigate('/login'); }} className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition shadow-sm">
+                                <LogOut className="w-4 h-4 text-slate-400" />
+                                <span>Logout</span>
                             </button>
-                            <button
-                                onClick={() => navigate('/internships')}
-                                className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-                            >
-                                <Briefcase className="w-4 h-4" />
-                                <span>Apply Internship</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (activeEnrollment) setActiveTab('workspace');
-                                    else showToast('Please register/enroll in an active internship track first.', 'warning');
-                                }}
-                                className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-                            >
-                                <FileCode className="w-4 h-4" />
-                                <span>Projects submit</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (activeEnrollment) setActiveTab('certificates');
-                                    else showToast('Please register/enroll in an active internship track first.', 'warning');
-                                }}
-                                className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'certificates'
-                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                                    : 'text-slate-605 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                                    }`}
-                            >
-                                <Award className="w-4 h-4" />
-                                <span>Certificates</span>
-                            </button>
-                            <button
-                                onClick={() => {
-                                    if (activeEnrollment) setActiveTab('overview');
-                                    else showToast('Please register/enroll in an active internship track first.', 'warning');
-                                }}
-                                className="w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800"
-                            >
-                                <FileText className="w-4 h-4" />
-                                <span>Offer Letters</span>
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('settings')}
-                                className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === 'settings'
-                                    ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
-                                    : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800'
-                                    }`}
-                            >
-                                <Settings className="w-4 h-4" />
-                                <span>Profile Settings</span>
-                            </button>
-                        </nav>
+
+                            <div className="hidden sm:flex items-center gap-2 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
+                                <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-300 dark:border-slate-700">
+                                    {profile?.avatar_url ? (
+                                        <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-xs font-bold text-slate-500">{profile?.full_name?.charAt(0) || 'U'}</span>
+                                    )}
+                                </div>
+                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 pr-2">{profile?.full_name?.split(' ')[0] || 'User'}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+
+                {/* Mobile Scrollable Nav */}
+                <div className="lg:hidden flex overflow-x-auto gap-5 px-4 py-3 bg-white dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800/80 no-scrollbar">
+                    <button onClick={() => setActiveTab('overview')} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors ${activeTab === 'overview' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300'}`}>
+                        <Home className="w-4 h-4" />
+                        <span>Home</span>
+                    </button>
+                    <button onClick={() => setActiveTab('overview')} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors text-slate-600 dark:text-slate-300`}>
+                        <ClipboardList className="w-4 h-4" />
+                        <span>My Tasks</span>
+                    </button>
+                    <button onClick={() => navigate('/internships')} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors text-slate-600 dark:text-slate-300`}>
+                        <Briefcase className="w-4 h-4" />
+                        <span>My Internships</span>
+                    </button>
+                    <button onClick={() => setActiveTab('payment')} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors ${activeTab === 'payment' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300'}`}>
+                        <CreditCard className="w-4 h-4" />
+                        <span>Payment</span>
+                    </button>
+                    <button onClick={() => { if (activeEnrollment) setActiveTab('certificates'); else showToast('Please register/enroll in an active internship track first.', 'warning'); }} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors ${activeTab === 'certificates' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300'}`}>
+                        <Award className="w-4 h-4" />
+                        <span>Certificates</span>
+                    </button>
+                    <button onClick={() => setActiveTab('settings')} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors ${activeTab === 'settings' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300'}`}>
+                        <User className="w-4 h-4" />
+                        <span>Profile</span>
+                    </button>
+                </div>
+            </nav>
 
             {/* Main Content Pane */}
             <div className="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full">
@@ -830,25 +878,40 @@ const Dashboard: React.FC = () => {
                             <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[140%] bg-gradient-to-tr from-brand-secondary/15 to-transparent blur-3xl pointer-events-none"></div>
 
                             {/* Left content column */}
-                            <div className="flex-1 text-left z-10 w-full">
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/10 rounded-full text-[10px] uppercase font-extrabold tracking-widest text-[#f59e0b]">
-                                    <Sparkles className="w-3.5 h-3.5 text-[#f59e0b] fill-[#f59e0b]/20" />
-                                    <span>WELCOME INTERN</span>
+                            <div className="flex-1 text-left z-10 w-full flex items-center gap-5 sm:gap-6">
+                                <div className="relative flex-shrink-0">
+                                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[30%] border-4 border-white/10 bg-slate-800/80 overflow-hidden flex items-center justify-center shadow-2xl backdrop-blur-sm">
+                                        {profile?.avatar_url ? (
+                                            <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            <span className="text-4xl font-extrabold text-white/50">{profile?.full_name?.charAt(0) || 'I'}</span>
+                                        )}
+                                    </div>
+                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 bg-emerald-500 rounded-full border-[3px] border-[#0b2b4e] flex items-center justify-center shadow-lg">
+                                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                                    </div>
                                 </div>
 
-                                <h1 className="text-3xl font-extrabold tracking-tight mt-3 text-white">
-                                    {activeOffer?.student_name || profile?.full_name || 'Intern'}
-                                </h1>
+                                <div className="flex flex-col">
+                                    <div className="inline-flex max-w-fit items-center gap-1.5 px-3 py-1 bg-white/10 border border-white/10 rounded-full text-[9px] sm:text-[10px] uppercase font-extrabold tracking-widest text-[#f59e0b] mb-2 shadow-sm">
+                                        <Sparkles className="w-3 h-3 text-[#f59e0b] fill-[#f59e0b]/20" />
+                                        <span>WELCOME INTERN</span>
+                                    </div>
 
-                                <div className="flex flex-wrap items-center gap-2 mt-2">
-                                    <span className="px-3 py-1 bg-white/10 text-white border border-white/20 rounded-full text-xs font-bold">
-                                        {activeEnrollment?.internship?.title || 'Virtual Internship'}
-                                    </span>
-                                    {activeOffer?.offer_letter_id && (
-                                        <span className="px-3 py-1 bg-white/10 text-white/95 border border-white/20 rounded-full text-xs font-mono font-bold">
-                                            ID: {activeOffer.offer_letter_id}
+                                    <h1 className="text-2xl sm:text-[34px] font-extrabold tracking-tight text-white mb-1.5 sm:mb-2 leading-none">
+                                        {activeOffer?.student_name || profile?.full_name || 'Intern'}
+                                    </h1>
+
+                                    <div className="flex flex-wrap items-center gap-2.5">
+                                        <span className="text-xs sm:text-[14px] font-extrabold text-[#38bdf8]">
+                                            {activeEnrollment?.internship?.title || 'Virtual Internship'}
                                         </span>
-                                    )}
+                                        {activeOffer?.offer_letter_id && (
+                                            <span className="px-2.5 py-0.5 bg-white/5 border border-white/10 rounded-full text-[9px] sm:text-[10px] uppercase tracking-wider text-white/50 font-bold">
+                                                ID: {activeOffer.offer_letter_id}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
 
                                 {/* Meta details list */}
@@ -939,50 +1002,6 @@ const Dashboard: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Navigation Tab strip */}
-                        <div className="flex flex-wrap items-center gap-1.5 p-1.5 bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-855/70 rounded-2xl mb-8 shadow-sm no-print">
-                            <button
-                                onClick={() => setActiveTab('overview')}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${activeTab === 'overview' ? 'bg-brand-primary text-white' : 'hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-650 dark:text-slate-350'
-                                    }`}
-                            >
-                                <LayoutDashboard className="w-4 h-4" />
-                                <span>Overview</span>
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('workspace')}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${activeTab === 'workspace' ? 'bg-brand-primary text-white' : 'hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-650 dark:text-slate-350'
-                                    }`}
-                            >
-                                <Layers className="w-4 h-4" />
-                                <span>Quest Workspace</span>
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('idcard')}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${activeTab === 'idcard' ? 'bg-brand-primary text-white' : 'hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-650 dark:text-slate-350'
-                                    }`}
-                            >
-                                <CreditCard className="w-4 h-4" />
-                                <span>ID Card</span>
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('certificates')}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${activeTab === 'certificates' ? 'bg-brand-primary text-white' : 'hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-650 dark:text-slate-350'
-                                    }`}
-                            >
-                                <Award className="w-4 h-4" />
-                                <span>Credentials</span>
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('settings')}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center space-x-1.5 ${activeTab === 'settings' ? 'bg-brand-primary text-white' : 'hover:bg-slate-50 dark:hover:bg-slate-850 text-slate-650 dark:text-slate-350'
-                                    }`}
-                            >
-                                <Settings className="w-4 h-4" />
-                                <span>Settings</span>
-                            </button>
                         </div>
 
                         {/* Tab displays */}
@@ -1125,189 +1144,160 @@ const Dashboard: React.FC = () => {
                                     </div>
                                 )}
 
-                                {/* Quick Access Grid */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
-
-                                    {/* Left Column: Recent Milestone Feedback */}
-                                    <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-                                        <div>
-                                            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Milestone Feedback Logs</h3>
-                                            <div className="space-y-4">
-                                                {taskProgresses.filter(p => p.admin_feedback).length === 0 ? (
-                                                    <p className="text-xs text-slate-400 py-6 text-center italic">No mentor comments received yet.</p>
-                                                ) : (
-                                                    taskProgresses.filter(p => p.admin_feedback).map(p => (
-                                                        <div key={p.id} className="p-4 bg-slate-50 dark:bg-slate-950/40 rounded-xl border border-slate-200 dark:border-slate-850">
-                                                            <div className="flex justify-between items-center mb-1">
-                                                                <span className="text-xs font-bold">{p.internship_tasks?.title}</span>
-                                                                <span className={`text-[10px] uppercase font-bold ${p.status === 'approved' ? 'text-emerald-500' : 'text-slate-400'}`}>
-                                                                    {p.status}
-                                                                </span>
-                                                            </div>
-                                                            <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 italic">
-                                                                "{p.admin_feedback}"
-                                                            </p>
-                                                        </div>
-                                                    ))
-                                                )}
+                                {/* Workspace Tasks Grid (Same Size Tasks Layout) */}
+                                <div className="mt-12 space-y-6">
+                                    <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+                                        <div className="relative w-full max-w-lg shadow-sm">
+                                            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                                <svg className="h-4 w-4 text-slate-400" viewBox="0 0 20 20" fill="currentColor">
+                                                    <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                                                </svg>
                                             </div>
+                                            <input
+                                                type="text"
+                                                value={taskSearchQuery}
+                                                onChange={(e) => setTaskSearchQuery(e.target.value)}
+                                                placeholder="Search tasks..."
+                                                className="block w-full pl-11 pr-4 py-3 border border-slate-200 dark:border-slate-800 rounded-[14px] leading-5 bg-white dark:bg-brand-cardDark text-slate-900 dark:text-slate-100 focus:outline-none focus:ring-1 focus:ring-brand-primary sm:text-sm transition-colors font-medium placeholder-slate-400"
+                                            />
                                         </div>
-
-                                        <button
-                                            onClick={() => setActiveTab('workspace')}
-                                            className="mt-6 w-full py-2.5 border border-brand-primary/20 text-brand-primary dark:text-brand-accent dark:hover:bg-brand-primary/10 rounded-xl text-xs font-bold transition flex items-center justify-center space-x-1.5"
-                                        >
-                                            <span>Open Quest Log Workspace</span>
-                                            <ArrowRight className="w-4 h-4" />
-                                        </button>
-                                    </div>
-
-                                    {/* Right Column: Code Sandbox Quick Access */}
-                                    <div className="bg-slate-900 border border-slate-850 rounded-2xl p-6 text-white flex flex-col justify-between">
-                                        <div className="space-y-3">
-                                            <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-slate-850 rounded-lg text-brand-accent text-xs font-bold">
-                                                <Code className="w-3.5 h-3.5" />
-                                                <span>Embedded Sandbox VM</span>
-                                            </div>
-                                            <h3 className="text-lg font-bold">Test Sandbox Sandbox</h3>
-                                            <p className="text-xs text-slate-400 leading-relaxed">
-                                                Test your HTML styling scripts or custom REST models directly inside the browser using our isolated VM lab container before pushing files to GitHub.
-                                            </p>
-                                        </div>
-
-                                        <div className="pt-6">
-                                            <button
-                                                onClick={() => navigate('/codelab')}
-                                                className="w-full py-2.5 bg-gradient-to-r from-brand-primary to-brand-secondary text-white rounded-xl text-xs font-bold transition shadow-lg hover:opacity-95"
-                                            >
-                                                Launch Lab Environment
+                                        <div className="hidden lg:flex items-center gap-1.5 p-1 bg-white border border-slate-200 rounded-full shadow-sm">
+                                            <button onClick={() => setTaskFilter('all')} className={`px-5 py-2.5 rounded-full text-xs font-bold transition ${taskFilter === 'all' ? 'bg-[#0f2942] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}>All</button>
+                                            <button onClick={() => setTaskFilter('completed')} className={`px-4 py-2.5 rounded-full text-xs font-bold transition ${taskFilter === 'completed' ? 'bg-[#0f2942] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}>Completed</button>
+                                            <button onClick={() => setTaskFilter('ongoing')} className={`px-4 py-2.5 rounded-full text-xs font-bold transition ${taskFilter === 'ongoing' ? 'bg-[#0f2942] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}>Ongoing</button>
+                                            <button onClick={() => setTaskFilter('pending')} className={`px-4 py-2.5 rounded-full text-xs font-bold transition ${taskFilter === 'pending' ? 'bg-[#0f2942] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}>Pending</button>
+                                            <button onClick={() => setTaskFilter('overdue')} className={`px-4 py-2.5 rounded-full text-xs font-bold transition ${taskFilter === 'overdue' ? 'bg-[#0f2942] text-white shadow-md' : 'text-slate-500 hover:text-slate-800'}`}>Overdue</button>
+                                            <div className="w-px h-5 bg-slate-200 mx-1"></div>
+                                            <button onClick={() => setTaskSort(prev => prev === 'asc' ? 'desc' : 'asc')} className="flex items-center gap-1.5 px-4 py-2.5 text-slate-500 hover:text-slate-800 text-xs font-bold transition">
+                                                <svg className={`w-4 h-4 transition-transform ${taskSort === 'desc' ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4h13M3 8h9m-9 4h6m4 0l4-4m0 0l4 4m-4-4v12"></path></svg>
+                                                Sort
                                             </button>
                                         </div>
                                     </div>
 
-                                </div>
+                                    {filteredTasks.length === 0 ? (
+                                        <div className="bg-white dark:bg-brand-cardDark border border-slate-205 dark:border-slate-805 rounded-3xl p-12 text-center shadow-sm">
+                                            <Layers className="w-12 h-12 text-slate-350 mx-auto mb-4" />
+                                            <h3 className="text-base font-bold">No tasks matched your filter criteria</h3>
+                                            <p className="text-sm text-slate-400 mt-2 max-w-sm mx-auto">
+                                                Try adjusting your search query or switching filters to see other tasks.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+                                            {filteredTasks.map((task, idx) => {
+                                                const isTaskApproved = task.status === 'approved';
+                                                const isLinkedInTask = task.internship_tasks?.task_number === 1;
+                                                const isLocked = !isLinkedInTask && !hasUnlockedInternship;
 
-                            </div>
-                        )}
+                                                const isSuccess = isTaskApproved;
+                                                const isPending = task.status === 'submitted' || task.status === 'resubmission_required';
 
-                        {/* Tab displayed: Quest Workspace */}
-                        {activeTab === 'workspace' && (
-                            <div className="space-y-6">
-                                <div className="border-b border-slate-205 dark:border-slate-805 pb-4">
-                                    <h2 className="text-xl font-bold flex items-center space-x-2">
-                                        <Layers className="w-5 h-5 text-brand-primary" />
-                                        <span>Internship Quest Workspace</span>
-                                    </h2>
-                                    <p className="text-xs text-slate-450 mt-0.5">
-                                        Complete milestones in serial order. Submit links to GitHub repository commits or documentation URLs.
-                                    </p>
-                                </div>
+                                                return (
+                                                    <div
+                                                        key={task.id}
+                                                        className={`bg-white dark:bg-brand-cardDark rounded-3xl p-6 shadow-sm flex flex-col justify-between border-y border-r border-l-[6px] transition-all duration-200 
+                                                        ${isSuccess ? 'border-l-[#22c55e] border-t-slate-200 border-r-slate-200 border-b-slate-200' : isLocked ? 'border-l-slate-300 border-y-slate-200 border-r-slate-200 opacity-60 pointer-events-none' : 'border-l-brand-primary border-y-slate-200 border-r-slate-200 shadow-md transform hover:-translate-y-1'}`}
+                                                    >
 
-                                {taskProgresses.length === 0 ? (
-                                    <div className="bg-white dark:bg-brand-cardDark border border-slate-205 dark:border-slate-805 rounded-xl p-12 text-center shadow-sm">
-                                        <Layers className="w-12 h-12 text-slate-350 mx-auto mb-4" />
-                                        <h3 className="text-base font-bold">No Milestones generated</h3>
-                                        <p className="text-xs text-slate-400 mt-2 max-w-sm mx-auto">
-                                            Accept your pending offer letter in the Overview dashboard or contact admins to seed milestones.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {taskProgresses.map((task) => {
-                                            const isTaskApproved = task.status === 'approved';
-                                            const isLinkedInTask = task.internship_tasks?.task_number === 1;
-
-                                            // A task is locked if it's not the LinkedIn task AND LinkedIn post hasn't been approved yet!
-                                            const isLocked = !isLinkedInTask && !hasUnlockedInternship;
-
-                                            return (
-                                                <div
-                                                    key={task.id}
-                                                    className={`bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-xl p-5 shadow-sm transition-all duration-200 ${isLocked ? 'opacity-50 select-none' : ''
-                                                        }`}
-                                                >
-                                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-                                                        <div className="space-y-1.5 flex-grow">
-                                                            <div className="flex flex-wrap items-center gap-2">
-                                                                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-500 uppercase">
-                                                                    Milestone {task.internship_tasks?.task_number}
-                                                                </span>
-
-                                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wide ${task.status === 'approved' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20 dark:text-emerald-400' :
-                                                                    task.status === 'submitted' ? 'bg-amber-100 text-amber-700 dark:bg-amber-955/20 dark:text-amber-400' :
-                                                                        task.status === 'resubmission_required' ? 'bg-rose-100 text-rose-700 dark:bg-rose-955/20 dark:text-rose-450' :
-                                                                            'bg-slate-100 text-slate-500 dark:bg-slate-900 dark:text-slate-400'
-                                                                    }`}>
-                                                                    {task.status === 'submitted' ? 'pending' : task.status === 'approved' ? 'successful' : task.status}
-                                                                </span>
+                                                        {/* Top row */}
+                                                        <div className="flex justify-between items-center mb-5">
+                                                            <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-lg ${isSuccess ? 'bg-[#22c55e]/15 text-[#22c55e]' : isLinkedInTask ? 'bg-blue-50 text-blue-500' : 'bg-[#e0e7ff] text-brand-primary'}`}>
+                                                                {isLinkedInTask ? <Linkedin className="w-5 h-5 fill-current" /> : (task.internship_tasks?.task_number || (idx + 1))}
                                                             </div>
-
-                                                            <h4 className="text-sm font-bold text-slate-850 dark:text-white capitalize">
-                                                                {task.internship_tasks?.title}
-                                                            </h4>
-                                                            <p className="text-xs text-slate-500 dark:text-slate-405 leading-relaxed max-w-4xl">
-                                                                {task.internship_tasks?.description}
-                                                            </p>
-
-                                                            {task.admin_feedback && (
-                                                                <div className="mt-2.5 p-3 bg-amber-500/[0.04] border-l-2 border-brand-primary rounded-r-lg text-[11px] text-slate-500 dark:text-slate-400 italic">
-                                                                    Mentor Feedback: "{task.admin_feedback}"
-                                                                </div>
-                                                            )}
+                                                            <div className={`px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1.5 ${isSuccess ? 'bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/20' : isPending ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}>
+                                                                {isSuccess ? <CheckCircle className="w-3.5 h-3.5" /> : isPending ? <Clock className="w-3.5 h-3.5" /> : <CheckCircle className="w-3.5 h-3.5 opacity-50" />}
+                                                                <span>{isSuccess ? 'Completed' : isPending ? (task.status === 'resubmission_required' ? 'Resubmit' : 'Pending') : 'Locked'}</span>
+                                                            </div>
                                                         </div>
 
-                                                        <div className="flex-shrink-0 w-full sm:w-auto text-right">
-                                                            {isLocked ? (
-                                                                <span className="text-xs text-slate-400 font-bold block select-none">🔒 Locked</span>
-                                                            ) : isTaskApproved ? (
-                                                                <span className="inline-flex items-center space-x-1 px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold rounded-lg shadow-sm">
-                                                                    <CheckCheck className="w-3.5 h-3.5" />
-                                                                    <span>Successful</span>
-                                                                </span>
-                                                            ) : task.status === 'submitted' ? (
-                                                                <span className="inline-flex items-center space-x-1 px-3 py-1 bg-amber-55 border border-amber-200 text-amber-700 text-xs font-bold rounded-lg shadow-sm">
-                                                                    <Clock className="w-3.5 h-3.5" />
-                                                                    <span>Pending</span>
-                                                                </span>
-                                                            ) : isLinkedInTask ? (
-                                                                <div className="flex flex-col items-stretch space-y-2">
-                                                                    <form
-                                                                        onSubmit={(e) => handleLinkedInVerificationSubmit(e, task.id)}
-                                                                        className="flex gap-1"
-                                                                    >
-                                                                        <input
-                                                                            type="url"
-                                                                            required
-                                                                            value={linkedinUrl}
-                                                                            onChange={(e) => setLinkedinUrl(e.target.value)}
-                                                                            placeholder="Paste Link..."
-                                                                            className="px-2 py-1 text-xs border border-slate-200 bg-slate-50 dark:bg-slate-950 rounded-lg outline-none w-32 focus:border-brand-primary"
-                                                                        />
-                                                                        <button
-                                                                            type="submit"
-                                                                            className="px-2.5 py-1 bg-brand-primary text-white rounded-lg text-xs font-bold tracking-wide"
-                                                                        >
-                                                                            Submit Link
-                                                                        </button>
-                                                                    </form>
+                                                        {/* Meta */}
+                                                        <div className="space-y-1.5 mb-5 select-none">
+                                                            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                                                                <CalendarDays className="w-3.5 h-3.5" />
+                                                                <span>Due Date: <span className="font-bold text-slate-800">21 Sept 2026</span></span>
+                                                            </div>
+                                                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#22c55e] uppercase tracking-wide">
+                                                                <CheckCheck className="w-3.5 h-3.5" />
+                                                                <span>{isSuccess ? 'Submitted on track' : isPending ? 'Under Review' : 'Waiting for Submission'}</span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Title & Desc */}
+                                                        <div className="flex-1 space-y-4 mb-7 relative">
+                                                            <h4 className="text-[17px] font-black text-slate-800 dark:text-white leading-snug">
+                                                                {task.internship_tasks?.title}
+                                                            </h4>
+                                                            <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
+                                                                {task.internship_tasks?.description || 'Build your professional online presence and learn full-stack deployment workflows.'}
+                                                            </p>
+
+                                                            {/* Mock key features and expected outcome as per layout request */}
+                                                            <div className="space-y-3 mt-4 border-t border-slate-100 pt-4 px-1">
+                                                                <div>
+                                                                    <h5 className="text-[10px] font-extrabold text-blue-600 uppercase tracking-widest mb-1">Key Features:</h5>
+                                                                    <ul className="text-[11px] text-slate-500 space-y-1 list-disc list-inside">
+                                                                        <li>Responsive component layout</li>
+                                                                        <li>Modern aesthetics and CSS handling</li>
+                                                                    </ul>
                                                                 </div>
+                                                                <div>
+                                                                    <h5 className="text-[10px] font-extrabold text-[#22c55e] uppercase tracking-widest mb-1">Expected Outcome:</h5>
+                                                                    <p className="text-[11px] text-slate-500 line-clamp-3">
+                                                                        Build an application demonstrating an understanding of frontend logic, database integration, and UI principles.
+                                                                    </p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Bottom actions */}
+                                                        <div className="mt-auto">
+                                                            {isLocked ? (
+                                                                <div className="w-full py-3 bg-slate-50 text-slate-400 rounded-2xl text-center text-xs font-bold flex items-center justify-center gap-2 border border-slate-200">
+                                                                    <span>Complete previous task</span>
+                                                                </div>
+                                                            ) : isSuccess ? (
+                                                                <div className="w-full py-3 bg-[#e8fbf0] text-[#1e8d47] rounded-2xl text-center text-[13px] font-extrabold flex items-center justify-center gap-2 border border-[#22c55e]/30 shadow-sm shadow-[#22c55e]/10">
+                                                                    <CheckCircle2 className="w-4 h-4" />
+                                                                    <span>Completed Successfully!</span>
+                                                                </div>
+                                                            ) : isPending ? (
+                                                                <div className="w-full py-3 bg-amber-50 text-amber-600 rounded-2xl text-center text-[13px] font-extrabold flex items-center justify-center gap-2 border border-amber-200">
+                                                                    <Clock className="w-4 h-4" />
+                                                                    <span>{task.status === 'resubmission_required' ? 'Review Rejected - Resubmit' : 'Awaiting Review...'}</span>
+                                                                </div>
+                                                            ) : isLinkedInTask ? (
+                                                                <form onSubmit={(e) => handleLinkedInVerificationSubmit(e, task.id)} className="flex flex-col gap-2">
+                                                                    <input
+                                                                        type="url"
+                                                                        required
+                                                                        value={linkedinUrl}
+                                                                        onChange={(e) => setLinkedinUrl(e.target.value)}
+                                                                        placeholder="Paste LinkedIn post URL..."
+                                                                        className="w-full px-4 py-2.5 text-xs border border-slate-300 bg-slate-50 rounded-xl outline-none focus:border-brand-primary placeholder-slate-400 font-medium"
+                                                                    />
+                                                                    <button type="submit" disabled={submittingLinkedin} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-blue-500/20">
+                                                                        Submit & Verify Post
+                                                                    </button>
+                                                                </form>
                                                             ) : (
-                                                                <button
-                                                                    onClick={() => setSelectedTaskForSubmission(task)}
-                                                                    className="w-full sm:w-auto px-4 py-2 bg-brand-primary hover:bg-brand-primary/95 text-white text-xs font-bold rounded-xl shadow transition"
-                                                                >
-                                                                    {task.status === 'resubmission_required' ? 'Resubmit' : 'Submit Milestone'}
+                                                                <button onClick={() => setSelectedTaskForSubmission(task)} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[13px] font-bold transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
+                                                                    <ArrowRight className="w-4 h-4" />
+                                                                    <span>Submit Project Repository</span>
                                                                 </button>
                                                             )}
                                                         </div>
                                                     </div>
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )}
+                                                );
+                                            })}
+                                        </div>
+                                    )}
+                                </div>
+
                             </div>
                         )}
+
+
 
                         {/* Tab display: virtual student ID card */}
                         {activeTab === 'idcard' && (
@@ -1451,6 +1441,28 @@ const Dashboard: React.FC = () => {
                                         </button>
                                     </div>
 
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Tab display: Payment (New Placeholder) */}
+                        {activeTab === 'payment' && (
+                            <div className="space-y-6">
+                                <div className="border-b border-slate-205 dark:border-slate-805 pb-4">
+                                    <h2 className="text-xl font-bold flex items-center space-x-2">
+                                        <CreditCard className="w-5 h-5 text-brand-primary" />
+                                        <span>Payment Details</span>
+                                    </h2>
+                                    <p className="text-xs text-slate-450 mt-0.5">
+                                        View and manage your internship stipends or premium certifications.
+                                    </p>
+                                </div>
+                                <div className="bg-white dark:bg-brand-cardDark border border-slate-205 dark:border-slate-805 rounded-xl p-12 text-center shadow-sm">
+                                    <CreditCard className="w-12 h-12 text-slate-350 mx-auto mb-4" />
+                                    <h3 className="text-base font-bold">No records found</h3>
+                                    <p className="text-xs text-slate-400 mt-2 max-w-sm mx-auto">
+                                        Your payment portal has not generated any invoices or stipends yet. They will appear here once valid.
+                                    </p>
                                 </div>
                             </div>
                         )}
@@ -1611,389 +1623,391 @@ const Dashboard: React.FC = () => {
             </div>
 
             {/* Modal / Dialog for Milestone Submission Form */}
-            {selectedTaskForSubmission && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm select-none">
-                    <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-left">
-                        <h3 className="text-lg font-bold flex items-center space-x-2">
-                            <FileCode className="w-5 h-5 text-brand-primary" />
-                            <span>Submit Milestone Solution</span>
-                        </h3>
-                        <p className="text-xs text-brand-primary dark:text-brand-accent mt-1 uppercase font-bold tracking-wide">
-                            {selectedTaskForSubmission.internship_tasks?.title}
-                        </p>
+            {
+                selectedTaskForSubmission && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm select-none">
+                        <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-left">
+                            <h3 className="text-lg font-bold flex items-center space-x-2">
+                                <FileCode className="w-5 h-5 text-brand-primary" />
+                                <span>Submit Milestone Solution</span>
+                            </h3>
+                            <p className="text-xs text-brand-primary dark:text-brand-accent mt-1 uppercase font-bold tracking-wide">
+                                {selectedTaskForSubmission.internship_tasks?.title}
+                            </p>
 
-                        <form onSubmit={handleMilestoneSubmission} className="mt-4 space-y-4">
-                            <div>
-                                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
-                                    GitHub Repository / Commit URL
-                                </label>
-                                <div className="relative">
-                                    <Github className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
-                                    <input
-                                        type="url"
-                                        required
-                                        value={githubUrl}
-                                        onChange={(e) => setGithubUrl(e.target.value)}
-                                        placeholder="https://github.com/username/project/commit/..."
-                                        className="w-full pl-9 pr-3 py-2.5 border border-slate-205 bg-slate-50 dark:bg-slate-950 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none"
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
-                                    Submission Notes / Code Summary
-                                </label>
-                                <textarea
-                                    required
-                                    value={studentNote}
-                                    onChange={(e) => setStudentNote(e.target.value)}
-                                    placeholder="Describe your design choices, database schema config, or features completed..."
-                                    className="w-full px-3 py-2.5 border border-slate-205 bg-slate-50 dark:bg-slate-950 dark:border-slate-805 rounded-xl text-xs font-semibold focus:outline-none h-24"
-                                />
-                            </div>
-
-                            {/* Optional project image / preview URL */}
-                            <div>
-                                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1 flex items-center gap-1.5">
-                                    Project Screenshot / Preview Image URL
-                                    <span className="normal-case font-medium text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md text-[9px]">Optional</span>
-                                </label>
-                                <div className="relative">
-                                    <svg className="absolute left-3 top-[10px] w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                                    </svg>
-                                    <input
-                                        type="url"
-                                        value={projectImageUrl}
-                                        onChange={(e) => setProjectImageUrl(e.target.value)}
-                                        placeholder="https://i.imgur.com/your-screenshot.png (optional)"
-                                        className="w-full pl-9 pr-3 py-2.5 border border-slate-205 bg-slate-50 dark:bg-slate-950 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none"
-                                    />
-                                </div>
-                                {projectImageUrl.trim() && (
-                                    <div className="mt-2 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 max-h-32">
-                                        <img
-                                            src={projectImageUrl}
-                                            alt="Project preview"
-                                            className="w-full h-full object-cover"
-                                            onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                            <form onSubmit={handleMilestoneSubmission} className="mt-4 space-y-4">
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+                                        GitHub Repository / Commit URL
+                                    </label>
+                                    <div className="relative">
+                                        <Github className="absolute left-3 top-3 w-4 h-4 text-slate-400" />
+                                        <input
+                                            type="url"
+                                            required
+                                            value={githubUrl}
+                                            onChange={(e) => setGithubUrl(e.target.value)}
+                                            placeholder="https://github.com/username/project/commit/..."
+                                            className="w-full pl-9 pr-3 py-2.5 border border-slate-205 bg-slate-50 dark:bg-slate-950 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none"
                                         />
                                     </div>
-                                )}
-                            </div>
+                                </div>
 
-                            <div className="flex space-x-3 pt-4 border-t border-slate-100 dark:border-slate-850">
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedTaskForSubmission(null)}
-                                    disabled={submittingTask}
-                                    className="flex-1 py-3 border border-slate-250 dark:border-slate-800 hover:bg-slate-50 text-slate-650 dark:text-slate-350 dark:hover:bg-slate-850 text-xs font-bold rounded-xl transition"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={submittingTask}
-                                    className="flex-1 py-3 bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-95 text-white text-xs font-bold rounded-xl transition shadow"
-                                >
-                                    {submittingTask ? 'Pushing Commit...' : 'Send Solution'}
-                                </button>
-                            </div>
-                        </form>
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">
+                                        Submission Notes / Code Summary
+                                    </label>
+                                    <textarea
+                                        required
+                                        value={studentNote}
+                                        onChange={(e) => setStudentNote(e.target.value)}
+                                        placeholder="Describe your design choices, database schema config, or features completed..."
+                                        className="w-full px-3 py-2.5 border border-slate-205 bg-slate-50 dark:bg-slate-950 dark:border-slate-805 rounded-xl text-xs font-semibold focus:outline-none h-24"
+                                    />
+                                </div>
+
+                                {/* Optional project image / preview URL */}
+                                <div>
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1 flex items-center gap-1.5">
+                                        Project Screenshot / Preview Image URL
+                                        <span className="normal-case font-medium text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-md text-[9px]">Optional</span>
+                                    </label>
+                                    <div className="relative">
+                                        <svg className="absolute left-3 top-[10px] w-4 h-4 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                        <input
+                                            type="url"
+                                            value={projectImageUrl}
+                                            onChange={(e) => setProjectImageUrl(e.target.value)}
+                                            placeholder="https://i.imgur.com/your-screenshot.png (optional)"
+                                            className="w-full pl-9 pr-3 py-2.5 border border-slate-205 bg-slate-50 dark:bg-slate-950 dark:border-slate-800 rounded-xl text-xs font-semibold focus:outline-none"
+                                        />
+                                    </div>
+                                    {projectImageUrl.trim() && (
+                                        <div className="mt-2 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 max-h-32">
+                                            <img
+                                                src={projectImageUrl}
+                                                alt="Project preview"
+                                                className="w-full h-full object-cover"
+                                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="flex space-x-3 pt-4 border-t border-slate-100 dark:border-slate-850">
+                                    <button
+                                        type="button"
+                                        onClick={() => setSelectedTaskForSubmission(null)}
+                                        disabled={submittingTask}
+                                        className="flex-1 py-3 border border-slate-250 dark:border-slate-800 hover:bg-slate-50 text-slate-650 dark:text-slate-350 dark:hover:bg-slate-850 text-xs font-bold rounded-xl transition"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        disabled={submittingTask}
+                                        className="flex-1 py-3 bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-95 text-white text-xs font-bold rounded-xl transition shadow"
+                                    >
+                                        {submittingTask ? 'Pushing Commit...' : 'Send Solution'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Hidden Offer Letter Component for Direct PDF Download */}
-            {activeOffer && (
-                <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '794px', height: '1123px', overflow: 'hidden' }}>
-                    <div
-                        id="offer-letter-download-area"
-                        className="bg-white select-text text-left overflow-hidden z-10 font-sans relative offer-letter mx-auto"
-                        style={{
-                            boxSizing: 'border-box',
-                            width: '794px',
-                            height: '1123px',
-                            padding: '45px 50px',
-                            color: '#0f172a',
-                            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-                            position: 'relative'
-                        }}
-                    >
-                        {/* Elegant background watermark */}
-                        <div className="doc-watermark">VINIX TECHNOLOGIES</div>
+            {
+                activeOffer && (
+                    <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '794px', height: '1123px', overflow: 'hidden' }}>
+                        <div
+                            id="offer-letter-download-area"
+                            className="bg-white select-text text-left overflow-hidden z-10 font-sans relative offer-letter mx-auto"
+                            style={{
+                                boxSizing: 'border-box',
+                                width: '794px',
+                                height: '1123px',
+                                padding: '45px 50px',
+                                color: '#0f172a',
+                                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
+                                position: 'relative'
+                            }}
+                        >
+                            {/* Elegant background watermark */}
+                            <div className="doc-watermark">VINIX TECHNOLOGIES</div>
 
-                        {/* Decorative double-border frames */}
-                        <div className="doc-frame-outer"></div>
-                        <div className="doc-frame-inner"></div>
+                            {/* Decorative double-border frames */}
+                            <div className="doc-frame-outer"></div>
+                            <div className="doc-frame-inner"></div>
 
-                        {/* Header Section */}
-                        <div className="doc-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', marginBottom: '2px', zIndex: 2 }}>
-                            <div className="header-left" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                <div className="header-logo-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span className="header-logo" style={{ height: '36px', display: 'flex', alignItems: 'center' }}>
-                                        <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" style={{ height: '100%', objectFit: 'contain' }} />
-                                    </span>
-                                    <div style={{ width: '1.5px', height: '28px', backgroundColor: '#cbd5e1' }}></div>
-                                    <div className="header-branding-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                        <span className="company-name" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: '1.25rem', color: '#0f2942', lineHeight: 1.1, letterSpacing: '0.5px' }}>VINIX</span>
-                                        <span className="company-tagline" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '0.62rem', fontWeight: 700, color: '#0284c7', letterSpacing: '0.5px', marginTop: '1px' }}>Empowering Future Innovators</span>
+                            {/* Header Section */}
+                            <div className="doc-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', marginBottom: '2px', zIndex: 2 }}>
+                                <div className="header-left" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                    <div className="header-logo-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                        <span className="header-logo" style={{ height: '36px', display: 'flex', alignItems: 'center' }}>
+                                            <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" style={{ height: '100%', objectFit: 'contain' }} />
+                                        </span>
+                                        <div style={{ width: '1.5px', height: '28px', backgroundColor: '#cbd5e1' }}></div>
+                                        <div className="header-branding-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                            <span className="company-name" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: '1.25rem', color: '#0f2942', lineHeight: 1.1, letterSpacing: '0.5px' }}>VINIX</span>
+                                            <span className="company-tagline" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '0.62rem', fontWeight: 700, color: '#0284c7', letterSpacing: '0.5px', marginTop: '1px' }}>Empowering Future Innovators</span>
+                                        </div>
+                                    </div>
+                                    <div className="company-contact-row" style={{ fontSize: '0.62rem', color: '#64748b', marginTop: '5px', fontWeight: 550 }}>
+                                        www.vinix.online | academic@vinix.online
                                     </div>
                                 </div>
-                                <div className="company-contact-row" style={{ fontSize: '0.62rem', color: '#64748b', marginTop: '5px', fontWeight: 550 }}>
-                                    www.vinix.online | academic@vinix.online
-                                </div>
-                            </div>
-                            <div className="header-right" style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                <div className="meta-item" style={{ display: 'flex', flexDirection: 'column' }}>
-                                    <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>INTERNSHIP ID</span>
-                                    <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>{activeOffer.offer_letter_id}</span>
-                                </div>
-                                <div className="meta-item" style={{ marginTop: '5px', display: 'flex', flexDirection: 'column' }}>
-                                    <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>ISSUE DATE</span>
-                                    <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>
-                                        {new Date(activeOffer.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Divider Line */}
-                        <div className="header-line" style={{ width: '100%', height: '1.5px', backgroundColor: '#e2e8f0', marginTop: '8px', marginBottom: '16px', zIndex: 2 }}></div>
-
-                        {/* Body Content */}
-                        <div className="doc-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', zIndex: 2 }}>
-                            <h1 className="document-title" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: '1.2rem', color: '#0f2942', marginBottom: '2px', letterSpacing: '0.2px' }}>INTERNSHIP OFFER LETTER</h1>
-                            <div className="document-date" style={{ fontSize: '0.72rem', color: '#cca353', marginBottom: '15px', fontWeight: 600 }}>
-                                Date: {new Date(activeOffer.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                            </div>
-
-                            <div className="greeting-block" style={{ fontSize: '0.73rem', color: '#334155', marginBottom: '8px' }}>
-                                Dear <strong>{activeOffer.student_name}</strong>,
-                            </div>
-
-                            <div className="intro-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '10px', textAlign: 'justify' }}>
-                                We are delighted to offer you the position of <strong>Virtual Intern – {activeOffer.internship_title}</strong> at <strong>Vinix Technologies</strong>. After reviewing your application, we are confident that your skills and enthusiasm make you a valuable addition to our program.
-                            </div>
-
-                            <div className="intro-sub-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '10px', textAlign: 'justify' }}>
-                                Your virtual internship details and key particulars are finalized as follows:
-                            </div>
-
-                            {/* Particulars Table */}
-                            <table className="particulars-table" style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '6px', overflow: 'hidden', border: '1px solid #e2e8f0', marginBottom: '12px', fontSize: '0.7rem' }}>
-                                <thead>
-                                    <tr>
-                                        <th colSpan={2} style={{ backgroundColor: '#0f2942', color: '#ffffff', fontWeight: 700, padding: '8px 12px', textAlign: 'left', fontSize: '0.68rem', letterSpacing: '0.5px', border: 'none' }}>INTERNSHIP PROGRAM PARTICULARS</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Internship Track</td>
-                                        <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{activeOffer.internship_title}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Intern ID</td>
-                                        <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{activeOffer.offer_letter_id}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Duration</td>
-                                        <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{activeOffer.duration}</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Commencement Date</td>
-                                        <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>
-                                            {(() => {
-                                                const d = new Date(activeOffer.issue_date);
-                                                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                                                return `${String(d.getDate()).padStart(2, '0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
-                                            })()}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Estimated Completion</td>
-                                        <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>
-                                            {(() => {
-                                                const d = new Date(activeOffer.issue_date);
-                                                const num = parseInt(activeOffer.duration) || 1;
-                                                if (activeOffer.duration.toLowerCase().includes('week')) {
-                                                    d.setDate(d.getDate() + num * 7);
-                                                } else {
-                                                    d.setMonth(d.getMonth() + num);
-                                                }
-                                                d.setDate(d.getDate() - 3);
-                                                const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                                                return `${String(d.getDate()).padStart(2, '0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
-                                            })()}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Stipend Details</td>
-                                        <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>Unpaid (Performance-Based Internship)</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Location & Model</td>
-                                        <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>Remote / Virtual</td>
-                                    </tr>
-                                    <tr>
-                                        <td className="label-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 600, color: '#475569', width: '35%' }}>College / University</td>
-                                        <td className="value-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 700, color: '#0f172a' }}>{studentProfile?.college || 'Anna University, Chennai'}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-
-                            {/* General Terms & Conditions */}
-                            <div className="terms-card" style={{ border: '1px solid #e2e8f0', borderRadius: '6px', padding: '10px 12px', marginBottom: '10px', backgroundColor: '#f8fafc' }}>
-                                <span className="card-title" style={{ color: '#0f2942', fontSize: '0.72rem', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>General Terms &amp; Conditions of Internship:</span>
-                                <div className="terms-list" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                    <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>1. Task Execution:</strong> You will be evaluated based on the functional completeness of the assigned tasks. You must submit weekly progress updates.</div>
-                                    <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>2. Code of Conduct:</strong> Plagiarism or any forms of professional misconduct will lead to immediate cancellation of your internship program.</div>
-                                    <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>3. Confidentiality:</strong> Any documentation, source code, or mock datasets shared during this program are strictly confidential.</div>
-                                    <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334555' }}><strong>4. Certification:</strong> An official Certificate of Internship Completion will be issued only upon successful submission and mentoring approval of all milestone tasks.</div>
+                                <div className="header-right" style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                    <div className="meta-item" style={{ display: 'flex', flexDirection: 'column' }}>
+                                        <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>INTERNSHIP ID</span>
+                                        <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>{activeOffer.offer_letter_id}</span>
+                                    </div>
+                                    <div className="meta-item" style={{ marginTop: '5px', display: 'flex', flexDirection: 'column' }}>
+                                        <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>ISSUE DATE</span>
+                                        <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>
+                                            {new Date(activeOffer.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
 
-                            {/* Certificate Section */}
-                            <div className="cert-completion-card" style={{ border: '1px solid #cbd5e1', borderRadius: '6px', padding: '10px 12px', marginBottom: '10px', backgroundColor: '#ffffff' }}>
-                                <span className="card-title" style={{ color: '#0f2942', fontSize: '0.72rem', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>CERTIFICATE OF COMPLETION</span>
-                                <div className="completion-text" style={{ fontSize: '0.71rem', lineHeight: '1.45', color: '#334155', textAlign: 'justify' }}>
-                                    Upon successful completion of the internship and fulfillment of all assigned tasks, you will receive a Certificate of Internship with QR-code verification for authenticity.
+                            {/* Divider Line */}
+                            <div className="header-line" style={{ width: '100%', height: '1.5px', backgroundColor: '#e2e8f0', marginTop: '8px', marginBottom: '16px', zIndex: 2 }}></div>
+
+                            {/* Body Content */}
+                            <div className="doc-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', zIndex: 2 }}>
+                                <h1 className="document-title" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: '1.2rem', color: '#0f2942', marginBottom: '2px', letterSpacing: '0.2px' }}>INTERNSHIP OFFER LETTER</h1>
+                                <div className="document-date" style={{ fontSize: '0.72rem', color: '#cca353', marginBottom: '15px', fontWeight: 600 }}>
+                                    Date: {new Date(activeOffer.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                </div>
+
+                                <div className="greeting-block" style={{ fontSize: '0.73rem', color: '#334155', marginBottom: '8px' }}>
+                                    Dear <strong>{activeOffer.student_name}</strong>,
+                                </div>
+
+                                <div className="intro-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '10px', textAlign: 'justify' }}>
+                                    We are delighted to offer you the position of <strong>Virtual Intern – {activeOffer.internship_title}</strong> at <strong>Vinix Technologies</strong>. After reviewing your application, we are confident that your skills and enthusiasm make you a valuable addition to our program.
+                                </div>
+
+                                <div className="intro-sub-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '10px', textAlign: 'justify' }}>
+                                    Your virtual internship details and key particulars are finalized as follows:
+                                </div>
+
+                                {/* Particulars Table */}
+                                <table className="particulars-table" style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '6px', overflow: 'hidden', border: '1px solid #e2e8f0', marginBottom: '12px', fontSize: '0.7rem' }}>
+                                    <thead>
+                                        <tr>
+                                            <th colSpan={2} style={{ backgroundColor: '#0f2942', color: '#ffffff', fontWeight: 700, padding: '8px 12px', textAlign: 'left', fontSize: '0.68rem', letterSpacing: '0.5px', border: 'none' }}>INTERNSHIP PROGRAM PARTICULARS</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Internship Track</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{activeOffer.internship_title}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Intern ID</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{activeOffer.offer_letter_id}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Duration</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{activeOffer.duration}</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Commencement Date</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>
+                                                {(() => {
+                                                    const d = new Date(activeOffer.issue_date);
+                                                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                                    return `${String(d.getDate()).padStart(2, '0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
+                                                })()}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Estimated Completion</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>
+                                                {(() => {
+                                                    const d = new Date(activeOffer.issue_date);
+                                                    const num = parseInt(activeOffer.duration) || 1;
+                                                    if (activeOffer.duration.toLowerCase().includes('week')) {
+                                                        d.setDate(d.getDate() + num * 7);
+                                                    } else {
+                                                        d.setMonth(d.getMonth() + num);
+                                                    }
+                                                    d.setDate(d.getDate() - 3);
+                                                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                                                    return `${String(d.getDate()).padStart(2, '0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
+                                                })()}
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Stipend Details</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>Unpaid (Performance-Based Internship)</td>
+                                        </tr>
+                                        <tr>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 600, color: '#475569', width: '35%' }}>Location & Model</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 700, color: '#0f172a' }}>Remote / Virtual</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+
+                                {/* General Terms & Conditions */}
+                                <div className="terms-card" style={{ border: '1px solid #e2e8f0', borderRadius: '6px', padding: '10px 12px', marginBottom: '10px', backgroundColor: '#f8fafc' }}>
+                                    <span className="card-title" style={{ color: '#0f2942', fontSize: '0.72rem', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>General Terms &amp; Conditions of Internship:</span>
+                                    <div className="terms-list" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>1. Task Execution:</strong> You will be evaluated based on the functional completeness of the assigned tasks. You must submit weekly progress updates.</div>
+                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>2. Code of Conduct:</strong> Plagiarism or any forms of professional misconduct will lead to immediate cancellation of your internship program.</div>
+                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>3. Confidentiality:</strong> Any documentation, source code, or mock datasets shared during this program are strictly confidential.</div>
+                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334555' }}><strong>4. Certification:</strong> An official Certificate of Internship Completion will be issued only upon successful submission and mentoring approval of all milestone tasks.</div>
+                                    </div>
+                                </div>
+
+                                {/* Certificate Section */}
+                                <div className="cert-completion-card" style={{ border: '1px solid #cbd5e1', borderRadius: '6px', padding: '10px 12px', marginBottom: '10px', backgroundColor: '#ffffff' }}>
+                                    <span className="card-title" style={{ color: '#0f2942', fontSize: '0.72rem', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>CERTIFICATE OF COMPLETION</span>
+                                    <div className="completion-text" style={{ fontSize: '0.71rem', lineHeight: '1.45', color: '#334155', textAlign: 'justify' }}>
+                                        Upon successful completion of the internship and fulfillment of all assigned tasks, you will receive a Certificate of Internship with QR-code verification for authenticity.
+                                    </div>
+                                </div>
+
+                                <div className="outro-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '8px' }}>
+                                    Please return the signed copy of this letter as a token of your formal acceptance of this offer. We look forward to a mutually rewarding learning experience.
                                 </div>
                             </div>
 
-                            <div className="outro-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '8px' }}>
-                                Please return the signed copy of this letter as a token of your formal acceptance of this offer. We look forward to a mutually rewarding learning experience.
-                            </div>
-                        </div>
-
-                        {/* Signatures Section */}
-                        <div className="signatures-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', width: '100%', paddingBottom: '12px', zIndex: 2 }}>
-                            {/* Company Seal (Left) */}
-                            <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-start' }}>
-                                <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px' }}>
-                                    <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Official Seal" className="stamp-overlay" style={{ width: '80px', height: '80px', objectFit: 'contain', opacity: 0.9 }} />
+                            {/* Signatures Section */}
+                            <div className="signatures-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', width: '100%', paddingBottom: '12px', zIndex: 2 }}>
+                                {/* Company Seal (Left) */}
+                                <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-start' }}>
+                                    <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px' }}>
+                                        <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Official Seal" className="stamp-overlay" style={{ width: '80px', height: '80px', objectFit: 'contain', opacity: 0.9 }} />
+                                    </div>
+                                    <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>COMPANY SEAL</span>
                                 </div>
-                                <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>COMPANY SEAL</span>
-                            </div>
 
-                            {/* Director Signatory (Right) */}
-                            <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-end', textAlign: 'right', marginLeft: 'auto' }}>
-                                <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px', justifyContent: 'flex-end' }}>
-                                    <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Director Signature" className="sig-image" style={{ maxHeight: '42px', objectFit: 'contain' }} />
+                                {/* Director Signatory (Right) */}
+                                <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-end', textAlign: 'right', marginLeft: 'auto' }}>
+                                    <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px', justifyContent: 'flex-end' }}>
+                                        <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Director Signature" className="sig-image" style={{ maxHeight: '42px', objectFit: 'contain' }} />
+                                    </div>
+                                    <span className="sig-name" style={{ fontWeight: 700, fontSize: '0.72rem', color: '#0f172a' }}>Vishal R</span>
+                                    <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>DIRECTOR – ACADEMIC OPERATIONS</span>
                                 </div>
-                                <span className="sig-name" style={{ fontWeight: 700, fontSize: '0.72rem', color: '#0f172a' }}>Vishal R</span>
-                                <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>DIRECTOR – ACADEMIC OPERATIONS</span>
                             </div>
-                        </div>
 
-                        {/* Footer */}
-                        <div className="doc-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontSize: '0.6rem', color: '#475569', fontWeight: 700, letterSpacing: '0.3px', zIndex: 2, borderTop: '1px solid #cbd5e1', paddingTop: '8px' }}>
-                            {/* Left Column: MSME + Skyrovix */}
-                            <div className="footer-left-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Logo" style={{ height: '36px', objectFit: 'contain' }} />
-                                <div style={{ width: '1px', height: '30px', backgroundColor: '#cbd5e1' }}></div>
-                                <img src={`${import.meta.env.BASE_URL}skyrovix.jpeg`} alt="Skyrovix Logo" style={{ height: '32px', objectFit: 'contain' }} />
-                            </div>
-                            {/* Center Column: Text */}
-                            <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.45, color: '#64748b' }}>
-                                <strong style={{ color: '#0f2942' }}>VINIX Technologies Private Limited</strong><br />
-                                UDYAM Registry: UDYAM-TN-17-0076606<br />
-                                academic@vinix.online | www.vinix.online
-                            </div>
-                            {/* Right Column: Yrnovatech */}
-                            <div className="footer-right-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                <img src={`${import.meta.env.BASE_URL}yrnovatech.png`} alt="Yrnovatech Logo" style={{ height: '35px', objectFit: 'contain' }} />
+                            {/* Footer */}
+                            <div className="doc-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontSize: '0.6rem', color: '#475569', fontWeight: 700, letterSpacing: '0.3px', zIndex: 2, borderTop: '1px solid #cbd5e1', paddingTop: '8px' }}>
+                                {/* Left Column: MSME + Skyrovix */}
+                                <div className="footer-left-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Logo" style={{ height: '36px', objectFit: 'contain' }} />
+                                    <div style={{ width: '1px', height: '30px', backgroundColor: '#cbd5e1' }}></div>
+                                    <img src={`${import.meta.env.BASE_URL}skyrovix.jpeg`} alt="Skyrovix Logo" style={{ height: '32px', objectFit: 'contain' }} />
+                                </div>
+                                {/* Center Column: Text */}
+                                <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.45, color: '#64748b' }}>
+                                    <strong style={{ color: '#0f2942' }}>VINIX Technologies Private Limited</strong><br />
+                                    UDYAM Registry: UDYAM-TN-17-0076606<br />
+                                    academic@vinix.online | www.vinix.online
+                                </div>
+                                {/* Right Column: Yrnovatech */}
+                                <div className="footer-right-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                    <img src={`${import.meta.env.BASE_URL}yrnovatech.png`} alt="Yrnovatech Logo" style={{ height: '35px', objectFit: 'contain' }} />
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Hidden Certificate Component for Direct PDF Download */}
-            {activeCertForDownload && (
-                <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '1123px', height: '794px', overflow: 'hidden' }}>
-                    <div
-                        id="certificate-download-area"
-                        className="certificate-container"
-                    >
-                        {/* Double border lines */}
-                        <div className="cert-frame-outer"></div>
-                        <div className="cert-frame-inner"></div>
+            {
+                activeCertForDownload && (
+                    <div style={{ position: 'absolute', left: '-9999px', top: '-9999px', width: '1123px', height: '794px', overflow: 'hidden' }}>
+                        <div
+                            id="certificate-download-area"
+                            className="certificate-container"
+                        >
+                            {/* Double border lines */}
+                            <div className="cert-frame-outer"></div>
+                            <div className="cert-frame-inner"></div>
 
-                        {/* Top branding elements */}
-                        <div className="cert-top-row">
-                            <div className="cert-logo-left">
-                                <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" />
-                            </div>
-
-                            <div className="cert-brand-center">
-                                <span className="cert-brand-name">VINIX</span>
-                                <span className="cert-brand-tagline">Empowering Future Innovators</span>
-                            </div>
-
-                            <div className="cert-logo-right">
-                                <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Seal" />
-                            </div>
-                        </div>
-
-                        {/* Certificate Headings */}
-                        <div className="cert-title-section">
-                            <h1 className="cert-title-main">CERTIFICATE</h1>
-                            <h3 className="cert-title-sub">OF INTERNSHIP COMPLETION</h3>
-                        </div>
-
-                        {/* Certificate main body */}
-                        <div className="cert-body-section">
-                            <p className="cert-presentation-text">This certificate is proudly presented to</p>
-                            <h2 className="recipient-name" style={{ textTransform: 'uppercase' }}>{profile?.full_name || 'Vinix Graduate'}</h2>
-
-                            <p className="cert-description">
-                                for successfully completing the task-based virtual internship program in <span className="bold-text">{activeCertForDownload.course_name}</span> at <span className="bold-text">VINIX Technologies</span>, demonstrating dedication, technical skill, and professional excellence throughout the program.
-                            </p>
-                        </div>
-
-                        {/* Footer signatory block with single Founder & Issued Date side */}
-                        <div className="cert-footer-section">
-                            {/* Date of Issuance Column (Left side) */}
-                            <div className="footer-col-left">
-                                <div className="signature-area" style={{ justifyContent: 'flex-start', alignItems: 'flex-end' }}>
-                                    <span className="issue-signer-date" style={{ fontWeight: 750, fontSize: '1.05rem', color: '#0f2942', marginBottom: '6px' }}>
-                                        {new Date(activeCertForDownload.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                    </span>
+                            {/* Top branding elements */}
+                            <div className="cert-top-row">
+                                <div className="cert-logo-left">
+                                    <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" />
                                 </div>
-                                <div className="signer-line"></div>
-                                <span className="signer-name">Date of Issuance</span>
-                                <span className="signer-title" style={{ visibility: 'hidden' }}>&nbsp;</span>
-                                <span className="detail-left">Issued Date</span>
-                            </div>
 
-                            {/* Official Stamp Column (Center) */}
-                            <div className="footer-col-center">
-                                <div className="stamp-container">
-                                    <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Company Stamp" className="stamp-img" style={{ mixBlendMode: 'multiply' }} />
+                                <div className="cert-brand-center">
+                                    <span className="cert-brand-name">VINIX</span>
+                                    <span className="cert-brand-tagline">Empowering Future Innovators</span>
                                 </div>
-                                <div className="detail-center-block">
-                                    <span>Intern ID: VINIX-{activeCertForDownload.certificate_number.split('-').pop()}</span>
-                                    <span>Verify at: <a href={`https://verify.vinix.co/credentials/${activeCertForDownload.certificate_number}`} className="verify-web-link" target="_blank" rel="noreferrer">verify.vinix.co/{activeCertForDownload.certificate_number}</a></span>
+
+                                <div className="cert-logo-right">
+                                    <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Seal" />
                                 </div>
                             </div>
 
-                            {/* Founder Signatory Column (Right side) */}
-                            <div className="footer-col-right flex-col items-center">
-                                <div className="signature-area w-full" style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
-                                    <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Founder Signature" className="signature-img" />
+                            {/* Certificate Headings */}
+                            <div className="cert-title-section">
+                                <h1 className="cert-title-main">CERTIFICATE</h1>
+                                <h3 className="cert-title-sub">OF INTERNSHIP COMPLETION</h3>
+                            </div>
+
+                            {/* Certificate main body */}
+                            <div className="cert-body-section">
+                                <p className="cert-presentation-text">This certificate is proudly presented to</p>
+                                <h2 className="recipient-name" style={{ textTransform: 'uppercase' }}>{profile?.full_name || 'Vinix Graduate'}</h2>
+
+                                <p className="cert-description">
+                                    for successfully completing the task-based virtual internship program in <span className="bold-text">{activeCertForDownload.course_name}</span> at <span className="bold-text">VINIX Technologies</span>, demonstrating dedication, technical skill, and professional excellence throughout the program.
+                                </p>
+                            </div>
+
+                            {/* Footer signatory block with single Founder & Issued Date side */}
+                            <div className="cert-footer-section">
+                                {/* Date of Issuance Column (Left side) */}
+                                <div className="footer-col-left">
+                                    <div className="signature-area" style={{ justifyContent: 'flex-start', alignItems: 'flex-end' }}>
+                                        <span className="issue-signer-date" style={{ fontWeight: 750, fontSize: '1.05rem', color: '#0f2942', marginBottom: '6px' }}>
+                                            {new Date(activeCertForDownload.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                        </span>
+                                    </div>
+                                    <div className="signer-line"></div>
+                                    <span className="signer-name">Date of Issuance</span>
+                                    <span className="signer-title" style={{ visibility: 'hidden' }}>&nbsp;</span>
+                                    <span className="detail-left">Issued Date</span>
                                 </div>
-                                <div className="signer-line"></div>
-                                <span className="signer-name" style={{ textAlign: 'center' }}>Vishal R</span>
-                                <span className="signer-title" style={{ textAlign: 'center' }}>Founder & CEO</span>
-                                <span className="detail-right" style={{ textAlign: 'center' }}>Certificate ID: {activeCertForDownload.certificate_number}</span>
+
+                                {/* Official Stamp Column (Center) */}
+                                <div className="footer-col-center">
+                                    <div className="stamp-container">
+                                        <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Company Stamp" className="stamp-img" style={{ mixBlendMode: 'multiply' }} />
+                                    </div>
+                                    <div className="detail-center-block">
+                                        <span>Intern ID: VINIX-{activeCertForDownload.certificate_number.split('-').pop()}</span>
+                                        <span>Verify at: <a href={`https://verify.vinix.co/credentials/${activeCertForDownload.certificate_number}`} className="verify-web-link" target="_blank" rel="noreferrer">verify.vinix.co/{activeCertForDownload.certificate_number}</a></span>
+                                    </div>
+                                </div>
+
+                                {/* Founder Signatory Column (Right side) */}
+                                <div className="footer-col-right flex-col items-center">
+                                    <div className="signature-area w-full" style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
+                                        <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Founder Signature" className="signature-img" />
+                                    </div>
+                                    <div className="signer-line"></div>
+                                    <span className="signer-name" style={{ textAlign: 'center' }}>Vishal R</span>
+                                    <span className="signer-title" style={{ textAlign: 'center' }}>Founder & CEO</span>
+                                    <span className="detail-right" style={{ textAlign: 'center' }}>Certificate ID: {activeCertForDownload.certificate_number}</span>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 };
 

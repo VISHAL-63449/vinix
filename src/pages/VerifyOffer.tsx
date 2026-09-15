@@ -404,12 +404,8 @@ const VerifyOffer: React.FC = () => {
                                             <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>Unpaid (Performance-Based Internship)</td>
                                         </tr>
                                         <tr>
-                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Location & Model</td>
-                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>Remote / Virtual</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 600, color: '#475569', width: '35%' }}>College / University</td>
-                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 700, color: '#0f172a' }}>{result.college || 'Anna University, Chennai'}</td>
+                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 600, color: '#475569', width: '35%' }}>Location & Model</td>
+                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 700, color: '#0f172a' }}>Remote / Virtual</td>
                                         </tr>
                                     </tbody>
                                 </table>

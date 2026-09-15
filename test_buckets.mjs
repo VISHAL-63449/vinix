@@ -1,0 +1,1 @@
+﻿import { createClient } from '@supabase/supabase-js'; import { config } from 'dotenv'; config({path: '.env'}); const supabase = createClient(process.env.VITE_SUPABASE_URL, process.env.VITE_SUPABASE_ANON_KEY); async function run() { const { data, error } = await supabase.storage.listBuckets(); console.log(JSON.stringify(data, null, 2), error); } run();

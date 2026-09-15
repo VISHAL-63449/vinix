@@ -70,6 +70,10 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
         navigate('/login');
     };
 
+    if (location.pathname === '/dashboard') {
+        return null;
+    }
+
     return (
         <nav className={`sticky top-0 z-50 w-full border-b transition-all duration-300 no-print ${isScrolled
             ? 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-900 shadow-md'

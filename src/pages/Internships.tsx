@@ -718,17 +718,53 @@ const Internships: React.FC = () => {
             }
             if (!uid) throw new Error('Authentication failed.');
 
+            // Optional: Upload Profile Photo
+            let avatarUrl = null;
+            if (profilePhoto) {
+                try {
+                    const fileExt = profilePhoto.name.split('.').pop();
+                    const fileName = `avatar_${uid}_${Date.now()}.${fileExt}`;
+
+                    const { error: uploadError } = await supabase.storage
+                        .from('avatars')
+                        .upload(fileName, profilePhoto, {
+                            upsert: true,
+                            contentType: profilePhoto.type
+                        });
+
+                    if (uploadError) {
+                        console.warn('Failed to upload to avatars bucket, falling back to base64:', uploadError);
+                        avatarUrl = await new Promise<string | null>((resolve) => {
+                            const reader = new FileReader();
+                            reader.onloadend = () => resolve(reader.result as string);
+                            reader.onerror = () => resolve(null);
+                            reader.readAsDataURL(profilePhoto);
+                        });
+                    } else {
+                        const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
+                        avatarUrl = data.publicUrl;
+                    }
+                } catch (e) {
+                    console.warn('Profile photo error:', e);
+                }
+            }
+
             // 1. Host user profile
+            const profilePayload: any = {
+                id: uid,
+                email: form.email,
+                full_name: form.fullName,
+                name: form.fullName,
+                role: 'student',
+                college: form.college
+            };
+            if (avatarUrl) {
+                profilePayload.avatar_url = avatarUrl;
+            }
+
             const { error: profErr } = await supabaseAdmin
                 .from('profiles')
-                .upsert({
-                    id: uid,
-                    email: form.email,
-                    full_name: form.fullName,
-                    name: form.fullName,
-                    role: 'student',
-                    college: form.college
-                });
+                .upsert(profilePayload);
             if (profErr) throw profErr;
 
             // 2. Host student profile details

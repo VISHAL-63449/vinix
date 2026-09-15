@@ -1,0 +1,134 @@
+827: <div className="bg-gradient-to-r from-[#031d38] vi
+828: {/* Background glows */}
+829: <div className="absolute top-[-20%] left-[-10%] w-
+830: <div className="absolute bottom-[-20%] right-[-10%
+831: 
+832: {/* Left content column */}
+833: <div className="flex-1 text-left z-10 w-full flex 
+834: <div className="relative flex-shrink-0">
+835: <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-
+836: {profile?.avatar_url ? (
+837: <img src={profile.avatar_url} alt="Profile" classN
+838: ) : (
+839: <span className="text-4xl font-extrabold text-whit
+840: )}
+841: </div>
+842: <div className="absolute -bottom-1 -right-1 w-6 h-
+843: <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text
+844: </div>
+845: </div>
+846: 
+847: <div className="flex flex-col">
+848: <div className="inline-flex max-w-fit items-center
+849: <Sparkles className="w-3 h-3 text-[#f59e0b] fill-[
+850: <span>WELCOME INTERN</span>
+851: </div>
+852: 
+853: <h1 className="text-2xl sm:text-[34px] font-extrab
+854: {activeOffer?.student_name || profile?.full_name |
+855: </h1>
+856: 
+857: <div className="flex flex-wrap items-center gap-2.
+858: <span className="text-xs sm:text-[14px] font-extra
+859: {activeEnrollment?.internship?.title || 'Virtual I
+860: </span>
+861: {activeOffer?.offer_letter_id && (
+862: <span className="px-2.5 py-0.5 bg-white/5 border b
+863: ID: {activeOffer.offer_letter_id}
+864: </span>
+865: )}
+866: </div>
+867: </div>
+868: </div>
+869: 
+870: {/* Meta details list */}
+871: <div className="flex flex-wrap items-center gap-4 
+872: <div className="flex items-center gap-2 bg-white/5
+873: <CalendarDays className="w-4 h-4 text-white/60" />
+874: <span>Enrolled: {activeOffer ? new Date(activeOffe
+875: </div>
+876: <div className="flex items-center gap-2 bg-white/5
+877: <Clock className="w-4 h-4 text-white/60" />
+878: <span>Duration: {activeOffer?.duration || '3 Month
+879: </div>
+880: <div className="flex items-center gap-2 bg-white/5
+881: <CheckCircle className="w-4 h-4 text-emerald-450" 
+882: <span>Tasks: {approvedCount} / {totalTaskCount || 
+883: </div>
+884: </div>
+885: 
+886: {/* Action Buttons list */}
+887: <div className="flex flex-wrap items-center gap-3 
+888: {activeOffer && (
+889: <button
+890: onClick={handleDownloadOfferLetterDirect}
+891: disabled={downloadingOffer}
+892: className="px-4 py-2.5 bg-white/10 hover:bg-white/
+893: >
+894: <FileText className="w-4 h-4" />
+895: <span>{downloadingOffer ? 'Downloading...' : 'Down
+896: </button>
+897: )}
+898: <button
+899: onClick={() => { setActiveTab('idcard'); setTimeou
+900: className="px-4 py-2.5 bg-white/10 hover:bg-white/
+901: >
+902: <Printer className="w-4 h-4" />
+903: <span>Download ID Card</span>
+904: </button>
+905: <a
+906: href="https://chat.whatsapp.com/example"
+907: target="_blank"
+908: rel="noopener noreferrer"
+909: className="px-4 py-2.5 bg-[#25d366] hover:bg-[#20b
+910: >
+911: <MessageSquare className="w-4 h-4" />
+912: <span>Join WhatsApp Group</span>
+913: </a>
+914: {certificates.length > 0 && (
+915: <button
+916: onClick={() => handleDownloadCertificateDirect(cer
+917: disabled={downloadingCert}
+918: className="px-4 py-2.5 bg-[#009688] hover:bg-[#007
+919: >
+920: <Award className="w-4 h-4" />
+921: <span>{downloadingCert ? 'Downloading...' : 'Downl
+922: </button>
+923: )}
+924: </div>
+925: </div>
+926: 
+927: {/* Right circular progress */}
+928: <div className="flex-shrink-0 flex flex-col items-
+929: <div className="relative w-32 h-32 flex items-cent
+930: {/* SVG progress circle */}
+931: <svg className="w-full h-full transform -rotate-90
+932: <circle
+933: cx="50"
+934: cy="50"
+935: r="40"
+936: className="stroke-white/10"
+937: strokeWidth="8"
+938: fill="transparent"
+939: />
+940: <circle
+941: cx="50"
+942: cy="50"
+943: r="40"
+944: className="stroke-emerald-400 transition-all durat
+945: strokeWidth="8"
+946: strokeDasharray={2 * Math.PI * 40}
+947: strokeDashoffset={2 * Math.PI * 40 * (1 - dynamicP
+948: strokeLinecap="round"
+949: fill="transparent"
+950: />
+951: </svg>
+952: <div className="absolute flex flex-col items-cente
+953: <span className="text-2xl font-black text-white le
+954: <span className="text-[8px] text-white/60 font-bol
+955: </div>
+956: </div>
+957: </div>
+958: </div>
+959: 
+960: {/* Tab displays */}
