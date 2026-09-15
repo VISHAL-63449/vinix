@@ -872,135 +872,135 @@ const Dashboard: React.FC = () => {
                 ) : (
                     <>
                         {/* Profile dashboard banner header */}
-                        <div className="bg-gradient-to-r from-[#031d38] via-[#0b2b4e] to-[#041c38] text-white rounded-[24px] p-8 shadow-xl mb-8 flex flex-col lg:flex-row items-center justify-between gap-6 relative overflow-hidden select-none no-print">
-                            {/* Background glows */}
-                            <div className="absolute top-[-20%] left-[-10%] w-[40%] h-[140%] bg-gradient-to-br from-brand-primary/10 to-transparent blur-3xl pointer-events-none"></div>
-                            <div className="absolute bottom-[-20%] right-[-10%] w-[40%] h-[140%] bg-gradient-to-tr from-brand-secondary/15 to-transparent blur-3xl pointer-events-none"></div>
+                        <div className="bg-[#0b2742] bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-[#0e3052] to-[#06182c] border border-[#1a3a5a] text-white rounded-[32px] p-5 sm:p-7 shadow-xl mb-8 flex flex-col gap-5 sm:gap-6 relative overflow-hidden select-none no-print">
+                            {/* Grid overlay */}
+                            <div className="absolute inset-0 opacity-[0.03] pointer-events-none mix-blend-overlay" style={{ backgroundImage: "linear-gradient(#ffffff 1px, transparent 1px), linear-gradient(90deg, #ffffff 1px, transparent 1px)", backgroundSize: "20px 20px" }}></div>
 
-                            {/* Left content column */}
-                            <div className="flex-1 text-left z-10 w-full flex items-center gap-5 sm:gap-6">
-                                <div className="relative flex-shrink-0">
-                                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-[30%] border-4 border-white/10 bg-slate-800/80 overflow-hidden flex items-center justify-center shadow-2xl backdrop-blur-sm">
-                                        {profile?.avatar_url ? (
-                                            <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                                        ) : (
-                                            <span className="text-4xl font-extrabold text-white/50">{profile?.full_name?.charAt(0) || 'I'}</span>
-                                        )}
-                                    </div>
-                                    <div className="absolute -bottom-1 -right-1 w-6 h-6 sm:w-7 sm:h-7 bg-emerald-500 rounded-full border-[3px] border-[#0b2b4e] flex items-center justify-center shadow-lg">
-                                        <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
-                                    </div>
-                                </div>
-
-                                <div className="flex flex-col">
-                                    <div className="inline-flex max-w-fit items-center gap-1.5 px-3 py-1 bg-white/10 border border-white/10 rounded-full text-[9px] sm:text-[10px] uppercase font-extrabold tracking-widest text-[#f59e0b] mb-2 shadow-sm">
-                                        <Sparkles className="w-3 h-3 text-[#f59e0b] fill-[#f59e0b]/20" />
-                                        <span>WELCOME INTERN</span>
+                            {/* ROW 1: Top section with avatar, name, and progress */}
+                            <div className="flex flex-row items-center justify-between z-10 w-full gap-2 sm:gap-4 relative">
+                                <div className="flex items-center gap-3 sm:gap-5">
+                                    {/* Avatar */}
+                                    <div className="relative flex-shrink-0">
+                                        <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-[28%] border-[2px] sm:border-[3px] border-[#1d436a] bg-slate-800 overflow-hidden flex items-center justify-center shadow-md">
+                                            {profile?.avatar_url ? (
+                                                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                            ) : (
+                                                <span className="text-xl sm:text-2xl font-extrabold text-white/50">{profile?.full_name?.charAt(0) || 'I'}</span>
+                                            )}
+                                        </div>
+                                        <div className="absolute -bottom-1 -right-1 w-5 h-5 sm:w-7 sm:h-7 bg-[#10b981] rounded-full border-[2px] sm:border-[3px] border-[#0a233a] flex items-center justify-center shadow-lg">
+                                            <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
+                                        </div>
                                     </div>
 
-                                    <h1 className="text-2xl sm:text-[34px] font-extrabold tracking-tight text-white mb-1.5 sm:mb-2 leading-none">
-                                        {activeOffer?.student_name || profile?.full_name || 'Intern'}
-                                    </h1>
+                                    {/* Name Column */}
+                                    <div className="flex flex-col">
+                                        <div className="inline-flex max-w-fit items-center gap-1 sm:gap-1.5 px-2 py-0.5 sm:px-3 sm:py-1 bg-white/10 border border-white/10 rounded-full text-[8px] sm:text-[10px] uppercase font-extrabold tracking-widest text-[#f59e0b] mb-1 shadow-sm">
+                                            <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#facc15] fill-[#facc15]" />
+                                            <span>WELCOME INTERN</span>
+                                        </div>
 
-                                    <div className="flex flex-wrap items-center gap-2.5">
-                                        <span className="text-xs sm:text-[14px] font-extrabold text-[#38bdf8]">
-                                            {activeEnrollment?.internship?.title || 'Virtual Internship'}
-                                        </span>
-                                        {activeOffer?.offer_letter_id && (
-                                            <span className="px-2.5 py-0.5 bg-white/5 border border-white/10 rounded-full text-[9px] sm:text-[10px] uppercase tracking-wider text-white/50 font-bold">
-                                                ID: {activeOffer.offer_letter_id}
+                                        <h1 className="text-lg sm:text-2xl font-black tracking-tight text-white mb-1 leading-none">
+                                            {activeOffer?.student_name || profile?.full_name || 'Intern'}
+                                        </h1>
+
+                                        <div className="flex flex-wrap sm:flex-row sm:items-center gap-2">
+                                            <span className="text-[11px] sm:text-[15px] font-extrabold text-[#38bdf8]">
+                                                {activeEnrollment?.internship?.title || 'Virtual Internship'}
                                             </span>
-                                        )}
+                                            {activeOffer?.offer_letter_id && (
+                                                <div className="flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 bg-[#153451] border border-[#204467] rounded flex-shrink-0 text-[9px] sm:text-[11px] font-semibold text-white/70">
+                                                    <span>ID: {activeOffer.offer_letter_id}</span>
+                                                    <ClipboardList className="w-2.5 h-2.5 sm:w-3 sm:h-3 cursor-pointer text-white/40 hover:text-white" onClick={() => navigator.clipboard.writeText(activeOffer.offer_letter_id)} />
+                                                </div>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* Meta details list */}
-                                <div className="flex flex-wrap items-center gap-4 mt-6">
-                                    <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5 text-xs text-white/80 font-medium">
-                                        <CalendarDays className="w-4 h-4 text-white/60" />
-                                        <span>Enrolled: {activeOffer ? new Date(activeOffer.issue_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '21 Jul 2026'}</span>
+                                {/* Right circular progress */}
+                                <div className="flex-shrink-0 flex flex-col items-center justify-center p-1 sm:p-2 z-10 bg-[#163654] border border-[#204467] rounded-[18px] sm:rounded-2xl shadow-inner max-w-fit px-2 sm:px-4 py-2 sm:py-3 mr-1">
+                                    <div className="relative w-12 h-12 sm:w-16 sm:h-16 flex items-center justify-center">
+                                        <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="40" className="stroke-[#0b2742]" strokeWidth="12" fill="transparent" />
+                                            <circle
+                                                cx="50"
+                                                cy="50"
+                                                r="40"
+                                                className="stroke-[#2dd4bf] transition-all duration-500 ease-out drop-shadow-[0_0_6px_rgba(45,212,191,0.5)]"
+                                                strokeWidth="12"
+                                                strokeDasharray={2 * Math.PI * 40}
+                                                strokeDashoffset={2 * Math.PI * 40 * (1 - dynamicProgress / 100)}
+                                                strokeLinecap="round"
+                                                fill="transparent"
+                                            />
+                                        </svg>
+                                        <div className="absolute flex items-center justify-center">
+                                            <span className="text-[12px] sm:text-[16px] font-black text-white leading-none">{dynamicProgress}%</span>
+                                        </div>
                                     </div>
-                                    <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5 text-xs text-white/80 font-medium">
-                                        <Clock className="w-4 h-4 text-white/60" />
-                                        <span>Duration: {activeOffer?.duration || '3 Months'}</span>
-                                    </div>
-                                    <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-3.5 py-1.5 text-xs text-white/80 font-medium">
-                                        <CheckCircle className="w-4 h-4 text-emerald-450" />
-                                        <span>Tasks: {approvedCount} / {totalTaskCount || taskProgresses.length} Approved</span>
-                                    </div>
-                                </div>
-
-                                {/* Action Buttons list */}
-                                <div className="flex flex-wrap items-center gap-3 mt-6">
-                                    {activeOffer && (
-                                        <button
-                                            onClick={handleDownloadOfferLetterDirect}
-                                            disabled={downloadingOffer}
-                                            className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold rounded-xl transition flex items-center gap-2"
-                                        >
-                                            <FileText className="w-4 h-4" />
-                                            <span>{downloadingOffer ? 'Downloading...' : 'Download Offer Letter'}</span>
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => { setActiveTab('idcard'); setTimeout(() => handleIdCardPrint(), 100); }}
-                                        className="px-4 py-2.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold rounded-xl transition flex items-center gap-2"
-                                    >
-                                        <Printer className="w-4 h-4" />
-                                        <span>Download ID Card</span>
-                                    </button>
-                                    <a
-                                        href="https://chat.whatsapp.com/example"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="px-4 py-2.5 bg-[#25d366] hover:bg-[#20ba5a] text-white text-xs font-extrabold rounded-xl transition flex items-center gap-2 shadow-lg shadow-[#25d366]/20"
-                                    >
-                                        <MessageSquare className="w-4 h-4" />
-                                        <span>Join WhatsApp Group</span>
-                                    </a>
-                                    {certificates.length > 0 && (
-                                        <button
-                                            onClick={() => handleDownloadCertificateDirect(certificates[0])}
-                                            disabled={downloadingCert}
-                                            className="px-4 py-2.5 bg-[#009688] hover:bg-[#00796b] text-white text-xs font-bold rounded-xl transition flex items-center gap-2"
-                                        >
-                                            <Award className="w-4 h-4" />
-                                            <span>{downloadingCert ? 'Downloading...' : 'Download Certificate'}</span>
-                                        </button>
-                                    )}
+                                    <span className="text-[8px] sm:text-[10px] text-[#2dd4bf] font-extrabold uppercase tracking-widest mt-1 sm:mt-2">Progress</span>
                                 </div>
                             </div>
 
-                            {/* Right circular progress */}
-                            <div className="flex-shrink-0 flex flex-col items-center justify-center p-4 z-10">
-                                <div className="relative w-32 h-32 flex items-center justify-center">
-                                    {/* SVG progress circle */}
-                                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                                        <circle
-                                            cx="50"
-                                            cy="50"
-                                            r="40"
-                                            className="stroke-white/10"
-                                            strokeWidth="8"
-                                            fill="transparent"
-                                        />
-                                        <circle
-                                            cx="50"
-                                            cy="50"
-                                            r="40"
-                                            className="stroke-emerald-400 transition-all duration-500 ease-out"
-                                            strokeWidth="8"
-                                            strokeDasharray={2 * Math.PI * 40}
-                                            strokeDashoffset={2 * Math.PI * 40 * (1 - dynamicProgress / 100)}
-                                            strokeLinecap="round"
-                                            fill="transparent"
-                                        />
-                                    </svg>
-                                    <div className="absolute flex flex-col items-center text-center">
-                                        <span className="text-2xl font-black text-white leading-none">{dynamicProgress}%</span>
-                                        <span className="text-[8px] text-white/60 font-bold uppercase tracking-wider mt-1">Progress</span>
-                                    </div>
+                            {/* ROW 2: Enrolled and Duration */}
+                            <div className="flex flex-row items-center justify-between sm:justify-start bg-[#153451] border border-[#204467] rounded-[16px] px-3 sm:px-6 py-2.5 sm:py-3.5 z-10 gap-3 sm:gap-6">
+                                <div className="flex items-center gap-1.5 sm:gap-2.5">
+                                    <CalendarDays className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#38bdf8]" />
+                                    <span className="text-[10px] sm:text-[14px] text-white/80 font-medium tracking-wide">
+                                        Enrolled: <span className="font-bold text-white">{activeOffer ? new Date(activeOffer.issue_date).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '21 Jul 2026'}</span>
+                                    </span>
                                 </div>
+                                <div className="w-px h-5 sm:h-6 bg-[#204467]"></div>
+                                <div className="flex items-center gap-1.5 sm:gap-2.5">
+                                    <Clock className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#38bdf8]" />
+                                    <span className="text-[10px] sm:text-[14px] text-white/80 font-medium tracking-wide">
+                                        Duration: <span className="font-bold text-white">{activeOffer?.duration || '3 Months'}</span>
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* ROW 3: Action Grid Buttons */}
+                            <div className="grid grid-cols-4 gap-2.5 sm:gap-4 z-10 w-full mt-1">
+                                <button className="flex flex-col items-center justify-center px-1 py-3 sm:p-4 bg-[#14304c] hover:bg-[#1a3a5a] border border-[#1f4060] rounded-[16px] sm:rounded-[20px] transition-colors group">
+                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#1e4873] group-hover:bg-[#2a5b8c] flex items-center justify-center mb-1.5 sm:mb-3 transition-colors shadow-inner">
+                                        <FileText className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#3b82f6]" />
+                                    </div>
+                                    <span className="text-[9px] sm:text-xs font-bold text-white/90">View Offer</span>
+                                </button>
+
+                                <button onClick={handleDownloadOfferLetterDirect} disabled={downloadingOffer} className="flex flex-col items-center justify-center px-1 py-3 sm:p-4 bg-[#14304c] hover:bg-[#1a3a5a] border border-[#1f4060] rounded-[16px] sm:rounded-[20px] transition-colors group">
+                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#1e4873] group-hover:bg-[#2a5b8c] flex items-center justify-center mb-1.5 sm:mb-3 transition-colors shadow-inner">
+                                        <FileDown className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#3b82f6]" />
+                                    </div>
+                                    <span className="text-[9px] sm:text-xs font-bold text-white/90">{downloadingOffer ? 'Downloading' : 'Offer Letter'}</span>
+                                </button>
+
+                                <button onClick={() => { setActiveTab('idcard'); setTimeout(() => handleIdCardPrint(), 100); }} className="flex flex-col items-center justify-center px-1 py-3 sm:p-4 bg-[#14304c] hover:bg-[#1a3a5a] border border-[#1f4060] rounded-[16px] sm:rounded-[20px] transition-colors group">
+                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#1e4873] group-hover:bg-[#2a5b8c] flex items-center justify-center mb-1.5 sm:mb-3 transition-colors shadow-inner">
+                                        <Printer className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#10b981]" />
+                                    </div>
+                                    <span className="text-[9px] sm:text-xs font-bold text-white/90">ID Card</span>
+                                </button>
+
+                                <button onClick={() => { if (certificates.length > 0) handleDownloadCertificateDirect(certificates[0]) }} disabled={downloadingCert} className={`flex flex-col items-center justify-center px-1 py-3 sm:p-4 rounded-[16px] sm:rounded-[20px] transition-colors group ${certificates.length > 0 ? 'bg-[#0f443b] hover:bg-[#125348] border border-[#176d5e]' : 'bg-[#14304c] hover:bg-[#1a3a5a] border border-[#1f4060] opacity-90'}`}>
+                                    <div className="w-8 h-8 sm:w-12 sm:h-12 rounded-full bg-[#135d51] group-hover:bg-[#197566] flex items-center justify-center mb-1.5 sm:mb-3 transition-colors shadow-inner">
+                                        <Award className="w-3.5 h-3.5 sm:w-5 sm:h-5 text-[#10b981]" />
+                                    </div>
+                                    <span className="text-[9px] sm:text-xs font-bold text-white/90">{downloadingCert ? 'Downloading' : 'Certificate'}</span>
+                                </button>
+                            </div>
+
+                            {/* ROW 4: Social Action Buttons */}
+                            <div className="grid grid-cols-2 gap-2.5 sm:gap-4 z-10 w-full mt-1">
+                                <a href="https://chat.whatsapp.com/example" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 sm:gap-2.5 py-3 sm:py-3.5 bg-gradient-to-r from-[#20B050] to-[#25D366] hover:opacity-90 text-white text-[11px] sm:text-[14px] font-extrabold rounded-[16px] sm:rounded-[20px] transition shadow-lg shadow-[#25d366]/20">
+                                    <MessageSquare className="w-3.5 h-3.5 sm:w-5 sm:h-5" />
+                                    <span>WhatsApp Group</span>
+                                </a>
+                                <a href="https://instagram.com/example" target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-1.5 sm:gap-2.5 py-3 sm:py-3.5 bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F56040] hover:opacity-90 text-white text-[11px] sm:text-[14px] font-extrabold rounded-[16px] sm:rounded-[20px] transition shadow-lg shadow-[#fd1d1d]/20">
+                                    <svg className="w-3.5 h-3.5 sm:w-5 sm:h-5 fill-current" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" /></svg>
+                                    <span>Instagram</span>
+                                </a>
                             </div>
                         </div>
 
