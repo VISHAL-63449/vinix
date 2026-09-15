@@ -151,16 +151,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                     <span>Dashboard</span>
                                 </Link>
 
-                                {/* CC Book Button */}
-                                {['admin', 'mentor'].includes(profile?.role || '') && (
-                                    <Link
-                                        to="/cc-book"
-                                        className="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-indigo-600 rounded-full hover:bg-indigo-700 transition shadow select-none cursor-pointer"
-                                    >
-                                        <BookOpen className="w-3.25 h-3.25" />
-                                        <span>CC Book</span>
-                                    </Link>
-                                )}
+
 
                                 {/* Logout Button */}
                                 <button
@@ -269,14 +260,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                                 <ShieldAlert className="w-5 h-5 text-rose-500" />
                                                 <span className="font-semibold">Admin Portal</span>
                                             </Link>
-                                            <Link
-                                                to="/cc-book"
-                                                onClick={() => setMobileMenuOpen(false)}
-                                                className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-brand-hoverDark"
-                                            >
-                                                <BookOpen className="w-5 h-5 text-indigo-500" />
-                                                <span className="font-semibold">CC Book / Counselling</span>
-                                            </Link>
+
                                         </>
                                     ) : profile?.role === 'mentor' ? (
                                         <>
@@ -288,14 +272,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                                 <ShieldAlert className="w-5 h-5 text-violet-500" />
                                                 <span className="font-semibold">Mentor Portal</span>
                                             </Link>
-                                            <Link
-                                                to="/cc-book"
-                                                onClick={() => setMobileMenuOpen(false)}
-                                                className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-brand-hoverDark"
-                                            >
-                                                <BookOpen className="w-5 h-5 text-indigo-500" />
-                                                <span className="font-semibold">CC Book / Counselling</span>
-                                            </Link>
+
                                         </>
                                     ) : (
                                         <Link
