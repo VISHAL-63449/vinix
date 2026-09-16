@@ -413,7 +413,7 @@ export const Home: React.FC = () => {
 
                             <div className="relative w-[340px] h-[230px] sm:w-[480px] sm:h-[320px] lg:w-[500px] lg:h-[340px] flex justify-center items-center">
                                 <img
-                                    src={`${import.meta.env.BASE_URL}home-image.jpeg?v=2`}
+                                    src={window.location.origin + import.meta.env.BASE_URL + 'home-image.jpeg?v=2'}
                                     alt="Vinix Internships"
                                     className="w-full h-full object-cover rounded-3xl border border-slate-100/50 select-none transform hover:scale-[1.01] transition-transform duration-500"
                                 />
@@ -546,17 +546,17 @@ export const Home: React.FC = () => {
                         </div>
                         <div className="flex flex-wrap items-center gap-10 md:gap-16 justify-start md:justify-end flex-grow">
                             <img
-                                src={`${import.meta.env.BASE_URL}skyrovix.jpeg`}
+                                src={window.location.origin + import.meta.env.BASE_URL + 'skyrovix.jpeg'}
                                 alt="Skyrovix"
                                 className="h-10 md:h-12 w-auto object-contain rounded-md border border-slate-100 dark:border-slate-800 shadow-sm"
                             />
                             <img
-                                src={`${import.meta.env.BASE_URL}vinix-partner.png`}
+                                src={window.location.origin + import.meta.env.BASE_URL + 'vinix-partner.png'}
                                 alt="Vinix Partner"
                                 className="h-10 md:h-12 w-auto object-contain dark:brightness-125 transition duration-300"
                             />
                             <img
-                                src={`${import.meta.env.BASE_URL}yrnovatech.png`}
+                                src={window.location.origin + import.meta.env.BASE_URL + 'yrnovatech.png'}
                                 alt="YR Novatech"
                                 className="h-10 md:h-11 w-auto object-contain bg-white rounded p-1 shadow-sm border border-slate-50 dark:border-slate-800"
                             />

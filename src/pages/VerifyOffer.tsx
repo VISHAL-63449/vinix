@@ -301,33 +301,40 @@ const VerifyOffer: React.FC = () => {
 
                             {/* Header Section */}
                             <div className="doc-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', marginBottom: '2px', zIndex: 2 }}>
-                                <div className="header-left" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                    <div className="header-logo-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                        <span className="header-logo" style={{ height: '36px', display: 'flex', alignItems: 'center' }}>
-                                            <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" style={{ height: '100%', objectFit: 'contain' }} />
-                                        </span>
-                                        <div style={{ width: '1.5px', height: '28px', backgroundColor: '#cbd5e1' }}></div>
-                                        <div className="header-branding-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                            <span className="company-name" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: '1.25rem', color: '#0f2942', lineHeight: 1.1, letterSpacing: '0.5px' }}>VINIX</span>
-                                            <span className="company-tagline" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '0.62rem', fontWeight: 700, color: '#0284c7', letterSpacing: '0.5px', marginTop: '1px' }}>Empowering Future Innovators</span>
-                                        </div>
-                                    </div>
-                                    <div className="company-contact-row" style={{ fontSize: '0.62rem', color: '#64748b', marginTop: '5px', fontWeight: 550 }}>
-                                        www.vinix.online | academic@vinix.online
-                                    </div>
-                                </div>
-                                <div className="header-right" style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                    <div className="meta-item" style={{ display: 'flex', flexDirection: 'column' }}>
-                                        <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>INTERNSHIP ID</span>
-                                        <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>{result.offerLetterId}</span>
-                                    </div>
-                                    <div className="meta-item" style={{ marginTop: '5px', display: 'flex', flexDirection: 'column' }}>
-                                        <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>ISSUE DATE</span>
-                                        <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>
-                                            {new Date(result.issueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                        </span>
-                                    </div>
-                                </div>
+                                {(() => {
+                                    const isOfficial = ['APPROVED', 'ACCEPTED', 'ACTIVE'].includes((result.status || '').toUpperCase());
+                                    return (
+                                        <>
+                                            <div className="header-left" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                                <div className="header-logo-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                    <span className="header-logo" style={{ height: '36px', display: 'flex', alignItems: 'center' }}>
+                                                        {isOfficial && <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" style={{ height: '100%', objectFit: 'contain' }} />}
+                                                    </span>
+                                                    <div style={{ width: '1.5px', height: '28px', backgroundColor: '#cbd5e1' }}></div>
+                                                    <div className="header-branding-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                                                        <span className="company-name" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: '1.25rem', color: '#0f2942', lineHeight: 1.1, letterSpacing: '0.5px' }}>VINIX</span>
+                                                        <span className="company-tagline" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '0.62rem', fontWeight: 700, color: '#0284c7', letterSpacing: '0.5px', marginTop: '1px' }}>Empowering Future Innovators</span>
+                                                    </div>
+                                                </div>
+                                                <div className="company-contact-row" style={{ fontSize: '0.62rem', color: '#64748b', marginTop: '5px', fontWeight: 550 }}>
+                                                    www.vinix.online | academic@vinix.online
+                                                </div>
+                                            </div>
+                                            <div className="header-right" style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                                                <div className="meta-item" style={{ display: 'flex', flexDirection: 'column' }}>
+                                                    <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>INTERNSHIP ID</span>
+                                                    <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>{result.offerLetterId}</span>
+                                                </div>
+                                                <div className="meta-item" style={{ marginTop: '5px', display: 'flex', flexDirection: 'column' }}>
+                                                    <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>ISSUE DATE</span>
+                                                    <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>
+                                                        {isOfficial && new Date(result.issueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
 
                             {/* Divider Line */}
@@ -436,42 +443,60 @@ const VerifyOffer: React.FC = () => {
 
                             {/* Signatures Section */}
                             <div className="signatures-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', width: '100%', paddingBottom: '12px', zIndex: 2 }}>
-                                {/* Company Seal (Left) */}
-                                <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-start' }}>
-                                    <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px' }}>
-                                        <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Official Seal" className="stamp-overlay" style={{ width: '80px', height: '80px', objectFit: 'contain', opacity: 0.9 }} />
-                                    </div>
-                                    <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>COMPANY SEAL</span>
-                                </div>
+                                {(() => {
+                                    const isOfficial = ['APPROVED', 'ACCEPTED', 'ACTIVE'].includes((result.status || '').toUpperCase());
+                                    return (
+                                        <>
+                                            {/* Company Seal (Left) */}
+                                            <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-start' }}>
+                                                <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px' }}>
+                                                    {isOfficial ? (
+                                                        <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Official Seal" className="stamp-overlay" style={{ width: '80px', height: '80px', objectFit: 'contain', opacity: 0.9 }} />
+                                                    ) : (
+                                                        <span style={{ fontSize: '0.7rem', color: '#dc2626', fontWeight: 800, padding: '5px', border: '1.5px dashed #dc2626', borderRadius: '4px' }}>PENDING VERIFICATION</span>
+                                                    )}
+                                                </div>
+                                                <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>COMPANY SEAL</span>
+                                            </div>
 
-                                {/* Director Signatory (Right) */}
-                                <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-end', textAlign: 'right', marginLeft: 'auto' }}>
-                                    <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px', justifyContent: 'flex-end' }}>
-                                        <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Director Signature" className="sig-image" style={{ maxHeight: '42px', objectFit: 'contain' }} />
-                                    </div>
-                                    <span className="sig-name" style={{ fontWeight: 700, fontSize: '0.72rem', color: '#0f172a' }}>Vishal R</span>
-                                    <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>DIRECTOR – ACADEMIC OPERATIONS</span>
-                                </div>
+                                            {/* Director Signatory (Right) */}
+                                            <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-end', textAlign: 'right', marginLeft: 'auto' }}>
+                                                <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px', justifyContent: 'flex-end' }}>
+                                                    {isOfficial && <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Director Signature" className="sig-image" style={{ maxHeight: '42px', objectFit: 'contain' }} />}
+                                                </div>
+                                                <span className="sig-name" style={{ fontWeight: 700, fontSize: '0.72rem', color: '#0f172a' }}>Vishal R</span>
+                                                <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>DIRECTOR – ACADEMIC OPERATIONS</span>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
 
                             {/* Footer */}
                             <div className="doc-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontSize: '0.6rem', color: '#475569', fontWeight: 700, letterSpacing: '0.3px', zIndex: 2, borderTop: '1px solid #cbd5e1', paddingTop: '8px' }}>
-                                {/* Left Column: MSME + Skyrovix */}
-                                <div className="footer-left-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Logo" style={{ height: '36px', objectFit: 'contain' }} />
-                                    <div style={{ width: '1px', height: '30px', backgroundColor: '#cbd5e1' }}></div>
-                                    <img src={`${import.meta.env.BASE_URL}skyrovix.jpeg`} alt="Skyrovix Logo" style={{ height: '32px', objectFit: 'contain' }} />
-                                </div>
-                                {/* Center Column: Text */}
-                                <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.45, color: '#64748b' }}>
-                                    <strong style={{ color: '#0f2942' }}>VINIX Technologies Private Limited</strong><br />
-                                    UDYAM Registry: UDYAM-TN-17-0076606<br />
-                                    academic@vinix.online | www.vinix.online
-                                </div>
-                                {/* Right Column: Yrnovatech */}
-                                <div className="footer-right-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                    <img src={`${import.meta.env.BASE_URL}yrnovatech.png`} alt="Yrnovatech Logo" style={{ height: '35px', objectFit: 'contain' }} />
-                                </div>
+                                {(() => {
+                                    const isOfficial = ['APPROVED', 'ACCEPTED', 'ACTIVE'].includes((result.status || '').toUpperCase());
+                                    return (
+                                        <>
+                                            {/* Left Column: MSME + Skyrovix */}
+                                            <div className="footer-left-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                {isOfficial && <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Logo" style={{ height: '36px', objectFit: 'contain' }} />}
+                                                <div style={{ width: '1px', height: '30px', backgroundColor: '#cbd5e1' }}></div>
+                                                {isOfficial && <img src={`${import.meta.env.BASE_URL}skyrovix.jpeg`} alt="Skyrovix Logo" style={{ height: '32px', objectFit: 'contain' }} />}
+                                            </div>
+                                            {/* Center Column: Text */}
+                                            <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.45, color: '#64748b' }}>
+                                                <strong style={{ color: '#0f2942' }}>VINIX Technologies Private Limited</strong><br />
+                                                UDYAM Registry: UDYAM-TN-17-0076606<br />
+                                                academic@vinix.online | www.vinix.online
+                                            </div>
+                                            {/* Right Column: Yrnovatech */}
+                                            <div className="footer-right-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                                                {isOfficial && <img src={`${import.meta.env.BASE_URL}yrnovatech.png`} alt="Yrnovatech Logo" style={{ height: '35px', objectFit: 'contain' }} />}
+                                            </div>
+                                        </>
+                                    );
+                                })()}
                             </div>
                         </div>
 

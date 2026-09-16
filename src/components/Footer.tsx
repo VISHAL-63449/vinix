@@ -181,7 +181,7 @@ const Footer: React.FC = () => {
                     {/* MSME Badge */}
                     <div className="pt-4 flex items-center gap-3">
                         <img
-                            src={`${import.meta.env.BASE_URL}msme.jpeg`}
+                            src={window.location.origin + import.meta.env.BASE_URL + 'msme.jpeg'}
                             alt="MSME Registered"
                             className="h-16 w-auto object-contain rounded-xl border border-slate-200/80 dark:border-slate-750 bg-white p-1.5 shadow-sm"
                         />

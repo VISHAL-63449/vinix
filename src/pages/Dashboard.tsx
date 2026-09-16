@@ -652,7 +652,7 @@ const Dashboard: React.FC = () => {
                         <div className="flex items-center gap-6">
                             <button onClick={() => navigate('/')} className="flex items-center hover:opacity-90 transition cursor-pointer shrink-0">
                                 <img
-                                    src={`${import.meta.env.BASE_URL}vinix-title.png`}
+                                    src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'}
                                     alt="Vinix"
                                     className="h-7 sm:h-8 w-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:invert transition-all duration-300"
                                 />
@@ -1332,7 +1332,7 @@ const Dashboard: React.FC = () => {
                                         <div className="flex items-center justify-between z-10 border-b border-slate-100 pb-2">
                                             <div className="flex items-center space-x-1.5">
                                                 <img
-                                                    src={`${import.meta.env.BASE_URL}vinix-title.png`}
+                                                    src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'}
                                                     alt="VINIX Logo"
                                                     className="h-6 w-auto object-contain"
                                                 />
@@ -1403,7 +1403,7 @@ const Dashboard: React.FC = () => {
                                                 {/* Center: Founder Signature */}
                                                 <div className="flex flex-col items-center">
                                                     <img
-                                                        src={`${import.meta.env.BASE_URL}founder-sign.png`}
+                                                        src={window.location.origin + import.meta.env.BASE_URL + 'founder-sign.png'}
                                                         alt="Founder Signature"
                                                         className="h-6 w-auto object-contain"
                                                     />
@@ -1414,7 +1414,7 @@ const Dashboard: React.FC = () => {
                                                 {/* Right: MSME Logo (Big Size) */}
                                                 <div className="flex-shrink-0 flex items-center justify-end">
                                                     <img
-                                                        src={`${import.meta.env.BASE_URL}msme.jpeg`}
+                                                        src={window.location.origin + import.meta.env.BASE_URL + 'msme.jpeg'}
                                                         alt="MSME Logo"
                                                         className="h-10 w-auto object-contain"
                                                     />
@@ -1748,7 +1748,7 @@ const Dashboard: React.FC = () => {
                                 <div className="header-left" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                                     <div className="header-logo-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                                         <span className="header-logo" style={{ height: '36px', display: 'flex', alignItems: 'center' }}>
-                                            <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" style={{ height: '100%', objectFit: 'contain' }} />
+                                            <img src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'} alt="VINIX Logo" style={{ height: '100%', objectFit: 'contain' }} />
                                         </span>
                                         <div style={{ width: '1.5px', height: '28px', backgroundColor: '#cbd5e1' }}></div>
                                         <div className="header-branding-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
@@ -1883,7 +1883,7 @@ const Dashboard: React.FC = () => {
                                 {/* Company Seal (Left) */}
                                 <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-start' }}>
                                     <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px' }}>
-                                        <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Official Seal" className="stamp-overlay" style={{ width: '80px', height: '80px', objectFit: 'contain', opacity: 0.9 }} />
+                                        <img src={window.location.origin + import.meta.env.BASE_URL + 'certificate-stamp.jpeg'} alt="Official Seal" className="stamp-overlay" style={{ width: '80px', height: '80px', objectFit: 'contain', opacity: 0.9 }} />
                                     </div>
                                     <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>COMPANY SEAL</span>
                                 </div>
@@ -1891,7 +1891,7 @@ const Dashboard: React.FC = () => {
                                 {/* Director Signatory (Right) */}
                                 <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-end', textAlign: 'right', marginLeft: 'auto' }}>
                                     <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px', justifyContent: 'flex-end' }}>
-                                        <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Director Signature" className="sig-image" style={{ maxHeight: '42px', objectFit: 'contain' }} />
+                                        <img src={window.location.origin + import.meta.env.BASE_URL + 'founder-sign.png'} alt="Director Signature" className="sig-image" style={{ maxHeight: '42px', objectFit: 'contain' }} />
                                     </div>
                                     <span className="sig-name" style={{ fontWeight: 700, fontSize: '0.72rem', color: '#0f172a' }}>Vishal R</span>
                                     <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>DIRECTOR – ACADEMIC OPERATIONS</span>
@@ -1902,9 +1902,9 @@ const Dashboard: React.FC = () => {
                             <div className="doc-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontSize: '0.6rem', color: '#475569', fontWeight: 700, letterSpacing: '0.3px', zIndex: 2, borderTop: '1px solid #cbd5e1', paddingTop: '8px' }}>
                                 {/* Left Column: MSME + Skyrovix */}
                                 <div className="footer-left-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Logo" style={{ height: '36px', objectFit: 'contain' }} />
+                                    <img src={window.location.origin + import.meta.env.BASE_URL + 'msme.jpeg'} alt="MSME Logo" style={{ height: '36px', objectFit: 'contain' }} />
                                     <div style={{ width: '1px', height: '30px', backgroundColor: '#cbd5e1' }}></div>
-                                    <img src={`${import.meta.env.BASE_URL}skyrovix.jpeg`} alt="Skyrovix Logo" style={{ height: '32px', objectFit: 'contain' }} />
+                                    <img src={window.location.origin + import.meta.env.BASE_URL + 'skyrovix.jpeg'} alt="Skyrovix Logo" style={{ height: '32px', objectFit: 'contain' }} />
                                 </div>
                                 {/* Center Column: Text */}
                                 <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.45, color: '#64748b' }}>
@@ -1914,7 +1914,7 @@ const Dashboard: React.FC = () => {
                                 </div>
                                 {/* Right Column: Yrnovatech */}
                                 <div className="footer-right-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                    <img src={`${import.meta.env.BASE_URL}yrnovatech.png`} alt="Yrnovatech Logo" style={{ height: '35px', objectFit: 'contain' }} />
+                                    <img src={window.location.origin + import.meta.env.BASE_URL + 'yrnovatech.png'} alt="Yrnovatech Logo" style={{ height: '35px', objectFit: 'contain' }} />
                                 </div>
                             </div>
                         </div>
@@ -1937,7 +1937,7 @@ const Dashboard: React.FC = () => {
                             {/* Top branding elements */}
                             <div className="cert-top-row">
                                 <div className="cert-logo-left">
-                                    <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" />
+                                    <img src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'} alt="VINIX Logo" />
                                 </div>
 
                                 <div className="cert-brand-center">
@@ -1946,7 +1946,7 @@ const Dashboard: React.FC = () => {
                                 </div>
 
                                 <div className="cert-logo-right">
-                                    <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Seal" />
+                                    <img src={window.location.origin + import.meta.env.BASE_URL + 'msme.jpeg'} alt="MSME Seal" />
                                 </div>
                             </div>
 
@@ -1984,7 +1984,7 @@ const Dashboard: React.FC = () => {
                                 {/* Official Stamp Column (Center) */}
                                 <div className="footer-col-center">
                                     <div className="stamp-container">
-                                        <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Company Stamp" className="stamp-img" style={{ mixBlendMode: 'multiply' }} />
+                                        <img src={window.location.origin + import.meta.env.BASE_URL + 'certificate-stamp.jpeg'} alt="Company Stamp" className="stamp-img" style={{ mixBlendMode: 'multiply' }} />
                                     </div>
                                     <div className="detail-center-block">
                                         <span>Intern ID: VINIX-{activeCertForDownload.certificate_number.split('-').pop()}</span>
@@ -1995,7 +1995,7 @@ const Dashboard: React.FC = () => {
                                 {/* Founder Signatory Column (Right side) */}
                                 <div className="footer-col-right flex-col items-center">
                                     <div className="signature-area w-full" style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
-                                        <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Founder Signature" className="signature-img" />
+                                        <img src={window.location.origin + import.meta.env.BASE_URL + 'founder-sign.png'} alt="Founder Signature" className="signature-img" />
                                     </div>
                                     <div className="signer-line"></div>
                                     <span className="signer-name" style={{ textAlign: 'center' }}>Vishal R</span>
