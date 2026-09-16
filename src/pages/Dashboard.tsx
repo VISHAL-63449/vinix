@@ -87,6 +87,7 @@ const Dashboard: React.FC = () => {
 
     // Settings Edit fields
     const [editName, setEditName] = useState('');
+    const [editAvatarUrl, setEditAvatarUrl] = useState('');
     const [editCollege, setEditCollege] = useState('');
     const [editBio, setEditBio] = useState('');
     const [editGithub, setEditGithub] = useState('');
@@ -188,6 +189,7 @@ const Dashboard: React.FC = () => {
             // Prep editing fields with profile values
             if (profile) {
                 setEditName(profile.full_name || '');
+                setEditAvatarUrl(profile.avatar_url || '');
                 setEditCollege(studentProfile?.college || '');
                 setEditBio(profile.bio || '');
                 setEditGithub(profile.github || '');
@@ -245,6 +247,7 @@ const Dashboard: React.FC = () => {
                 .from('profiles')
                 .update({
                     full_name: editName,
+                    avatar_url: editAvatarUrl,
                     bio: editBio,
                     github: editGithub,
                     linkedin: editLinkedin,
@@ -544,6 +547,17 @@ const Dashboard: React.FC = () => {
                         required
                         value={editName}
                         onChange={(e) => setEditName(e.target.value)}
+                        className="w-full px-3.5 py-2.5 border border-slate-200 bg-slate-50 dark:bg-slate-950 dark:border-slate-805 rounded-xl text-xs font-semibold focus:outline-none"
+                    />
+                </div>
+
+                <div>
+                    <label className="text-xs font-bold text-slate-500 uppercase block mb-1">Profile Photo URL</label>
+                    <input
+                        type="url"
+                        value={editAvatarUrl}
+                        onChange={(e) => setEditAvatarUrl(e.target.value)}
+                        placeholder="https://example.com/avatar.jpg"
                         className="w-full px-3.5 py-2.5 border border-slate-200 bg-slate-50 dark:bg-slate-950 dark:border-slate-805 rounded-xl text-xs font-semibold focus:outline-none"
                     />
                 </div>

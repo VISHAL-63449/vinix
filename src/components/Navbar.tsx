@@ -166,10 +166,13 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                     <span>Logout</span>
                                 </button>
 
-                                {/* Separator Line & Avatar Details */}
                                 <div className="flex items-center space-x-2 pl-2.5 border-l border-slate-200 dark:border-slate-800">
-                                    <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200 flex items-center justify-center font-bold text-xs select-none">
-                                        {profile?.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'}
+                                    <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-800 dark:text-slate-200 flex items-center justify-center font-bold text-xs select-none overflow-hidden">
+                                        {profile?.avatar_url ? (
+                                            <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            profile?.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase() || 'U'
+                                        )}
                                     </div>
                                     <span className="text-xs text-slate-550 dark:text-slate-400 font-semibold max-w-[90px] truncate select-none">
                                         {profile?.full_name ? profile.full_name.split(' ')[0].toLowerCase() : 'user'}
@@ -248,8 +251,14 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                         {/* User Profile / Header Box */}
                         <div className="bg-blue-50/60 dark:bg-slate-900/50 border border-blue-100/50 dark:border-slate-800 rounded-[24px] p-4 flex items-center justify-between">
                             <div className="flex items-center space-x-3.5">
-                                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm select-none">
-                                    {user ? (profile?.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()) : 'V'}
+                                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm select-none overflow-hidden">
+                                    {user ? (
+                                        profile?.avatar_url ? (
+                                            <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                        ) : (
+                                            profile?.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()
+                                        )
+                                    ) : 'V'}
                                 </div>
                                 <div className="flex flex-col">
                                     <span className="text-[15px] font-bold text-slate-900 dark:text-white">
