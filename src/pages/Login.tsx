@@ -88,13 +88,13 @@ const Login: React.FC = () => {
             <div className="w-full max-w-5xl bg-white dark:bg-brand-cardDark rounded-[24px] overflow-hidden border border-slate-200/50 dark:border-slate-800/40 shadow-2xl grid grid-cols-1 md:grid-cols-2">
 
                 {/* Left Side: Premium Aesthetic Panel */}
-                <div className="bg-gradient-to-b from-brand-primary via-indigo-900 to-slate-950 text-white p-10 flex flex-col justify-between relative overflow-hidden select-none">
+                <div className="order-2 md:order-1 bg-gradient-to-b from-brand-primary via-indigo-900 to-slate-950 text-white p-10 flex flex-col justify-between relative overflow-hidden select-none">
                     {/* Neon Glow spots */}
                     <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-brand-accent/20 blur-[100px] pointer-events-none"></div>
                     <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-brand-secondary/20 blur-[100px] pointer-events-none"></div>
 
                     {/* Logo */}
-                    <div className="flex items-center space-x-2 z-10">
+                    <div className="flex items-center space-x-2 z-10 hidden md:flex">
                         <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center border border-white/20">
                             <Rocket className="h-4.5 w-4.5 text-brand-accent" />
                         </div>
@@ -120,12 +120,12 @@ const Login: React.FC = () => {
 
                     <div className="text-[10px] text-slate-400 z-10 border-t border-white/10 pt-4 flex justify-between">
                         <span>© {new Date().getFullYear()} VINIX</span>
-                        <span>RLS Secure Database Setup</span>
+                        <span>Secure Database</span>
                     </div>
                 </div>
 
                 {/* Right Side: Form Panel */}
-                <div className="p-8 sm:p-10 flex flex-col justify-center bg-slate-50/30 dark:bg-slate-900/10">
+                <div className="order-1 md:order-2 p-8 sm:p-10 flex flex-col justify-center bg-slate-50/30 dark:bg-slate-900/10">
                     <div className="space-y-6">
                         <div className="space-y-1">
                             <h3 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">Portal Gateway</h3>

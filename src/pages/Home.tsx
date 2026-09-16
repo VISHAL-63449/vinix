@@ -278,36 +278,43 @@ export const Home: React.FC = () => {
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300 relative overflow-hidden">
 
-            {/* Float background Tech stack labels matching screenshot */}
-            <FloatTechLogo style={{ top: '12%', left: '4%' }}>
-                <HTML5Logo />
-            </FloatTechLogo>
-            <FloatTechLogo style={{ top: '22%', left: '80%' }}>
-                <TSLogo />
-            </FloatTechLogo>
-            <FloatTechLogo style={{ top: '55%', left: '2%' }}>
-                <JSLogo />
-            </FloatTechLogo>
-            <FloatTechLogo style={{ top: '15%', left: '60%' }}>
-                <ReactLogo />
-            </FloatTechLogo>
-            <FloatTechLogo style={{ top: '30%', left: '3%' }}>
-                <PythonLogo />
-            </FloatTechLogo>
-            <FloatTechLogo style={{ top: '75%', left: '50%' }}>
-                <GitLogo />
-            </FloatTechLogo>
-            <FloatTechLogo style={{ top: '76%', left: '4%' }}>
-                <NodeLogo />
-            </FloatTechLogo>
-            <FloatTechLogo style={{ top: '82%', left: '5%' }}>
-                <AWSLogo />
-            </FloatTechLogo>
-
             {/* ═══════ HERO SECTION ═══════ */}
-            <section className="relative z-10 bg-gradient-to-br from-blue-50/40 via-white to-transparent
-                                dark:from-slate-900/40 dark:via-slate-955 dark:to-transparent">
-                <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 md:py-24">
+            <section className="relative z-10 overflow-hidden">
+                {/* Background Image Overlay */}
+                <div
+                    className="absolute inset-0 z-[-2] bg-cover bg-top sm:bg-center bg-no-repeat"
+                    style={{ backgroundImage: `url('${window.location.origin}${import.meta.env.BASE_URL}background.png')` }}
+                ></div>
+                {/* Gradient Overlay for Readability */}
+                <div className="absolute inset-0 z-[-1] bg-gradient-to-br from-blue-50/20 via-white/10 to-transparent dark:from-slate-900/40 dark:via-slate-955/20 dark:to-transparent pointer-events-none"></div>
+
+                {/* Float background Tech stack labels matching screenshot */}
+                <FloatTechLogo style={{ top: '6%', left: '6%' }}>
+                    <HTML5Logo />
+                </FloatTechLogo>
+                <FloatTechLogo style={{ top: '10%', left: '85%' }}>
+                    <TSLogo />
+                </FloatTechLogo>
+                <FloatTechLogo style={{ top: '4%', left: '55%' }}>
+                    <JSLogo />
+                </FloatTechLogo>
+                <FloatTechLogo style={{ top: '35%', left: '80%' }}>
+                    <ReactLogo />
+                </FloatTechLogo>
+                <FloatTechLogo style={{ top: '48%', left: '-2%' }}>
+                    <PythonLogo />
+                </FloatTechLogo>
+                <FloatTechLogo style={{ top: '85%', left: '15%' }}>
+                    <GitLogo />
+                </FloatTechLogo>
+                <FloatTechLogo style={{ top: '55%', left: '85%' }}>
+                    <NodeLogo />
+                </FloatTechLogo>
+                <FloatTechLogo style={{ top: '88%', left: '60%' }}>
+                    <AWSLogo />
+                </FloatTechLogo>
+
+                <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 md:py-24 relative z-10">
                     <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
 
                         {/* ── LEFT Hero details ── */}
@@ -324,7 +331,7 @@ export const Home: React.FC = () => {
                             </div>
 
                             {/* Main Headings */}
-                            <h1 className="font-extrabold text-slate-900 dark:text-white leading-[1.08] tracking-tight text-3.5xl sm:text-5xl md:text-6xl">
+                            <h1 className="font-extrabold text-slate-900 dark:text-white leading-[1.08] tracking-tight text-[44px] sm:text-5xl md:text-6xl">
                                 <div>Build Skills.</div>
                                 <div>Gain Experience.</div>
                                 <div className="text-blue-600 dark:text-blue-400 flex items-center min-h-[4.5rem]">
@@ -347,7 +354,7 @@ export const Home: React.FC = () => {
                             </p>
 
                             {/* Styled pastel Features Grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-w-lg">
+                            <div className="grid grid-cols-2 gap-3.5 max-w-lg">
                                 <FeatureItem
                                     icon={Code2}
                                     label="Real-world Projects"
@@ -379,10 +386,10 @@ export const Home: React.FC = () => {
                             </div>
 
                             {/* CTA Action Triggers */}
-                            <div className="flex flex-wrap gap-4 pt-2">
+                            <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full">
                                 <button
                                     onClick={() => navigate('/internships')}
-                                    className="flex items-center gap-2 px-8 py-4 bg-blue-600
+                                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 bg-blue-600
                                                hover:bg-blue-750 text-white font-bold rounded-2xl
                                                shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 transition active:scale-[0.97]"
                                 >
@@ -394,7 +401,7 @@ export const Home: React.FC = () => {
                                         const el = document.getElementById('how-it-works');
                                         if (el) el.scrollIntoView({ behavior: 'smooth' });
                                     }}
-                                    className="flex items-center gap-2 px-7 py-4 bg-slate-50
+                                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-7 py-4 bg-slate-50
                                                dark:bg-slate-900 border border-slate-200/80
                                                dark:border-slate-800 text-slate-700 dark:text-slate-200
                                                font-bold rounded-2xl transition hover:bg-slate-100
@@ -421,7 +428,7 @@ export const Home: React.FC = () => {
                                 {/* Overlay/floating cards: display on both mobile and desktop (resizes responsively) */}
                                 <div className="absolute inset-0 select-none pointer-events-auto block">
                                     {/* Card 1: Your Progress */}
-                                    <div className="absolute -top-4 -left-6 sm:-top-6 sm:-left-8 lg:-left-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-36 sm:w-52 animate-float pointer-events-auto">
+                                    <div className="absolute -top-8 -left-10 sm:-top-12 sm:-left-12 lg:-top-8 lg:-left-32 xl:-left-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-36 sm:w-52 animate-float pointer-events-auto">
                                         <div className="flex items-center justify-between mb-1 sm:mb-1.5">
                                             <span className="text-[7.5px] sm:text-[9px] font-black uppercase text-slate-400 tracking-wider">Your Progress</span>
                                             <div className="grid grid-cols-3 gap-0.5 opacity-60">
@@ -481,7 +488,7 @@ export const Home: React.FC = () => {
                                     </div>
 
                                     {/* Card 3: Certificate Earned */}
-                                    <div className="absolute -top-4 -right-4 sm:-top-6 sm:-right-6 lg:-right-12 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-800 shadow-md w-36 sm:w-56 animate-float-delayed pointer-events-auto">
+                                    <div className="absolute -top-8 -right-8 sm:-top-12 sm:-right-16 lg:-top-12 lg:-right-32 xl:-right-36 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-800 shadow-md w-36 sm:w-56 animate-float-delayed pointer-events-auto">
                                         <div className="flex justify-between items-start mb-1 sm:mb-2">
                                             <div className="space-y-0.5">
                                                 <span className="text-[6.5px] sm:text-[8px] font-bold text-teal-405 uppercase tracking-wider leading-none">Certificate Earned</span>

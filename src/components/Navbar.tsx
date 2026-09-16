@@ -207,21 +207,27 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
 
                         {/* Mobile Auth Button Quick Links */}
                         {!user ? (
-                            <Link
-                                to="/login"
-                                className="flex items-center justify-center space-x-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm"
+                            <button
+                                onClick={() => {
+                                    setMobileMenuOpen(false);
+                                    navigate('/login');
+                                }}
+                                className="flex items-center justify-center space-x-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm select-none"
                             >
                                 <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                 <span className="whitespace-nowrap">Login / Register</span>
-                            </Link>
+                            </button>
                         ) : (
-                            <Link
-                                to={profile?.role === 'admin' ? '/admin' : profile?.role === 'mentor' ? '/mentor' : '/dashboard'}
-                                className="flex items-center justify-center space-x-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm"
+                            <button
+                                onClick={() => {
+                                    setMobileMenuOpen(false);
+                                    navigate(profile?.role === 'admin' ? '/admin' : profile?.role === 'mentor' ? '/mentor' : '/dashboard');
+                                }}
+                                className="flex items-center justify-center space-x-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm select-none"
                             >
                                 <LayoutDashboard className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                 <span className="whitespace-nowrap">Dashboard</span>
-                            </Link>
+                            </button>
                         )}
 
                         <button
@@ -235,110 +241,135 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
             </div>
 
             {/* Mobile Drawer */}
-            {
-                mobileMenuOpen && (
-                    <div
-                        style={{
-                            backgroundColor: darkMode ? '#0D0E12' : '#FFFFFF',
-                            borderColor: darkMode ? '#1E293B' : '#E2E8F0',
-                        }}
-                        className="lg:hidden border-t py-3 px-4 space-y-2"
-                    >
-                        {navLinks.map((link) => {
-                            const Icon = link.icon;
-                            return (
-                                <Link
-                                    key={link.path}
-                                    to={link.path}
-                                    onClick={() => setMobileMenuOpen(false)}
-                                    className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl text-base font-semibold ${isActive(link.path)
-                                        ? 'bg-brand-hoverLight text-brand-primary dark:bg-brand-hoverDark dark:text-brand-accent'
-                                        : 'text-slate-650 hover:text-brand-primary dark:text-slate-300 dark:hover:text-brand-accent'
-                                        }`}
-                                >
-                                    <Icon className="w-5 h-5 flex-shrink-0" />
-                                    <span>{link.name}</span>
-                                </Link>
-                            );
-                        })}
+            {mobileMenuOpen && (
+                <div className="absolute top-[64px] left-0 w-full h-[100vh] z-40 bg-slate-50 dark:bg-slate-950 overflow-y-auto px-4 py-6 border-t border-slate-100 dark:border-slate-800 shadow-xl lg:hidden">
+                    <div className="max-w-md mx-auto space-y-6 pb-24">
 
-                        <div className="pt-4 border-t border-slate-100 dark:border-slate-800 space-y-2">
+                        {/* User Profile / Header Box */}
+                        <div className="bg-blue-50/60 dark:bg-slate-900/50 border border-blue-100/50 dark:border-slate-800 rounded-[24px] p-4 flex items-center justify-between">
+                            <div className="flex items-center space-x-3.5">
+                                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm select-none">
+                                    {user ? (profile?.full_name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()) : 'V'}
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[15px] font-bold text-slate-900 dark:text-white">
+                                        {user ? (profile?.full_name || 'User') : 'Guest'}
+                                    </span>
+                                    <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                                        {user ? user.email : 'Login to access features'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            {/* Theme Toggle in Mobile Sidebar */}
+                            <button
+                                onClick={() => setDarkMode(!darkMode)}
+                                className="p-2.5 rounded-full bg-white dark:bg-slate-800 border-none shadow-sm text-slate-500 dark:text-slate-400 active:scale-95 transition-transform"
+                            >
+                                {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+                            </button>
+                        </div>
+
+                        {/* Navigation Section */}
+                        <div className="relative flex items-center justify-center pt-2">
+                            <div className="absolute inset-x-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+                            <span className="relative bg-slate-50 dark:bg-slate-950 px-4 text-[10px] font-black text-slate-400 tracking-widest uppercase">
+                                Navigation
+                            </span>
+                        </div>
+
+                        <div className="space-y-1">
+                            {navLinks.map((link) => {
+                                const Icon = link.icon;
+                                const active = isActive(link.path);
+                                return (
+                                    <Link
+                                        key={link.path}
+                                        to={link.path}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className={`relative flex items-center space-x-4 px-3 py-2 rounded-2xl transition-all ${active
+                                            ? 'bg-blue-50/80 dark:bg-blue-900/20'
+                                            : 'hover:bg-slate-100 dark:hover:bg-slate-900/30'
+                                            }`}
+                                    >
+                                        {active && (
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[55%] bg-blue-600 rounded-r-md"></div>
+                                        )}
+                                        <div className={`w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center shadow-sm ${active
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400'
+                                            }`}>
+                                            <Icon size={18} strokeWidth={active ? 2.5 : 2} />
+                                        </div>
+                                        <span className={`text-[15px] font-bold ${active ? 'text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'
+                                            }`}>
+                                            {link.name}
+                                        </span>
+                                    </Link>
+                                );
+                            })}
+                        </div>
+
+                        {/* Account Section */}
+                        <div className="relative flex items-center justify-center pt-6">
+                            <div className="absolute inset-x-0 h-px bg-slate-200 dark:bg-slate-800"></div>
+                            <span className="relative bg-slate-50 dark:bg-slate-950 px-4 text-[10px] font-black text-slate-400 tracking-widest uppercase">
+                                Account
+                            </span>
+                        </div>
+
+                        <div className="space-y-1">
                             {user ? (
                                 <>
-                                    <div className="px-4 py-2">
-                                        <p className="text-xs text-slate-400 font-medium">Logged in as</p>
-                                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">{profile?.full_name || user.email}</p>
-                                        <span className="inline-block mt-1 px-2.5 py-0.5 rounded-full text-[9px] font-bold bg-brand-primary/10 text-brand-primary uppercase">
-                                            {profile?.role || 'student'}
-                                        </span>
-                                    </div>
-
-                                    {profile?.role === 'admin' ? (
-                                        <>
-                                            <Link
-                                                to="/admin"
-                                                onClick={() => setMobileMenuOpen(false)}
-                                                className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-brand-hoverDark"
-                                            >
-                                                <ShieldAlert className="w-5 h-5 text-rose-500" />
-                                                <span className="font-semibold">Admin Portal</span>
-                                            </Link>
-
-                                        </>
-                                    ) : profile?.role === 'mentor' ? (
-                                        <>
-                                            <Link
-                                                to="/mentor"
-                                                onClick={() => setMobileMenuOpen(false)}
-                                                className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-brand-hoverDark"
-                                            >
-                                                <ShieldAlert className="w-5 h-5 text-violet-500" />
-                                                <span className="font-semibold">Mentor Portal</span>
-                                            </Link>
-
-                                        </>
-                                    ) : (
-                                        <Link
-                                            to="/dashboard"
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-brand-hoverDark"
-                                        >
-                                            <LayoutDashboard className="w-5 h-5 text-brand-primary" />
-                                            <span className="font-semibold">Student Dashboard</span>
-                                        </Link>
-                                    )}
+                                    <Link
+                                        to={profile?.role === 'admin' ? '/admin' : profile?.role === 'mentor' ? '/mentor' : '/dashboard'}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className="flex items-center space-x-4 px-3 py-2 rounded-2xl hover:bg-slate-100 dark:hover:bg-slate-900/30 transition-all"
+                                    >
+                                        <div className="w-11 h-11 rounded-full bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 shadow-sm flex items-center justify-center">
+                                            <LayoutDashboard size={18} />
+                                        </div>
+                                        <span className="text-[15px] font-bold text-slate-700 dark:text-slate-300">Dashboard</span>
+                                    </Link>
 
                                     <button
                                         onClick={handleSignOut}
-                                        className="flex items-center space-x-2 w-full text-left px-4 py-2.5 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20"
+                                        className="flex items-center space-x-4 px-3 py-2 mt-2 w-full text-left rounded-2xl bg-red-50/50 dark:bg-red-950/20 hover:bg-red-100 dark:hover:bg-red-900/30 transition-all"
                                     >
-                                        <LogOut className="w-5 h-5" />
-                                        <span className="font-semibold">Sign Out</span>
+                                        <div className="w-11 h-11 rounded-full bg-white dark:bg-slate-800 text-red-500 shadow-sm flex items-center justify-center">
+                                            <LogOut size={18} strokeWidth={2.5} />
+                                        </div>
+                                        <span className="text-[15px] font-bold text-red-600 dark:text-red-400">Sign Out</span>
                                     </button>
                                 </>
                             ) : (
-                                <div className="grid grid-cols-2 gap-2 px-2">
+                                <div className="grid grid-cols-2 gap-3 px-3 pt-2">
                                     <Link
                                         to="/login"
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className="flex justify-center py-2 px-4 border border-slate-300 dark:border-slate-700 text-sm font-semibold rounded-xl text-slate-700 dark:text-slate-305 hover:bg-slate-50 dark:hover:bg-brand-hoverDark"
+                                        className="flex justify-center py-3.5 px-4 bg-white dark:bg-slate-800 text-[14px] font-bold rounded-2xl text-slate-700 dark:text-slate-200 shadow-sm hover:shadow-md transition-shadow"
                                     >
                                         Log In
                                     </Link>
                                     <Link
                                         to="/register"
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className="flex justify-center py-2 px-4 bg-gradient-to-r from-brand-primary to-brand-secondary text-sm font-semibold rounded-xl text-white shadow"
+                                        className="flex justify-center py-3.5 px-4 bg-blue-600 text-[14px] font-bold rounded-2xl text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all"
                                     >
                                         Sign Up
                                     </Link>
                                 </div>
                             )}
                         </div>
+
+                        {/* Footer */}
+                        <div className="pt-10 pb-6 text-center">
+                            <p className="text-xs font-semibold text-slate-400/80">© 2026 Skyrovix IT Solutions.</p>
+                        </div>
                     </div>
-                )
-            }
-        </nav >
+                </div>
+            )}
+        </nav>
     );
 };
 

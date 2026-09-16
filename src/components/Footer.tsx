@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import {
     Mail, MapPin, Clock, ArrowRight, Code2, Users, Rocket,
     Award, Heart, Shield, Cpu, Palette, Lock, Cloud, Database,
@@ -10,9 +10,13 @@ import logoImg from '../assets/vinix-logo.png';
 const Footer: React.FC = () => {
     const year = new Date().getFullYear();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Hide footer on mobile devices on login or register pages
+    const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
     return (
-        <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-brand-cardDark transition-colors duration-300 no-print">
+        <footer className={`border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-brand-cardDark transition-colors duration-300 no-print ${isAuthPage ? 'hidden lg:block' : ''}`}>
 
             {/* ── Main Grid ── */}
             <div className="max-w-7xl mx-auto px-6 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
@@ -58,10 +62,10 @@ const Footer: React.FC = () => {
                         <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:border-slate-800 dark:hover:border-white hover:text-slate-800 dark:hover:text-white flex items-center justify-center transition">
                             <span className="text-xs font-bold">git</span>
                         </a>
-                        <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:border-pink-500 dark:hover:border-pink-400 hover:text-pink-500 dark:hover:text-pink-400 flex items-center justify-center transition">
+                        <a href="https://www.instagram.com/vinix_technology?stkn=aThjaGhjMW1zODdr" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:border-pink-500 dark:hover:border-pink-400 hover:text-pink-500 dark:hover:text-pink-400 flex items-center justify-center transition">
                             <span className="text-xs font-bold">ig</span>
                         </a>
-                        <a href="https://wa.me" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:border-emerald-500 dark:hover:border-emerald-400 hover:text-emerald-505 dark:hover:text-emerald-400 flex items-center justify-center transition">
+                        <a href="https://whatsapp.com/channel/0029Vb8nHh8LdQeYcWSNzi0i" target="_blank" rel="noopener noreferrer" className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:border-emerald-500 dark:hover:border-emerald-400 hover:text-emerald-505 dark:hover:text-emerald-400 flex items-center justify-center transition">
                             <span className="text-xs font-bold">wa</span>
                         </a>
                     </div>
