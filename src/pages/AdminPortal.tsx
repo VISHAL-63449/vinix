@@ -2233,9 +2233,9 @@ const AdminPortal: React.FC = () => {
                                                 <span className="font-bold text-slate-450 uppercase tracking-widest text-[9px] block">Full Name</span>
                                                 <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">{selectedStudentForDetail.profiles?.full_name || 'N/A'}</p>
                                             </div>
-                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-830 rounded-xl">
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-830 rounded-xl overflow-hidden">
                                                 <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Email Address</span>
-                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-205 mt-0.5 font-mono">{selectedStudentForDetail.profiles?.email || 'N/A'}</p>
+                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-205 mt-0.5 font-mono truncate" title={selectedStudentForDetail.profiles?.email || ''}>{selectedStudentForDetail.profiles?.email || 'N/A'}</p>
                                             </div>
                                             <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl md:col-span-2">
                                                 <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">College / University Name</span>
@@ -2483,9 +2483,9 @@ const AdminPortal: React.FC = () => {
                                         {selectedEnrollForDetails.profiles?.full_name || 'N/A'}
                                     </p>
                                 </div>
-                                <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-855 rounded-xl">
+                                <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-855 rounded-xl overflow-hidden">
                                     <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Email Address</span>
-                                    <p className="text-sm font-semibold text-slate-855 dark:text-slate-100 mt-0.5 font-mono">
+                                    <p className="text-sm font-semibold text-slate-855 dark:text-slate-100 mt-0.5 font-mono truncate" title={selectedEnrollForDetails.profiles?.email || ''}>
                                         {selectedEnrollForDetails.profiles?.email || 'N/A'}
                                     </p>
                                 </div>
