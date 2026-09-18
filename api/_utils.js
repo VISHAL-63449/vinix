@@ -103,7 +103,7 @@ export async function ensureBucketExists() {
 }
 
 // Mailer Helper
-export async function sendEmail({ email, name, subject, body, pdfBuffer, pdfName }) {
+export async function sendEmail({ email, name, subject, body, htmlBody, pdfBuffer, pdfName }) {
     const host = process.env.SMTP_HOST;
     const port = parseInt(process.env.SMTP_PORT) || 587;
     const user = process.env.SMTP_USER;
@@ -116,7 +116,11 @@ export async function sendEmail({ email, name, subject, body, pdfBuffer, pdfName
         console.log(` - Subject: ${subject}`);
         console.log(` - Attachment: ${pdfName} (${pdfBuffer.length} bytes)`);
         console.log(`-----------------------------------------`);
-        console.log(body);
+        if (htmlBody) {
+            console.log("[HTML PAYLOAD USED]");
+        } else {
+            console.log(body);
+        }
         console.log(`-----------------------------------------`);
         return { mock: true, recipient: email };
     }
@@ -133,7 +137,7 @@ export async function sendEmail({ email, name, subject, body, pdfBuffer, pdfName
         to: email,
         subject,
         text: body,
-        html: body.replace(/\n/g, '<br>'),
+        html: htmlBody || (body ? body.replace(/\n/g, '<br>') : ''),
         attachments: [
             {
                 filename: pdfName,

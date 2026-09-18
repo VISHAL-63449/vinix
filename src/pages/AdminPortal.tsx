@@ -6,7 +6,7 @@ import {
     LayoutDashboard, CheckSquare, Search, ShieldCheck, User, FolderOpen,
     Award, FileText, Briefcase, CalendarDays, Settings, CreditCard, ArrowRight, FileSpreadsheet, Plus, Trash2, Edit3, X, Megaphone, Mail,
     Sparkles, PlusCircle, Bell, Moon, ChevronDown, ListTodo, Users, ExternalLink,
-    BookOpen, Layers, Check, Activity, GraduationCap
+    BookOpen, Layers, Check, Activity, GraduationCap, RefreshCw, Clock, History
 } from 'lucide-react';
 
 interface Internship {
@@ -24,6 +24,9 @@ interface Enrollment {
     status: string;
     joined_at: string;
     progress?: number;
+    certificate_status?: string;
+    completion_status?: string;
+    application_status?: string;
     profiles?: {
         full_name: string;
         email: string;
@@ -86,6 +89,20 @@ interface OfferLetter {
     status: string;
 }
 
+interface PaymentRecord {
+    payment_id: string;
+    student_id: string;
+    application_id?: string;
+    amount: number;
+    payment_status: string;
+    transaction_id: string;
+    payment_date: string;
+    profiles?: {
+        full_name: string;
+    };
+    domain_name?: string;
+}
+
 interface Domain {
     id: string;
     name: string;
@@ -115,7 +132,7 @@ const formatLastActive = (updatedAtStr?: string) => {
 const AdminPortal: React.FC = () => {
     const { user, profile } = useAuth();
     const { toasts, showToast, dismiss } = useToast();
-    const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'submissions' | 'certificates' | 'domains' | 'students' | 'student-detail'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'submissions' | 'certificates' | 'domains' | 'students' | 'student-detail' | 'payments'>('overview');
     const [subTab, setSubTab] = useState<'domains' | 'internships'>('domains');
     const [selectedStudentForDetail, setSelectedStudentForDetail] = useState<Enrollment | null>(null);
     const [studentsSearch, setStudentsSearch] = useState('');
@@ -126,13 +143,16 @@ const AdminPortal: React.FC = () => {
     const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
     const [submissions, setSubmissions] = useState<TaskProgress[]>([]);
     const [allSubmissions, setAllSubmissions] = useState<TaskProgress[]>([]);
-    const [gradingSubTab, setGradingSubTab] = useState<'pending' | 'all'>('pending');
+    const [gradingSubTab, setGradingSubTab] = useState<'all' | 'pending' | 'resubmissions' | 'reviewed'>('all');
     const [certificates, setCertificates] = useState<Certificate[]>([]);
     const [offerLetters, setOfferLetters] = useState<OfferLetter[]>([]);
+    const [paymentsList, setPaymentsList] = useState<PaymentRecord[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Submissions search & filters
+    // Submissions and Payments search & filters
     const [submissionSearch, setSubmissionSearch] = useState('');
+    const [paymentSearch, setPaymentSearch] = useState('');
+    const [paymentFilter, setPaymentFilter] = useState<'All' | 'Pending' | 'Verified' | 'Rejected'>('All');
 
     // Evaluation modal
     const [selectedSubForReview, setSelectedSubForReview] = useState<TaskProgress | null>(null);
@@ -165,6 +185,46 @@ const AdminPortal: React.FC = () => {
     const [certStudentId, setCertStudentId] = useState('');
     const [certCourseName, setCertCourseName] = useState('');
     const [issuingCert, setIssuingCert] = useState(false);
+    const [approvingCertId, setApprovingCertId] = useState<string | null>(null);
+
+    const handleApproveCertificate = async (enrollmentId: string) => {
+        setApprovingCertId(enrollmentId);
+        try {
+            // Find enrollment details
+            const { data: enroll, error: fetchErr } = await supabaseAdmin
+                .from('internship_enrollments')
+                .select('user_id, internship_id, internships(title)')
+                .eq('id', enrollmentId)
+                .single();
+
+            if (fetchErr || !enroll) throw new Error(fetchErr?.message || 'Enrollment not found');
+
+            const certNo = `VINIX-CERT-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+            const courseName = (enroll.internships as any)?.title || 'Virtual Internship';
+
+            // Insert certificate
+            const { error: certError } = await supabaseAdmin
+                .from('certificates')
+                .insert({
+                    user_id: enroll.user_id,
+                    certificate_number: certNo,
+                    course_name: courseName,
+                    status: 'issued',
+                    issue_date: new Date().toISOString()
+                });
+
+            if (certError) throw certError;
+
+            // Removed overwriting of application_status so it retains PAYMENT_VERIFIED:{utr}
+
+            showToast('Certificate successfully approved and issued!', 'success');
+            loadData();
+        } catch (err: any) {
+            showToast(`Approval Error: ${err.message}`, 'error');
+        } finally {
+            setApprovingCertId(null);
+        }
+    };
 
     async function loadData() {
         try {
@@ -208,11 +268,38 @@ const AdminPortal: React.FC = () => {
                 .from('offer_letters')
                 .select('*');
 
-            // Collect all unique user IDs from enrolls, subs, and certs
+            // Emulate payments by fetching enrollments that have a payment pending/verified encoded in application_status
+            const { data: allEnrollsForPayments } = await supabaseAdmin
+                .from('internship_enrollments')
+                .select('*')
+                .or('application_status.ilike.PAYMENT_%,application_status.ilike.ISSUED:%')
+                .order('updated_at', { ascending: false });
+
+            // Shape them into PaymentRecord
+            const paymentsData = (allEnrollsForPayments || []).map(p => {
+                const appStatus = p.application_status || '';
+                const parts = appStatus.split(':');
+                const pState = parts[0];
+                const utr = parts.slice(1).join(':') || 'MANUAL_UPI';
+                return {
+                    payment_id: `PAY_ENROLL_${p.id}`,
+                    student_id: p.user_id,
+                    application_id: undefined,
+                    amount: 100,
+                    payment_status: pState === 'PAYMENT_PENDING' ? 'PENDING' :
+                        pState === 'PAYMENT_VERIFIED' || pState === 'ISSUED' ? 'SUCCESS' : 'REJECTED',
+                    payment_date: p.updated_at || p.created_at,
+                    transaction_id: utr,
+                    payment_gateway: 'MANUAL_UPI'
+                }
+            });
+
+            // Collect all unique user IDs from enrolls, subs, certs, and payments
             const enrolledUserIds = (enrolls || []).map(e => e.user_id);
             const subUserIds = (subs || []).map(s => s.user_id);
             const certUserIds = (certs || []).map(c => c.user_id);
-            const allUserIds = Array.from(new Set([...enrolledUserIds, ...subUserIds, ...certUserIds].filter(Boolean)));
+            const paymentUserIds = (paymentsData || []).map(p => p.student_id);
+            const allUserIds = Array.from(new Set([...enrolledUserIds, ...subUserIds, ...certUserIds, ...paymentUserIds].filter(Boolean)));
 
             // Fetch profiles in bulk
             let profilesMap: Record<string, { full_name: string; email: string; college?: string; updated_at?: string }> = {};
@@ -303,6 +390,18 @@ const AdminPortal: React.FC = () => {
                 };
             });
 
+            const finalPayments = (paymentsData || []).map(p => {
+                const profileDetail = profilesMap[p.student_id];
+                const activeEnrollment = (enrolls || []).find(e => e.user_id === p.student_id);
+                return {
+                    ...p,
+                    profiles: {
+                        full_name: profileDetail?.full_name || 'Alumnus'
+                    },
+                    domain_name: activeEnrollment?.internships?.title || 'Unknown Domain'
+                };
+            });
+
             setDomainsList(doms || []);
             setInternships(inters || []);
             setEnrollments(finalEnrolls);
@@ -310,6 +409,7 @@ const AdminPortal: React.FC = () => {
             setAllSubmissions(finalSubs);
             setCertificates(finalCerts);
             setOfferLetters(offers || []);
+            setPaymentsList(finalPayments);
 
         } catch (err) {
             console.error('Error fetching admin data:', err);
@@ -465,7 +565,7 @@ const AdminPortal: React.FC = () => {
                 const totalCount = progressItems.length;
                 const calProgress = Math.round((approvedCount / totalCount) * 100);
 
-                // Update internship_enrollments
+                // Update internship_enrollments with new Payment Flow statuses
                 await supabaseAdmin
                     .from('internship_enrollments')
                     .update({
@@ -476,7 +576,7 @@ const AdminPortal: React.FC = () => {
                     .eq('user_id', selectedSubForReview.user_id)
                     .eq('internship_id', selectedSubForReview.internship_id);
 
-                // Update enrollments
+                // For backward compatibility also update enrollments table
                 await supabaseAdmin
                     .from('enrollments')
                     .update({
@@ -486,42 +586,6 @@ const AdminPortal: React.FC = () => {
                     })
                     .eq('user_id', selectedSubForReview.user_id)
                     .eq('internship_id', selectedSubForReview.internship_id);
-
-                // Auto-issue certificate if 100% completed
-                if (calProgress === 100) {
-                    const courseName = internships.find(i => i.id === selectedSubForReview.internship_id)?.title || 'Virtual Internship';
-                    const { data: existingCerts } = await supabaseAdmin
-                        .from('certificates')
-                        .select('id')
-                        .eq('user_id', selectedSubForReview.user_id)
-                        .eq('course_name', courseName)
-                        .limit(1);
-
-                    if (!existingCerts || existingCerts.length === 0) {
-                        const certNo = `VINIX-CERT-2026-${Math.floor(1000 + Math.random() * 9000)}`;
-                        await supabaseAdmin
-                            .from('certificates')
-                            .insert({
-                                user_id: selectedSubForReview.user_id,
-                                certificate_number: certNo,
-                                course_name: courseName,
-                                status: 'issued',
-                                issue_date: new Date().toISOString()
-                            });
-
-                        // Trigger server-side PDF generation & email delivery
-                        fetch('/api/generate-certificate', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                studentId: selectedSubForReview.user_id,
-                                courseName: courseName,
-                                certificateNumber: certNo,
-                                internshipId: selectedSubForReview.internship_id
-                            })
-                        }).catch(err => console.error('Failed to trigger server-side certificate generation:', err));
-                    }
-                }
             }
 
             showToast(`Milestone marked as ${status}.`, 'success');
@@ -532,6 +596,35 @@ const AdminPortal: React.FC = () => {
             showToast(`Failed to grade task: ${err.message}`, 'error');
         } finally {
             setReviewLoading(false);
+        }
+    };
+
+    const handlePaymentAction = async (payment: PaymentRecord, act: 'verify' | 'reject') => {
+        try {
+            if (!payment.payment_id.startsWith('PAY_ENROLL_')) return;
+            const enrollId = payment.payment_id.replace('PAY_ENROLL_', '');
+
+            // extract the existing UTR from transaction_id or application_status
+            const utr = payment.transaction_id || 'UNKNOWN';
+            const newStatus = act === 'verify' ? `PAYMENT_VERIFIED:${utr}` : 'PAYMENT_REJECTED';
+
+            const { error } = await supabaseAdmin
+                .from('internship_enrollments')
+                .update({ application_status: newStatus })
+                .eq('id', enrollId);
+
+            if (error) throw error;
+
+            if (act === 'verify') {
+                showToast('Payment Verified! Auto-Issuing Certificate...', 'success');
+                // Trigger auto issuance
+                await handleApproveCertificate(enrollId);
+            } else {
+                showToast('Payment Rejected!', 'success');
+                loadData();
+            }
+        } catch (err: any) {
+            showToast(`Failed to update payment: ${err.message}`, 'error');
         }
     };
 
@@ -821,8 +914,8 @@ const AdminPortal: React.FC = () => {
                             <span>Certificates</span>
                         </button>
                         <button
-                            onClick={() => { }}
-                            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                            onClick={() => setActiveTab('payments')}
+                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === 'payments' ? 'bg-[#154ED0] text-white shadow-md' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'}`}
                         >
                             <CreditCard className="w-4 h-4" />
                             <span>Payments & Invoices</span>
@@ -900,7 +993,60 @@ const AdminPortal: React.FC = () => {
                     </div>
                 </header>
 
-                <main className="flex-grow p-6 sm:p-10 space-y-6 sm:space-y-8 overflow-y-auto">
+                {/* Mobile Scrollable Nav */}
+                <div className="md:hidden flex overflow-x-auto gap-3 px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 no-scrollbar shrink-0 shadow-sm pointer-events-auto">
+                    <button
+                        onClick={() => setActiveTab('overview')}
+                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'overview' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
+                    >
+                        <LayoutDashboard className="w-4 h-4" />
+                        <span>Dashboard</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('applications')}
+                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'applications' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
+                    >
+                        <FolderOpen className="w-4 h-4" />
+                        <span>Applications</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('submissions')}
+                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'submissions' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
+                    >
+                        <CheckSquare className="w-4 h-4" />
+                        <span>Submissions</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('students')}
+                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'students' || activeTab === 'student-detail' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
+                    >
+                        <GraduationCap className="w-4 h-4" />
+                        <span>Students</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('certificates')}
+                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'certificates' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
+                    >
+                        <Award className="w-4 h-4" />
+                        <span>Certificates</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('payments')}
+                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'payments' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
+                    >
+                        <CreditCard className="w-4 h-4" />
+                        <span>Payments</span>
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('domains')}
+                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'domains' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
+                    >
+                        <Layers className="w-4 h-4" />
+                        <span>Domains</span>
+                    </button>
+                </div>
+
+                <main className="flex-grow p-4 sm:p-10 space-y-6 sm:space-y-8 overflow-y-auto w-full">
 
                     {activeTab === 'overview' && (
                         <div className="space-y-8 animate-fade-in-up">
@@ -1313,261 +1459,396 @@ const AdminPortal: React.FC = () => {
 
                     {activeTab === 'submissions' && (
                         <div className="space-y-6 text-left">
-                            <div className="border-b border-slate-205 dark:border-slate-805 pb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                            {/* Header Section */}
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-2">
                                 <div>
-                                    <h2 className="text-xl font-bold flex items-center space-x-2">
-                                        <CheckSquare className="w-5 h-5 text-brand-primary" />
-                                        <span>Student Grading Lab Workspace</span>
-                                    </h2>
-                                    <p className="text-xs text-slate-450 mt-0.5">Evaluate milestone submissions, review Git branches, and provide feedback.</p>
+                                    <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Task Submissions</h1>
+                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Review, approve, or request revisions for intern task submissions.</p>
                                 </div>
-                                <input
-                                    type="text"
-                                    placeholder="Search by student name..."
-                                    value={submissionSearch}
-                                    onChange={(e) => setSubmissionSearch(e.target.value)}
-                                    className="px-3.5 py-1.5 border border-slate-200 bg-white dark:bg-slate-950 dark:border-slate-805 rounded-xl text-xs font-semibold focus:outline-none w-full sm:w-64"
-                                />
-                            </div>
-
-                            <div className="flex space-x-4 border-b border-slate-200 dark:border-slate-800 pb-2">
                                 <button
-                                    onClick={() => setGradingSubTab('pending')}
-                                    className={`px-4 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition duration-200 cursor-pointer ${gradingSubTab === 'pending'
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
-                                        }`}
+                                    onClick={loadData}
+                                    className="flex items-center gap-2 border border-slate-300 dark:border-slate-700 rounded-full px-4 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition text-sm font-semibold text-slate-700 dark:text-slate-300"
                                 >
-                                    Pending Grading Queue ({submissions.length})
-                                </button>
-                                <button
-                                    onClick={() => setGradingSubTab('all')}
-                                    className={`px-4 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition duration-200 cursor-pointer ${gradingSubTab === 'all'
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
-                                        }`}
-                                >
-                                    All Student Submissions ({allSubmissions.length})
+                                    <RefreshCw className="w-4 h-4" /> Refresh List
                                 </button>
                             </div>
 
-                            {gradingSubTab === 'pending' ? (
-                                submissions.filter(sub =>
-                                    !submissionSearch ||
-                                    (sub.profiles?.full_name || '').toLowerCase().includes(submissionSearch.toLowerCase())
-                                ).length === 0 ? (
-                                    <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-xl p-12 text-center">
-                                        <CheckSquare className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                                        <h4 className="text-slate-850 dark:text-white font-bold">Grading queue empty</h4>
-                                        <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                                            All student submissions matching filters are graded.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {submissions
-                                            .filter(sub =>
-                                                !submissionSearch ||
-                                                (sub.profiles?.full_name || '').toLowerCase().includes(submissionSearch.toLowerCase())
-                                            )
-                                            .map(sub => (
-                                                <div key={sub.id} className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-xl p-5 shadow-sm space-y-4">
-                                                    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 dark:border-slate-850 pb-3">
-                                                        <div>
-                                                            <h4 className="text-xs font-bold text-slate-805 dark:text-slate-100 uppercase tracking-wide">
-                                                                {sub.profiles?.full_name} • Milestone {sub.internship_tasks?.task_number}
-                                                            </h4>
-                                                            <h3 className="text-sm font-semibold capitalize mt-0.5">{sub.internship_tasks?.title}</h3>
-                                                        </div>
-                                                        <button
-                                                            onClick={() => {
-                                                                setAdminFeedback(sub.admin_feedback || '');
-                                                                setSelectedSubForReview(sub);
-                                                            }}
-                                                            className="px-4 py-2 bg-brand-primary text-white text-xs font-bold rounded-xl transition shadow"
-                                                        >
-                                                            Grade Submission
-                                                        </button>
-                                                    </div>
+                            {/* Filters and Search */}
+                            <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
+                                <div className="flex bg-slate-50 dark:bg-slate-900 rounded-full border border-slate-200 dark:border-slate-800 p-1 overflow-x-auto max-w-full no-scrollbar">
+                                    <button
+                                        onClick={() => setGradingSubTab('all')}
+                                        className={`px-4 py-2 rounded-full font-semibold text-sm whitespace-nowrap transition-all ${gradingSubTab === 'all' ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+                                    >
+                                        All Submissions ({allSubmissions.length})
+                                    </button>
+                                    <button
+                                        onClick={() => setGradingSubTab('pending')}
+                                        className={`px-4 py-2 font-semibold text-sm whitespace-nowrap transition-all flex items-center gap-1.5 rounded-full ${gradingSubTab === 'pending' ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+                                    >
+                                        <Clock className="w-3.5 h-3.5" /> Pending Review ({allSubmissions.filter(s => s.status === 'submitted').length})
+                                    </button>
+                                    <button
+                                        onClick={() => setGradingSubTab('resubmissions')}
+                                        className={`px-4 py-2 font-semibold text-sm whitespace-nowrap transition-all flex items-center gap-1.5 rounded-full ${gradingSubTab === 'resubmissions' ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+                                    >
+                                        <History className="w-3.5 h-3.5" /> Resubmissions ({allSubmissions.filter(s => s.status === 'resubmission_required').length})
+                                    </button>
+                                    <button
+                                        onClick={() => setGradingSubTab('reviewed')}
+                                        className={`px-4 py-2 font-semibold text-sm whitespace-nowrap transition-all flex items-center gap-1.5 rounded-full ${gradingSubTab === 'reviewed' ? 'bg-white dark:bg-slate-800 text-slate-800 dark:text-white shadow-sm' : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'}`}
+                                    >
+                                        <Check className="w-3.5 h-3.5" /> Reviewed ({allSubmissions.filter(s => s.status === 'approved').length})
+                                    </button>
+                                </div>
+                                <div className="relative w-full xl:w-80 flex-shrink-0">
+                                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search intern name, email, task..."
+                                        value={submissionSearch}
+                                        onChange={(e) => setSubmissionSearch(e.target.value)}
+                                        className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-full text-sm outline-none focus:ring-1 focus:ring-blue-500 transition-shadow"
+                                    />
+                                </div>
+                            </div>
 
-                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                                                        <div>
-                                                            <span className="font-bold text-slate-400 uppercase tracking-widest block text-[9px]">GitHub / LinkedIn Solution Link</span>
-                                                            <a
-                                                                href={sub.github_url || sub.linkedin_url || '#'}
-                                                                target="_blank"
-                                                                rel="noreferrer"
-                                                                className="text-brand-primary dark:text-brand-accent underline hover:opacity-90 font-mono mt-1 block truncate"
-                                                            >
-                                                                {sub.github_url || sub.linkedin_url || 'N/A'}
+                            {/* Submission List */}
+                            <div className="space-y-4">
+                                {(() => {
+                                    const filteredList = allSubmissions.filter(sub => {
+                                        if (gradingSubTab === 'pending' && sub.status !== 'submitted') return false;
+                                        if (gradingSubTab === 'resubmissions' && sub.status !== 'resubmission_required') return false;
+                                        if (gradingSubTab === 'reviewed' && sub.status !== 'approved') return false;
+                                        if (submissionSearch) {
+                                            const q = submissionSearch.toLowerCase();
+                                            return (sub.profiles?.full_name || '').toLowerCase().includes(q) ||
+                                                (sub.profiles?.email || '').toLowerCase().includes(q) ||
+                                                (sub.internship_tasks?.title || '').toLowerCase().includes(q);
+                                        }
+                                        return true;
+                                    });
+
+                                    if (filteredList.length === 0) {
+                                        return (
+                                            <div className="bg-white dark:bg-brand-cardDark border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl p-12 text-center">
+                                                <ListTodo className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
+                                                <h4 className="text-slate-700 dark:text-slate-300 font-bold mb-1">No submissions found</h4>
+                                                <p className="text-sm text-slate-500 dark:text-slate-400">There are no tasks matching the selected filters.</p>
+                                            </div>
+                                        );
+                                    }
+
+                                    return filteredList.map(sub => {
+                                        let statusConfig = { label: 'Unknown', borderClass: 'bg-slate-500', badgeClass: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-400', Icon: Clock };
+                                        if (sub.status === 'submitted') {
+                                            statusConfig = { label: 'Pending Review', borderClass: 'bg-amber-500', badgeClass: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400', Icon: Clock };
+                                        } else if (sub.status === 'resubmission_required') {
+                                            statusConfig = { label: 'Resubmission', borderClass: 'bg-purple-500', badgeClass: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400', Icon: History };
+                                        } else if (sub.status === 'approved') {
+                                            statusConfig = { label: 'Approved', borderClass: 'bg-emerald-500', badgeClass: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-400', Icon: CheckSquare };
+                                        }
+
+                                        return (
+                                            <div key={sub.id} className="bg-white dark:bg-brand-cardDark border border-slate-200 dark:border-slate-800 rounded-xl flex flex-col xl:flex-row xl:items-center justify-between p-5 relative overflow-hidden shadow-sm hover:shadow transition-shadow group">
+                                                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${statusConfig.borderClass}`}></div>
+                                                <div className="pl-4 xl:w-2/3">
+                                                    <h3 className="font-bold text-slate-900 dark:text-white text-[15px]">Task {sub.internship_tasks?.task_number}: {sub.internship_tasks?.title}</h3>
+                                                    <p className="text-[11px] text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-1.5 mb-2 font-semibold">
+                                                        {sub.profiles?.full_name || 'Unknown Student'} · {sub.profiles?.email}
+                                                    </p>
+                                                    <div className="flex flex-wrap items-center gap-4 text-xs font-medium">
+                                                        <p className="text-slate-500 dark:text-slate-400">
+                                                            Submitted: <span className="font-bold text-slate-700 dark:text-slate-300">{formatLastActive(sub.submitted_at || '')}</span>
+                                                        </p>
+                                                        {(sub.github_url || sub.linkedin_url) && (
+                                                            <a href={sub.github_url || sub.linkedin_url || '#'} target="_blank" rel="noreferrer" className="font-bold text-brand-primary dark:text-blue-400 flex items-center gap-1 hover:underline">
+                                                                <ExternalLink className="w-3.5 h-3.5" /> Live Demo
                                                             </a>
-                                                        </div>
-                                                        <div>
-                                                            <span className="font-bold text-slate-400 uppercase tracking-widest block text-[9px]">Student Note</span>
-                                                            <p className="text-slate-500 dark:text-slate-400 mt-1">{sub.student_note || 'No notes added.'}</p>
-                                                        </div>
+                                                        )}
                                                     </div>
                                                 </div>
-                                            ))}
-                                    </div>
-                                )
-                            ) : (
-                                allSubmissions.filter(sub =>
-                                    !submissionSearch ||
-                                    (sub.profiles?.full_name || '').toLowerCase().includes(submissionSearch.toLowerCase())
-                                ).length === 0 ? (
-                                    <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-xl p-12 text-center">
-                                        <CheckSquare className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                                        <h4 className="text-slate-850 dark:text-white font-bold">No submissions found</h4>
-                                        <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
-                                            No student progress entries exist matching the filter.
-                                        </p>
-                                    </div>
-                                ) : (
-                                    <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl overflow-hidden shadow-sm">
-                                        <table className="w-full border-collapse text-left text-xs">
-                                            <thead>
-                                                <tr className="bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-805 text-slate-500 font-bold uppercase text-[9px]">
-                                                    <th className="p-4">Student</th>
-                                                    <th className="p-4">Milestone</th>
-                                                    <th className="p-4">Solution Link</th>
-                                                    <th className="p-4">Status</th>
-                                                    <th className="p-4 text-right">Actions</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-                                                {allSubmissions
-                                                    .filter(sub =>
-                                                        !submissionSearch ||
-                                                        (sub.profiles?.full_name || '').toLowerCase().includes(submissionSearch.toLowerCase())
-                                                    )
-                                                    .map(sub => (
-                                                        <tr key={sub.id} className="hover:bg-slate-50/[0.4] dark:hover:bg-slate-900/[0.2]">
-                                                            <td className="p-4">
-                                                                <span className="font-bold block">{sub.profiles?.full_name}</span>
-                                                                <span className="text-[10px] text-slate-400 font-mono">{sub.profiles?.email}</span>
-                                                            </td>
-                                                            <td className="p-4">
-                                                                <span className="font-bold block text-slate-700 dark:text-slate-300">Milestone {sub.internship_tasks?.task_number}</span>
-                                                                <span className="text-[10px] text-slate-400 block truncate max-w-xs">{sub.internship_tasks?.title}</span>
-                                                            </td>
-                                                            <td className="p-4 font-mono text-[10px]">
-                                                                {sub.github_url || sub.linkedin_url ? (
-                                                                    <a
-                                                                        href={sub.github_url || sub.linkedin_url || '#'}
-                                                                        target="_blank"
-                                                                        rel="noreferrer"
-                                                                        className="text-brand-primary dark:text-brand-accent underline hover:opacity-90 block truncate max-w-xs"
-                                                                    >
-                                                                        {sub.github_url || sub.linkedin_url}
-                                                                    </a>
-                                                                ) : (
-                                                                    <span className="text-slate-400">N/A</span>
-                                                                )}
-                                                            </td>
-                                                            <td className="p-4">
-                                                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${sub.status === 'approved' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20' :
-                                                                    sub.status === 'submitted' ? 'bg-blue-100 text-blue-700' :
-                                                                        sub.status === 'resubmission_required' ? 'bg-rose-100 text-rose-700' :
-                                                                            sub.status === 'available' ? 'bg-sky-100 text-sky-700' :
-                                                                                'bg-slate-100 text-slate-450 dark:bg-slate-900'
-                                                                    }`}>
-                                                                    {sub.status.replace('_', ' ')}
-                                                                </span>
-                                                            </td>
-                                                            <td className="p-4 text-right">
-                                                                {(sub.status === 'submitted' || sub.status === 'approved' || sub.status === 'resubmission_required') && (
-                                                                    <button
-                                                                        onClick={() => {
-                                                                            setAdminFeedback(sub.admin_feedback || '');
-                                                                            setSelectedSubForReview(sub);
-                                                                        }}
-                                                                        className="px-2.5 py-1 bg-brand-primary text-white text-[10px] font-bold rounded-lg transition"
-                                                                    >
-                                                                        {sub.status === 'submitted' ? 'Grade' : 'Review'}
-                                                                    </button>
-                                                                )}
-                                                            </td>
-                                                        </tr>
-                                                    ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                )
-                            )}
+
+                                                <div className="pl-4 xl:pl-0 mt-4 xl:mt-0 flex flex-wrap xl:flex-nowrap items-center gap-3 xl:w-1/3 xl:justify-end">
+                                                    <span className={`${statusConfig.badgeClass} px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 shadow-sm border border-black/5 dark:border-white/5`}>
+                                                        <statusConfig.Icon className="w-3.5 h-3.5" />
+                                                        {statusConfig.label}
+                                                    </span>
+
+                                                    <button
+                                                        onClick={() => {
+                                                            setAdminFeedback(sub.admin_feedback || '');
+                                                            setSelectedSubForReview(sub);
+                                                        }}
+                                                        className="border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-full px-4 py-2 text-xs font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5 shadow-sm text-slate-700 dark:text-slate-200"
+                                                    >
+                                                        View Submission
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        );
+                                    });
+                                })()}
+                            </div>
                         </div>
                     )}
 
                     {activeTab === 'certificates' && (
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 text-left">
 
-                            {/* Issuing Form */}
-                            <div className="lg:col-span-1 bg-white dark:bg-brand-cardDark border border-slate-202 dark:border-slate-805 rounded-2xl p-6 shadow-sm">
-                                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Issue New Certificate</h3>
-                                <form onSubmit={handleIssueCertificate} className="space-y-4">
-                                    <div>
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Select Student</label>
-                                        <select
-                                            required
-                                            value={certStudentId}
-                                            onChange={(e) => setCertStudentId(e.target.value)}
-                                            className="w-full px-3 py-2 border border-slate-200 bg-slate-50 dark:bg-slate-950 dark:border-slate-800 rounded-xl text-xs outline-none"
-                                        >
-                                            <option value="">-- Choose Intern --</option>
-                                            {enrollments.map(e => (
-                                                <option key={e.id} value={e.user_id}>
-                                                    {e.profiles?.full_name} ({e.internships?.title})
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
+                            {/* Verification Queue (New Auto Workflow) */}
+                            <div className="lg:col-span-2 bg-white dark:bg-brand-cardDark border border-slate-202 dark:border-slate-805 rounded-2xl p-6 shadow-sm flex flex-col max-h-[600px]">
+                                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex justify-between">
+                                    <span>Verification Queue</span>
+                                    <span className="text-brand-primary">{enrollments.filter(e => e.application_status?.startsWith('PAYMENT_')).length} Pending</span>
+                                </h3>
 
-                                    <div>
-                                        <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Course/Domain Name</label>
-                                        <input
-                                            type="text"
-                                            required
-                                            value={certCourseName}
-                                            onChange={(e) => setCertCourseName(e.target.value)}
-                                            placeholder="e.g. Full-Stack Web Development"
-                                            className="w-full px-3 py-2 border border-slate-200 bg-slate-50 dark:bg-slate-950 dark:border-slate-800 rounded-xl text-xs outline-none"
-                                        />
-                                    </div>
-
-                                    <button
-                                        type="submit"
-                                        disabled={issuingCert}
-                                        className="w-full py-2.5 bg-brand-primary text-white text-xs font-bold rounded-xl shadow transition"
-                                    >
-                                        {issuingCert ? 'Issuing...' : 'Issue Certificate'}
-                                    </button>
-                                </form>
-                            </div>
-
-                            {/* Registry Directory logs list */}
-                            <div className="lg:col-span-2 bg-white dark:bg-brand-cardDark border border-slate-202 dark:border-slate-805 rounded-2xl p-6 shadow-sm">
-                                <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Verification Registry logs</h3>
-
-                                {certificates.length === 0 ? (
-                                    <p className="text-xs text-slate-400 text-center py-10">No certificates issued yet.</p>
-                                ) : (
-                                    <div className="divide-y divide-slate-100 dark:divide-slate-850 max-h-[400px] overflow-y-auto pr-2">
-                                        {certificates.map(cert => (
-                                            <div key={cert.id} className="py-3 flex justify-between items-center text-xs">
-                                                <div>
-                                                    <span className="font-bold block capitalize">{cert.profiles?.full_name}</span>
-                                                    <span className="text-[10px] text-slate-400 font-mono mt-0.5">{cert.certificate_number}</span>
+                                <div className="divide-y divide-slate-100 dark:divide-slate-850 overflow-y-auto pr-2 flex-1">
+                                    {enrollments.filter(e => e.application_status?.startsWith('PAYMENT_')).length === 0 ? (
+                                        <p className="text-xs text-slate-400 text-center py-10 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">No certificates pending verification.</p>
+                                    ) : (
+                                        enrollments.filter(e => e.application_status?.startsWith('PAYMENT_')).map(enroll => (
+                                            <div key={enroll.id} className="py-4 flex flex-col md:flex-row justify-between items-start md:items-center text-xs gap-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/50 px-2 transition">
+                                                <div className="flex items-center space-x-3">
+                                                    <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold text-sm shadow-sm border border-blue-100 dark:border-blue-800">
+                                                        {enroll.profiles?.full_name?.charAt(0).toUpperCase() || 'S'}
+                                                    </div>
+                                                    <div>
+                                                        <span className="font-bold block capitalize text-sm">{enroll.profiles?.full_name}</span>
+                                                        <span className="text-[10px] text-slate-400 font-mono mt-0.5 block">{enroll.profiles?.email}</span>
+                                                        <span className="text-[10px] text-emerald-600 font-bold block mt-1">Payment: Verified ✓ (₹100)</span>
+                                                    </div>
                                                 </div>
-                                                <div className="text-right">
-                                                    <span className="font-bold text-slate-700 dark:text-slate-205">{cert.course_name}</span>
-                                                    <span className="text-[10px] text-slate-400 block">{new Date(cert.issue_date).toLocaleDateString()}</span>
+                                                <div className="text-left md:text-right flex-1 md:flex-none w-full md:w-auto">
+                                                    <span className="font-bold text-slate-700 dark:text-slate-205 block">{enroll.internships?.title || 'Internship Track'}</span>
+                                                    <span className="text-[10px] text-slate-400 block mt-1">100% Tasks Completed</span>
                                                 </div>
+                                                <button
+                                                    onClick={() => handleApproveCertificate(enroll.id)}
+                                                    disabled={approvingCertId === enroll.id}
+                                                    className="w-full md:w-auto px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold rounded-xl transition shadow whitespace-nowrap"
+                                                >
+                                                    {approvingCertId === enroll.id ? 'Approving...' : 'Approve & Issue'}
+                                                </button>
                                             </div>
-                                        ))}
-                                    </div>
-                                )}
+                                        ))
+                                    )}
+                                </div>
                             </div>
 
+                            {/* Forms Area */}
+                            <div className="lg:col-span-1 space-y-8">
+                                {/* Issuing Form */}
+                                <div className="bg-white dark:bg-brand-cardDark border border-slate-202 dark:border-slate-805 rounded-2xl p-6 shadow-sm">
+                                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Manual Issue</h3>
+                                    <form onSubmit={handleIssueCertificate} className="space-y-4">
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Select Student</label>
+                                            <select
+                                                required
+                                                value={certStudentId}
+                                                onChange={(e) => setCertStudentId(e.target.value)}
+                                                className="w-full px-3 py-2 border border-slate-200 bg-slate-50 dark:bg-slate-950 dark:border-slate-800 rounded-xl text-xs outline-none"
+                                            >
+                                                <option value="">-- Choose Intern --</option>
+                                                {enrollments.map(e => (
+                                                    <option key={e.id} value={e.user_id}>
+                                                        {e.profiles?.full_name} ({e.internships?.title})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Course/Domain</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={certCourseName}
+                                                onChange={(e) => setCertCourseName(e.target.value)}
+                                                placeholder="e.g. Full-Stack Web Development"
+                                                className="w-full px-3 py-2 border border-slate-200 bg-slate-50 dark:bg-slate-950 dark:border-slate-800 rounded-xl text-xs outline-none"
+                                            />
+                                        </div>
+
+                                        <button
+                                            type="submit"
+                                            disabled={issuingCert}
+                                            className="w-full py-2.5 bg-brand-primary text-white text-xs font-bold rounded-xl shadow transition"
+                                        >
+                                            {issuingCert ? 'Issuing...' : 'Issue Certificate'}
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {/* Registry Directory logs list */}
+                                <div className="bg-white dark:bg-brand-cardDark border border-slate-202 dark:border-slate-805 rounded-2xl p-6 shadow-sm">
+                                    <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Verification Registry logs</h3>
+
+                                    {certificates.length === 0 ? (
+                                        <p className="text-xs text-slate-400 text-center py-10 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">No certificates issued yet.</p>
+                                    ) : (
+                                        <div className="divide-y divide-slate-100 dark:divide-slate-850 max-h-[300px] overflow-y-auto pr-2">
+                                            {certificates.map(cert => (
+                                                <div key={cert.id} className="py-3 flex justify-between items-center text-xs">
+                                                    <div>
+                                                        <span className="font-bold block capitalize">{cert.profiles?.full_name}</span>
+                                                        <span className="text-[10px] text-slate-400 font-mono mt-0.5 block">{cert.certificate_number}</span>
+                                                    </div>
+                                                    <div className="text-right">
+                                                        <span className="font-bold text-slate-700 dark:text-slate-205 block">{cert.course_name}</span>
+                                                        <span className="text-[10px] text-slate-400 block">{new Date(cert.issue_date).toLocaleDateString()}</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                        </div>
+                    )}
+                    {activeTab === 'payments' && (
+                        <div className="space-y-6 text-left">
+                            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                <div>
+                                    <h2 className="text-2xl font-extrabold text-slate-800 dark:text-white">Payments</h2>
+                                    <span className="text-sm text-slate-500">{paymentsList.filter(p => {
+                                        if (paymentFilter !== 'All') {
+                                            const pStatus = p.payment_status?.toLowerCase();
+                                            const pFilter = paymentFilter.toLowerCase();
+                                            if (pFilter === 'verified' && pStatus === 'success') return true;
+                                            return pStatus === pFilter;
+                                        }
+                                        return true;
+                                    }).length} matching · {paymentsList.length} total payments</span>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+                                <div className="flex space-x-1 sm:space-x-2 bg-slate-50 dark:bg-slate-900 rounded-full p-1 border border-slate-200 dark:border-slate-800 shadow-sm w-full sm:w-auto overflow-x-auto">
+                                    {['All', 'Pending', 'Verified', 'Rejected'].map(filter => (
+                                        <button
+                                            key={filter}
+                                            onClick={() => setPaymentFilter(filter as any)}
+                                            className={`px-3 sm:px-6 py-2 rounded-full text-xs font-bold transition-all whitespace-nowrap ${paymentFilter === filter
+                                                ? 'bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-sm ring-1 ring-slate-200 dark:ring-slate-700'
+                                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200'
+                                                }`}
+                                        >
+                                            {filter}
+                                        </button>
+                                    ))}
+                                </div>
+                                <div className="relative w-full sm:w-72">
+                                    <Search className="w-4 h-4 text-slate-400 absolute left-3 xl:top-3 top-2.5" />
+                                    <input
+                                        type="text"
+                                        placeholder="Search student, UTR..."
+                                        value={paymentSearch}
+                                        onChange={(e) => setPaymentSearch(e.target.value)}
+                                        className="w-full pl-9 pr-4 py-2.5 sm:py-2 border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 rounded-full text-xs sm:text-sm outline-none shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm overflow-hidden min-h-[400px]">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full min-w-[800px] border-collapse text-left">
+                                        <thead>
+                                            <tr className="border-b border-slate-100 dark:border-slate-805 bg-white dark:bg-slate-900">
+                                                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Student</th>
+                                                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">UTR</th>
+                                                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Amount</th>
+                                                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest">Status</th>
+                                                <th className="px-6 py-4 text-[11px] font-bold text-slate-500 uppercase tracking-widest text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                                            {paymentsList
+                                                .filter(p => {
+                                                    if (paymentFilter !== 'All') {
+                                                        const pStatus = p.payment_status?.toLowerCase();
+                                                        const pFilter = paymentFilter.toLowerCase();
+                                                        if (pFilter === 'verified' && pStatus === 'success') return true;
+                                                        if (pStatus !== pFilter) return false;
+                                                    }
+                                                    if (paymentSearch) {
+                                                        const q = paymentSearch.toLowerCase();
+                                                        return (
+                                                            p.profiles?.full_name?.toLowerCase().includes(q) ||
+                                                            p.transaction_id.toLowerCase().includes(q)
+                                                        );
+                                                    }
+                                                    return true;
+                                                })
+                                                .map(payment => {
+                                                    const initials = payment.profiles?.full_name?.charAt(0).toUpperCase() || 'S';
+                                                    const rawStatus = payment.payment_status?.toLowerCase() || 'pending';
+                                                    const statusMap: any = {
+                                                        'success': 'verified',
+                                                        'verified': 'verified',
+                                                        'rejected': 'rejected',
+                                                        'pending': 'pending'
+                                                    };
+                                                    const displayStatus = statusMap[rawStatus] || rawStatus;
+
+                                                    let statusBadge = "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300";
+                                                    if (displayStatus === 'verified') statusBadge = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
+                                                    if (displayStatus === 'rejected') statusBadge = "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400";
+
+                                                    return (
+                                                        <tr key={payment.payment_id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50 transition">
+                                                            <td className="px-6 py-4">
+                                                                <div className="flex items-center space-x-4 text-left">
+                                                                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold text-sm uppercase shadow-sm">
+                                                                        {initials}
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className="font-bold text-slate-800 dark:text-slate-100 block leading-tight text-sm">{payment.profiles?.full_name}</span>
+                                                                        <span className="text-xs text-slate-400 font-medium leading-none block mt-1 line-clamp-1 max-w-[200px]">{payment.domain_name}</span>
+                                                                    </div>
+                                                                </div>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-sm font-mono font-medium text-slate-700 dark:text-slate-300">
+                                                                {payment.transaction_id}
+                                                            </td>
+                                                            <td className="px-6 py-4 text-sm font-bold text-slate-800 dark:text-slate-100">
+                                                                ₹{payment.amount}
+                                                            </td>
+                                                            <td className="px-6 py-4">
+                                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold capitalize ${statusBadge}`}>
+                                                                    {displayStatus}
+                                                                </span>
+                                                            </td>
+                                                            <td className="px-6 py-4 text-right">
+                                                                {displayStatus === 'verified' && (
+                                                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Completed</span>
+                                                                )}
+                                                                {displayStatus === 'rejected' && (
+                                                                    <span className="text-sm font-bold text-slate-700 dark:text-slate-300">Rejected</span>
+                                                                )}
+                                                                {displayStatus === 'pending' && (
+                                                                    <div className="flex justify-end gap-2">
+                                                                        <button onClick={() => handlePaymentAction(payment, 'verify')} className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold transition shadow-sm">Verify</button>
+                                                                        <button onClick={() => handlePaymentAction(payment, 'reject')} className="px-4 py-1.5 border border-slate-200 text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-xs font-bold transition shadow-sm">Reject</button>
+                                                                    </div>
+                                                                )}
+                                                            </td>
+                                                        </tr>
+                                                    );
+                                                })}
+                                            {paymentsList.length === 0 && (
+                                                <tr>
+                                                    <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-400 font-medium border-t border-dashed border-slate-200 dark:border-slate-800">
+                                                        No payments found matching the current filters.
+                                                    </td>
+                                                </tr>
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         </div>
                     )}
 

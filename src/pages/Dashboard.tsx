@@ -10,7 +10,8 @@ import {
     CheckCircle2, XCircle, ExternalLink, FileDown, Play, CheckCheck,
     MessageSquare, Printer, GraduationCap, Briefcase, Settings, Code,
     QrCode, Linkedin, Github, CreditCard, Shield, Send, ArrowRight,
-    Sparkles, Clock, CalendarDays, FileText, CheckCircle, LogOut, Home, ClipboardList
+    Sparkles, Clock, CalendarDays, FileText, CheckCircle, LogOut, Home, ClipboardList,
+    RotateCcw, AlertCircle
 } from 'lucide-react';
 
 interface Enrollment {
@@ -18,6 +19,9 @@ interface Enrollment {
     internship_id: string;
     progress: number;
     status: string;
+    certificate_status?: string;
+    completion_status?: string;
+    application_status?: string;
     internship: {
         title: string;
         domain: string;
@@ -53,6 +57,7 @@ interface TaskProgress {
     linkedin_url?: string;
     student_note?: string;
     admin_feedback?: string;
+    submission_url?: string;
     internship_tasks: {
         task_number: number;
         title: string;
@@ -113,6 +118,8 @@ const Dashboard: React.FC = () => {
     const [downloadingOffer, setDownloadingOffer] = useState(false);
     const [downloadingCert, setDownloadingCert] = useState(false);
     const [activeCertForDownload, setActiveCertForDownload] = useState<CertificateData | null>(null);
+    const [processingPayment, setProcessingPayment] = useState(false);
+    const [utrNumber, setUtrNumber] = useState('');
 
     async function loadDashboardData() {
         if (!user) return;
@@ -172,6 +179,8 @@ const Dashboard: React.FC = () => {
                 internship_id: e.internship_id,
                 progress: e.progress || 0,
                 status: e.status,
+                certificate_status: e.certificate_status || 'NOT_ELIGIBLE',
+                completion_status: e.completion_status || 'IN_PROGRESS',
                 internship: {
                     title: e.internship?.title || 'Virtual Internship',
                     domain: appData?.domain || 'Software Engineering',
@@ -346,7 +355,12 @@ const Dashboard: React.FC = () => {
 
             if (error) throw error;
 
-            showToast('Milestone submission recorded! Evaluators will grade your code shortly.', 'success');
+            showToast(
+                selectedTaskForSubmission.status === 'resubmission_required'
+                    ? 'Task solution resubmitted! Evaluators will review your revisions shortly.'
+                    : 'Milestone submission recorded! Evaluators will grade your code shortly.',
+                'success'
+            );
             setSelectedTaskForSubmission(null);
             setGithubUrl('');
             setStudentNote('');
@@ -511,6 +525,31 @@ const Dashboard: React.FC = () => {
         }
     };
 
+    const handleProcessPayment = async () => {
+        if (!activeEnrollment) return;
+        if (!utrNumber || utrNumber.length < 5) {
+            showToast('Please enter a valid UTR number.', 'error');
+            return;
+        }
+
+        setProcessingPayment(true);
+        try {
+            // Update enrollment status to track payment UTR natively since API isn't available
+            const { error } = await supabaseAdmin
+                .from('internship_enrollments')
+                .update({ application_status: `PAYMENT_PENDING:${utrNumber}` })
+                .eq('id', activeEnrollment.id);
+            if (error) throw new Error(error.message || 'Payment update failed');
+
+            showToast('Payment successful. Your certificate request has been submitted for admin verification.', 'success');
+            loadDashboardData();
+        } catch (err: any) {
+            showToast(`Payment error: ${err.message}`, 'error');
+        } finally {
+            setProcessingPayment(false);
+        }
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-brand-bgLight dark:bg-brand-bgDark flex items-center justify-center p-4">
@@ -519,7 +558,7 @@ const Dashboard: React.FC = () => {
         );
     }
 
-    const activeEnrollment = enrollments.find(e => e.status === 'active' || e.status === 'completed');
+    const activeEnrollment = enrollments.find(e => ['active', 'completed'].includes(e.status));
     const pendingEnrollment = enrollments.find(e => e.status === 'pending') ||
         (!activeEnrollment && application && application.status === 'pending' ? { internship: { title: application.domain + ' Internship' } } as any : null);
     const activeOffer = offerLetters[0];
@@ -657,6 +696,8 @@ const Dashboard: React.FC = () => {
     return (
         <div className="min-h-screen bg-brand-bgLight dark:bg-brand-bgDark text-slate-800 dark:text-slate-100 transition-colors duration-300 flex flex-col">
             <ToastContainer toasts={toasts} dismiss={dismiss} />
+
+
 
             {/* Top Navigation Bar / Replaced Sidebar */}
             <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md border-slate-200/80 dark:bg-slate-950/80 dark:border-slate-800/80 shadow-sm no-print">
@@ -1022,6 +1063,71 @@ const Dashboard: React.FC = () => {
                         {activeTab === 'overview' && (
                             <div className="space-y-8">
 
+                                {/* 100% Completion Payment Prompt Banner */}
+                                {dynamicProgress === 100 && activeEnrollment && !activeEnrollment.application_status?.startsWith('PAYMENT_') && !activeEnrollment.application_status?.startsWith('ISSUED:') && certificates.length === 0 && (
+                                    <div className="bg-gradient-to-r from-blue-600 to-blue-500 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-lg relative overflow-hidden text-left animate-fade-in-up">
+                                        <div className="hidden sm:flex absolute right-0 top-0 opacity-10 pointer-events-none transform translate-x-1/4 -translate-y-1/4">
+                                            <svg width="200" height="200" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" /></svg>
+                                        </div>
+                                        <div className="p-4 bg-white/20 rounded-2xl flex-shrink-0 backdrop-blur-md">
+                                            <Award className="w-8 h-8 text-white" />
+                                        </div>
+                                        <div className="flex-1 text-white z-10">
+                                            <h3 className="text-xl font-black mb-1">Congratulations! You've completed all tasks!</h3>
+                                            <p className="text-sm text-blue-100 font-medium">
+                                                Your internship progress is at 100%. Please complete your certificate processing fee to receive your verified completion certificate.
+                                            </p>
+                                        </div>
+                                        <div className="flex-shrink-0 z-10 w-full sm:w-auto">
+                                            <button
+                                                onClick={() => setActiveTab('payment')}
+                                                className="w-full sm:w-auto px-8 py-3.5 bg-white text-blue-600 hover:bg-blue-50 text-sm font-bold rounded-xl shadow-lg shadow-black/10 transition-colors"
+                                            >
+                                                Go To Payment Page
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {dynamicProgress === 100 && activeEnrollment?.application_status?.startsWith('PAYMENT_PENDING') && certificates.length === 0 && (
+                                    <div className="bg-gradient-to-r from-amber-500 to-amber-400 rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-lg relative overflow-hidden text-left animate-fade-in-up">
+                                        <div className="p-4 bg-white/20 rounded-2xl flex-shrink-0 backdrop-blur-md">
+                                            <svg className="w-8 h-8 text-white animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                                        </div>
+                                        <div className="flex-1 text-white z-10">
+                                            <h3 className="text-xl font-black mb-1">Payment Under Verification</h3>
+                                            <p className="text-sm text-amber-50 font-medium">
+                                                Your payment UTR has been submitted and is currently being verified by an Admin. Check back shortly!
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {dynamicProgress === 100 && (activeEnrollment?.application_status?.startsWith('ISSUED:') || certificates.length > 0) && (
+                                    <div className="bg-gradient-to-r from-[#22c55e] to-[#16a34a] rounded-3xl p-6 sm:p-8 flex flex-col sm:flex-row items-center gap-6 shadow-lg relative overflow-hidden text-left animate-fade-in-up">
+                                        <div className="hidden sm:flex absolute right-0 top-0 opacity-10 pointer-events-none transform translate-x-1/4 -translate-y-1/4">
+                                            <svg width="200" height="200" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" /></svg>
+                                        </div>
+                                        <div className="p-4 bg-white/20 rounded-2xl flex-shrink-0 backdrop-blur-md">
+                                            <Award className="w-8 h-8 text-white" />
+                                        </div>
+                                        <div className="flex-1 text-white z-10">
+                                            <h3 className="text-xl font-black mb-1">Admin Successfully Verified 🎉</h3>
+                                            <p className="text-sm text-emerald-100 font-medium">
+                                                Your payment and tasks have been verified. Download your verified completion certificate!
+                                            </p>
+                                        </div>
+                                        <div className="flex-shrink-0 z-10 w-full sm:w-auto">
+                                            <button
+                                                onClick={() => handleDownloadCertificateDirect(certificates[0])}
+                                                className="w-full sm:w-auto px-8 py-3.5 bg-white text-[#16a34a] hover:bg-emerald-50 text-sm font-bold rounded-xl shadow-lg shadow-black/10 transition-colors"
+                                            >
+                                                Download Certificate
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+
                                 {/* Overview cards stats banner */}
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 
@@ -1082,6 +1188,55 @@ const Dashboard: React.FC = () => {
                                         </button>
                                     </div>
                                 </div>
+
+                                {/* Certificate Status Banners */}
+                                {activeEnrollment?.application_status?.startsWith('PAYMENT_') && (
+                                    <div className="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                        <div className="flex items-center space-x-3 text-left">
+                                            <div className="p-2.5 bg-blue-500/10 rounded-xl text-blue-500 flex items-center justify-center">
+                                                <CheckCircle className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-bold text-blue-800 dark:text-blue-300">Payment Successful</h4>
+                                                <p className="text-xs text-slate-450 dark:text-slate-400 mt-0.5">
+                                                    Your certificate request has been submitted for admin verification.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {activeEnrollment?.application_status?.startsWith('ISSUED:') && certificates.length > 0 && (
+                                    <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-2xl p-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                        <div className="flex items-center space-x-3 text-left">
+                                            <div className="p-2.5 bg-emerald-500/10 rounded-xl text-emerald-500 flex items-center justify-center">
+                                                <Award className="w-6 h-6" />
+                                            </div>
+                                            <div>
+                                                <h4 className="text-sm font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-2">
+                                                    ✓ Certificate Issued
+                                                </h4>
+                                                <p className="text-xs text-slate-450 dark:text-slate-400 mt-0.5">
+                                                    Your certificate has been successfully verified and issued. <b>Certificate ID: {certificates[0]?.certificate_number}</b>
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <button
+                                                onClick={() => navigate('/verify/' + certificates[0]?.certificate_number)}
+                                                className="px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 text-xs font-bold rounded-lg transition"
+                                            >
+                                                View Certificate
+                                            </button>
+                                            <button
+                                                onClick={() => handleDownloadCertificateDirect(certificates[0])}
+                                                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold rounded-lg transition"
+                                            >
+                                                Download Certificate
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Offer Letter Action Status Banner */}
                                 {activeOffer && activeOffer.status !== 'ACCEPTED' && (
@@ -1205,23 +1360,24 @@ const Dashboard: React.FC = () => {
                                                 const isLocked = !isLinkedInTask && !hasUnlockedInternship;
 
                                                 const isSuccess = isTaskApproved;
-                                                const isPending = task.status === 'submitted' || task.status === 'resubmission_required';
+                                                const isSubmitted = task.status === 'submitted';
+                                                const isResubmitRequired = task.status === 'resubmission_required';
 
                                                 return (
                                                     <div
                                                         key={task.id}
                                                         className={`bg-white dark:bg-brand-cardDark rounded-3xl p-6 shadow-sm flex flex-col justify-between border-y border-r border-l-[6px] transition-all duration-200 
-                                                        ${isSuccess ? 'border-l-[#22c55e] border-t-slate-200 border-r-slate-200 border-b-slate-200' : isLocked ? 'border-l-slate-300 border-y-slate-200 border-r-slate-200 opacity-60 pointer-events-none' : 'border-l-brand-primary border-y-slate-200 border-r-slate-200 shadow-md transform hover:-translate-y-1'}`}
+                                                        ${isSuccess ? 'border-l-[#22c55e] border-t-slate-200 border-r-slate-200 border-b-slate-200' : isResubmitRequired ? 'border-l-amber-500 border-t-slate-200 border-r-slate-200 border-b-slate-200 shadow-md transform hover:-translate-y-1' : isLocked ? 'border-l-slate-300 border-y-slate-200 border-r-slate-200 opacity-60 pointer-events-none' : 'border-l-brand-primary border-y-slate-200 border-r-slate-200 shadow-md transform hover:-translate-y-1'}`}
                                                     >
 
                                                         {/* Top row */}
                                                         <div className="flex justify-between items-center mb-5">
-                                                            <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-lg ${isSuccess ? 'bg-[#22c55e]/15 text-[#22c55e]' : isLinkedInTask ? 'bg-blue-50 text-blue-500' : 'bg-[#e0e7ff] text-brand-primary'}`}>
+                                                            <div className={`w-11 h-11 rounded-full flex items-center justify-center font-bold text-lg ${isSuccess ? 'bg-[#22c55e]/15 text-[#22c55e]' : isLinkedInTask ? 'bg-blue-50 text-blue-500' : isResubmitRequired ? 'bg-amber-100 text-amber-600 dark:bg-amber-950/50' : 'bg-[#e0e7ff] text-brand-primary'}`}>
                                                                 {isLinkedInTask ? <Linkedin className="w-5 h-5 fill-current" /> : (task.internship_tasks?.task_number || (idx + 1))}
                                                             </div>
-                                                            <div className={`px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1.5 ${isSuccess ? 'bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/20' : isPending ? 'bg-amber-50 text-amber-600 border border-amber-100' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}>
-                                                                {isSuccess ? <CheckCircle className="w-3.5 h-3.5" /> : isPending ? <Clock className="w-3.5 h-3.5" /> : <CheckCircle className="w-3.5 h-3.5 opacity-50" />}
-                                                                <span>{isSuccess ? 'Completed' : isPending ? (task.status === 'resubmission_required' ? 'Resubmit' : 'Pending') : 'Locked'}</span>
+                                                            <div className={`px-4 py-1.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide flex items-center gap-1.5 ${isSuccess ? 'bg-[#22c55e]/10 text-[#22c55e] border border-[#22c55e]/20' : isResubmitRequired ? 'bg-amber-50 text-amber-600 border border-amber-200' : isSubmitted ? 'bg-blue-50 text-blue-600 border border-blue-100' : 'bg-slate-50 text-slate-500 border border-slate-200'}`}>
+                                                                {isSuccess ? <CheckCircle className="w-3.5 h-3.5" /> : isResubmitRequired ? <RotateCcw className="w-3.5 h-3.5" /> : isSubmitted ? <Clock className="w-3.5 h-3.5" /> : <CheckCircle className="w-3.5 h-3.5 opacity-50" />}
+                                                                <span>{isSuccess ? 'Completed' : isResubmitRequired ? 'Resubmit' : isSubmitted ? 'Under Review' : 'Locked'}</span>
                                                             </div>
                                                         </div>
 
@@ -1231,20 +1387,50 @@ const Dashboard: React.FC = () => {
                                                                 <CalendarDays className="w-3.5 h-3.5" />
                                                                 <span>Due Date: <span className="font-bold text-slate-800">21 Sept 2026</span></span>
                                                             </div>
-                                                            <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#22c55e] uppercase tracking-wide">
-                                                                <CheckCheck className="w-3.5 h-3.5" />
-                                                                <span>{isSuccess ? 'Submitted on track' : isPending ? 'Under Review' : 'Waiting for Submission'}</span>
-                                                            </div>
+                                                            {isSuccess ? (
+                                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-[#22c55e] uppercase tracking-wide">
+                                                                    <CheckCheck className="w-3.5 h-3.5" />
+                                                                    <span>Submitted on track</span>
+                                                                </div>
+                                                            ) : isResubmitRequired ? (
+                                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-600 uppercase tracking-wide">
+                                                                    <AlertCircle className="w-3.5 h-3.5" />
+                                                                    <span>Changes Requested &mdash; Resubmit Required</span>
+                                                                </div>
+                                                            ) : isSubmitted ? (
+                                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-blue-600 uppercase tracking-wide">
+                                                                    <Clock className="w-3.5 h-3.5" />
+                                                                    <span>Under Review</span>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-wide">
+                                                                    <Clock className="w-3.5 h-3.5" />
+                                                                    <span>Waiting for Submission</span>
+                                                                </div>
+                                                            )}
                                                         </div>
 
                                                         {/* Title & Desc */}
-                                                        <div className="flex-1 space-y-4 mb-7 relative">
+                                                        <div className="flex-1 space-y-4 mb-5 relative">
                                                             <h4 className="text-[17px] font-black text-slate-800 dark:text-white leading-snug">
                                                                 {task.internship_tasks?.title}
                                                             </h4>
                                                             <p className="text-[13px] text-slate-500 font-medium leading-relaxed">
                                                                 {task.internship_tasks?.description || 'Build your professional online presence and learn full-stack deployment workflows.'}
                                                             </p>
+
+                                                            {/* Evaluator feedback note if resubmission required */}
+                                                            {isResubmitRequired && task.admin_feedback && (
+                                                                <div className="p-3 bg-amber-50/90 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-2xl text-left">
+                                                                    <div className="flex items-center gap-1.5 text-[10px] font-bold text-amber-800 dark:text-amber-300 uppercase tracking-wider mb-1">
+                                                                        <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                                                        <span>Evaluator Feedback:</span>
+                                                                    </div>
+                                                                    <p className="text-[12px] text-slate-700 dark:text-slate-300 italic leading-snug">
+                                                                        "{task.admin_feedback}"
+                                                                    </p>
+                                                                </div>
+                                                            )}
 
                                                             {/* Mock key features and expected outcome as per layout request */}
                                                             <div className="space-y-3 mt-4 border-t border-slate-100 pt-4 px-1">
@@ -1265,7 +1451,7 @@ const Dashboard: React.FC = () => {
                                                         </div>
 
                                                         {/* Bottom actions */}
-                                                        <div className="mt-auto">
+                                                        <div className="mt-auto pt-2">
                                                             {isLocked ? (
                                                                 <div className="w-full py-3 bg-slate-50 text-slate-400 rounded-2xl text-center text-xs font-bold flex items-center justify-center gap-2 border border-slate-200">
                                                                     <span>Complete previous task</span>
@@ -1275,11 +1461,42 @@ const Dashboard: React.FC = () => {
                                                                     <CheckCircle2 className="w-4 h-4" />
                                                                     <span>Completed Successfully!</span>
                                                                 </div>
-                                                            ) : isPending ? (
-                                                                <div className="w-full py-3 bg-amber-50 text-amber-600 rounded-2xl text-center text-[13px] font-extrabold flex items-center justify-center gap-2 border border-amber-200">
+                                                            ) : isSubmitted ? (
+                                                                <div className="w-full py-3 bg-blue-50 text-blue-600 rounded-2xl text-center text-[13px] font-extrabold flex items-center justify-center gap-2 border border-blue-200">
                                                                     <Clock className="w-4 h-4" />
-                                                                    <span>{task.status === 'resubmission_required' ? 'Review Rejected - Resubmit' : 'Awaiting Review...'}</span>
+                                                                    <span>Awaiting Review...</span>
                                                                 </div>
+                                                            ) : isResubmitRequired ? (
+                                                                isLinkedInTask ? (
+                                                                    <form onSubmit={(e) => handleLinkedInVerificationSubmit(e, task.id)} className="flex flex-col gap-2">
+                                                                        <input
+                                                                            type="url"
+                                                                            required
+                                                                            value={linkedinUrl}
+                                                                            onChange={(e) => setLinkedinUrl(e.target.value)}
+                                                                            placeholder="Paste updated LinkedIn post URL..."
+                                                                            className="w-full px-4 py-2.5 text-xs border border-amber-300 bg-amber-50/40 rounded-xl outline-none focus:border-amber-500 placeholder-slate-400 font-medium"
+                                                                        />
+                                                                        <button type="submit" disabled={submittingLinkedin} className="w-full py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 cursor-pointer">
+                                                                            <RotateCcw className="w-3.5 h-3.5" />
+                                                                            <span>Resubmit & Verify Post</span>
+                                                                        </button>
+                                                                    </form>
+                                                                ) : (
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => {
+                                                                            setGithubUrl(task.github_url || '');
+                                                                            setStudentNote(task.student_note || '');
+                                                                            setProjectImageUrl(task.submission_url || '');
+                                                                            setSelectedTaskForSubmission(task);
+                                                                        }}
+                                                                        className="w-full py-3 bg-amber-500 hover:bg-amber-600 active:scale-[0.99] text-white rounded-2xl text-[13px] font-bold transition shadow-md shadow-amber-500/25 flex items-center justify-center gap-2 cursor-pointer"
+                                                                    >
+                                                                        <RotateCcw className="w-4 h-4" />
+                                                                        <span>Resubmit Project Solution</span>
+                                                                    </button>
+                                                                )
                                                             ) : isLinkedInTask ? (
                                                                 <form onSubmit={(e) => handleLinkedInVerificationSubmit(e, task.id)} className="flex flex-col gap-2">
                                                                     <input
@@ -1290,12 +1507,21 @@ const Dashboard: React.FC = () => {
                                                                         placeholder="Paste LinkedIn post URL..."
                                                                         className="w-full px-4 py-2.5 text-xs border border-slate-300 bg-slate-50 rounded-xl outline-none focus:border-brand-primary placeholder-slate-400 font-medium"
                                                                     />
-                                                                    <button type="submit" disabled={submittingLinkedin} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-blue-500/20">
+                                                                    <button type="submit" disabled={submittingLinkedin} className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-blue-500/20 cursor-pointer">
                                                                         Submit & Verify Post
                                                                     </button>
                                                                 </form>
                                                             ) : (
-                                                                <button onClick={() => setSelectedTaskForSubmission(task)} className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl text-[13px] font-bold transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => {
+                                                                        setGithubUrl(task.github_url || '');
+                                                                        setStudentNote(task.student_note || '');
+                                                                        setProjectImageUrl(task.submission_url || '');
+                                                                        setSelectedTaskForSubmission(task);
+                                                                    }}
+                                                                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white rounded-2xl text-[13px] font-bold transition shadow-md shadow-blue-500/20 flex items-center justify-center gap-2 cursor-pointer"
+                                                                >
                                                                     <ArrowRight className="w-4 h-4" />
                                                                     <span>Submit Project Repository</span>
                                                                 </button>
@@ -1462,22 +1688,133 @@ const Dashboard: React.FC = () => {
                         {/* Tab display: Payment (New Placeholder) */}
                         {activeTab === 'payment' && (
                             <div className="space-y-6">
-                                <div className="border-b border-slate-205 dark:border-slate-805 pb-4">
-                                    <h2 className="text-xl font-bold flex items-center space-x-2">
-                                        <CreditCard className="w-5 h-5 text-brand-primary" />
-                                        <span>Payment Details</span>
-                                    </h2>
-                                    <p className="text-xs text-slate-450 mt-0.5">
-                                        View and manage your internship stipends or premium certifications.
-                                    </p>
-                                </div>
-                                <div className="bg-white dark:bg-brand-cardDark border border-slate-205 dark:border-slate-805 rounded-xl p-12 text-center shadow-sm">
-                                    <CreditCard className="w-12 h-12 text-slate-350 mx-auto mb-4" />
-                                    <h3 className="text-base font-bold">No records found</h3>
-                                    <p className="text-xs text-slate-400 mt-2 max-w-sm mx-auto">
-                                        Your payment portal has not generated any invoices or stipends yet. They will appear here once valid.
-                                    </p>
-                                </div>
+                                {dynamicProgress === 100 && activeEnrollment && !activeEnrollment.application_status?.startsWith('PAYMENT_') && !activeEnrollment.application_status?.startsWith('ISSUED:') && certificates.length === 0 ? (
+                                    <div className="w-full animate-fade-in-up">
+                                        <div className="mb-6 text-left">
+                                            <h2 className="text-xl font-bold text-slate-800 dark:text-white flex items-center space-x-2">
+                                                <CreditCard className="w-5 h-5 text-slate-700 dark:text-slate-300" />
+                                                <span>Certificate Fee Payment</span>
+                                            </h2>
+                                            <p className="text-sm text-slate-500 mt-1">Scan the QR code or use the UPI ID below to pay the certification fee.</p>
+                                        </div>
+
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                                            {/* Left Column - Payment Details */}
+                                            <div className="bg-white dark:bg-brand-cardDark border border-slate-100 dark:border-slate-800 rounded-3xl p-6 md:p-8 shadow-sm flex flex-col items-center text-center">
+                                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-6">Scan QR code via GPay, PhonePe, Paytm or BHIM</span>
+
+                                                <div className="p-4 bg-white border border-slate-200 shadow-sm rounded-3xl mb-6">
+                                                    <img
+                                                        src={window.location.origin + import.meta.env.BASE_URL + 'upi-qr.png'}
+                                                        alt="UPI QR Code"
+                                                        className="w-48 h-48 sm:w-56 sm:h-56 object-contain mix-blend-multiply"
+                                                    />
+                                                </div>
+
+                                                <a
+                                                    href="upi://pay?pa=vr271028-1@okhdfcbank&pn=Vinix&am=100&cu=INR"
+                                                    className="w-full sm:w-auto px-10 py-3 bg-blue-600 hover:bg-blue-500 text-white text-sm font-bold rounded-xl transition shadow flex items-center justify-center space-x-2 mb-6"
+                                                >
+                                                    <ExternalLink className="w-4 h-4" />
+                                                    <span>Pay via GPay / UPI App</span>
+                                                </a>
+
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-3">Supported Payment Apps</span>
+                                                <div className="flex items-center space-x-2 mb-8">
+                                                    <span className="px-3 py-1 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 text-xs font-bold rounded-full">GPay</span>
+                                                    <span className="px-3 py-1 bg-purple-50 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 text-xs font-bold rounded-full">PhonePe</span>
+                                                    <span className="px-3 py-1 bg-sky-50 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400 text-xs font-bold rounded-full">Paytm</span>
+                                                    <span className="px-3 py-1 bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400 text-xs font-bold rounded-full">BHIM UPI</span>
+                                                </div>
+
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2">UPI ID</span>
+                                                <div className="w-full bg-slate-50 dark:bg-slate-900/50 py-3 rounded-xl border border-slate-100 dark:border-slate-800 text-sm font-mono font-bold text-slate-800 dark:text-slate-200 select-all tracking-wide mb-2">
+                                                    vr271028-1@okhdfcbank
+                                                </div>
+                                                <span className="text-xs font-medium text-slate-500">Payee: <span className="font-bold text-slate-700 dark:text-slate-300">Vinix</span></span>
+                                            </div>
+
+                                            {/* Right Column - Verification Form */}
+                                            <div className="space-y-6 flex flex-col h-full">
+                                                <div className="bg-white dark:bg-brand-cardDark border border-slate-100 dark:border-slate-800 rounded-3xl p-6 shadow-sm flex-shrink-0 text-left">
+                                                    <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 block">Certification Fee</span>
+                                                    <span className="text-3xl font-black text-emerald-500">₹100</span>
+                                                </div>
+
+                                                <div className="text-left">
+                                                    <label className="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">UPI Transaction UTR / Reference Number *</label>
+                                                    <input
+                                                        type="text"
+                                                        value={utrNumber}
+                                                        onChange={(e) => setUtrNumber(e.target.value)}
+                                                        placeholder="Enter the 12-digit UTR number from your payment"
+                                                        className="w-full px-4 py-3.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-mono outline-none shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-shadow"
+                                                    />
+                                                    <span className="text-[10px] font-medium text-slate-400 mt-2 block">You can find this in your UPI app payment history</span>
+                                                </div>
+
+                                                <div className="text-left flex-1 min-h-[100px]">
+                                                    <label className="text-sm font-bold text-slate-700 dark:text-slate-200 block mb-2">Payment Screenshot (Optional)</label>
+                                                    <div className="w-full px-4 py-4 border border-dashed border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/30 rounded-xl flex items-center space-x-4">
+                                                        <label className="cursor-pointer px-4 py-2 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-xs font-bold rounded-lg transition">
+                                                            Choose File
+                                                            <input type="file" accept="image/*" className="hidden" />
+                                                        </label>
+                                                        <span className="text-xs text-slate-400">No file chosen</span>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mt-auto pt-4">
+                                                    <button
+                                                        onClick={handleProcessPayment}
+                                                        disabled={processingPayment || !utrNumber || utrNumber.length < 5}
+                                                        className="w-full py-4 bg-[#8eb9f0] hover:bg-[#6e9bdc] disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-bold rounded-xl shadow-lg transition flex items-center justify-center space-x-2"
+                                                    >
+                                                        <CreditCard className="w-4 h-4" />
+                                                        <span>{processingPayment ? 'Processing...' : 'Pay Fee ₹100 & Verify'}</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <div className="border-b border-slate-205 dark:border-slate-805 pb-4">
+                                            <h2 className="text-xl font-bold flex items-center space-x-2">
+                                                <CreditCard className="w-5 h-5 text-brand-primary" />
+                                                <span>Payment Details</span>
+                                            </h2>
+                                            <p className="text-xs text-slate-450 mt-0.5">
+                                                View and manage your internship stipends or premium certifications.
+                                            </p>
+                                        </div>
+                                        <div className="bg-white dark:bg-brand-cardDark border border-slate-205 dark:border-slate-805 rounded-xl p-12 text-center shadow-sm">
+                                            <CreditCard className="w-12 h-12 text-slate-350 mx-auto mb-4" />
+                                            {activeEnrollment?.application_status?.startsWith('PAYMENT_PENDING') && certificates.length === 0 ? (
+                                                <>
+                                                    <h3 className="text-base font-bold text-amber-600">Payment Under Verification</h3>
+                                                    <p className="text-xs text-slate-400 mt-2 max-w-sm mx-auto">
+                                                        Your payment is currently being reviewed by an admin. You will be notified once it is verified.
+                                                    </p>
+                                                </>
+                                            ) : activeEnrollment?.application_status?.startsWith('ISSUED:') || activeEnrollment?.application_status?.startsWith('PAYMENT_VERIFIED') || certificates.length > 0 ? (
+                                                <>
+                                                    <h3 className="text-base font-bold text-[#22c55e]">Payment Verified</h3>
+                                                    <p className="text-xs text-slate-400 mt-2 max-w-sm mx-auto">
+                                                        Your certificate processing fee was successfully verified. You can find your certificate in the Certificates tab.
+                                                    </p>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <h3 className="text-base font-bold">No payments due</h3>
+                                                    <p className="text-xs text-slate-400 mt-2 max-w-sm mx-auto">
+                                                        Your payment portal has no pending fees. Complete all your tasks to unlock your certificate fee.
+                                                    </p>
+                                                </>
+                                            )}
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         )}
 
@@ -1643,11 +1980,24 @@ const Dashboard: React.FC = () => {
                         <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-left">
                             <h3 className="text-lg font-bold flex items-center space-x-2">
                                 <FileCode className="w-5 h-5 text-brand-primary" />
-                                <span>Submit Milestone Solution</span>
+                                <span>{selectedTaskForSubmission.status === 'resubmission_required' ? 'Resubmit Milestone Solution' : 'Submit Milestone Solution'}</span>
                             </h3>
                             <p className="text-xs text-brand-primary dark:text-brand-accent mt-1 uppercase font-bold tracking-wide">
                                 {selectedTaskForSubmission.internship_tasks?.title}
                             </p>
+
+                            {/* Evaluator feedback note if resubmitting */}
+                            {selectedTaskForSubmission.status === 'resubmission_required' && selectedTaskForSubmission.admin_feedback && (
+                                <div className="mt-3 p-3.5 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 rounded-xl text-xs">
+                                    <div className="font-bold text-amber-800 dark:text-amber-300 flex items-center gap-1.5 mb-1 text-[11px] uppercase tracking-wide">
+                                        <AlertCircle className="w-3.5 h-3.5 text-amber-600 shrink-0" />
+                                        <span>Evaluator Feedback:</span>
+                                    </div>
+                                    <p className="text-slate-700 dark:text-slate-300 italic leading-relaxed">
+                                        "{selectedTaskForSubmission.admin_feedback}"
+                                    </p>
+                                </div>
+                            )}
 
                             <form onSubmit={handleMilestoneSubmission} className="mt-4 space-y-4">
                                 <div>
@@ -1675,7 +2025,7 @@ const Dashboard: React.FC = () => {
                                         required
                                         value={studentNote}
                                         onChange={(e) => setStudentNote(e.target.value)}
-                                        placeholder="Describe your design choices, database schema config, or features completed..."
+                                        placeholder={selectedTaskForSubmission.status === 'resubmission_required' ? "Describe the changes and fixes you made based on the evaluator feedback..." : "Describe your design choices, database schema config, or features completed..."}
                                         className="w-full px-3 py-2.5 border border-slate-205 bg-slate-50 dark:bg-slate-950 dark:border-slate-805 rounded-xl text-xs font-semibold focus:outline-none h-24"
                                     />
                                 </div>
@@ -1713,7 +2063,12 @@ const Dashboard: React.FC = () => {
                                 <div className="flex space-x-3 pt-4 border-t border-slate-100 dark:border-slate-850">
                                     <button
                                         type="button"
-                                        onClick={() => setSelectedTaskForSubmission(null)}
+                                        onClick={() => {
+                                            setSelectedTaskForSubmission(null);
+                                            setGithubUrl('');
+                                            setStudentNote('');
+                                            setProjectImageUrl('');
+                                        }}
                                         disabled={submittingTask}
                                         className="flex-1 py-3 border border-slate-250 dark:border-slate-800 hover:bg-slate-50 text-slate-650 dark:text-slate-350 dark:hover:bg-slate-850 text-xs font-bold rounded-xl transition"
                                     >
@@ -1722,9 +2077,22 @@ const Dashboard: React.FC = () => {
                                     <button
                                         type="submit"
                                         disabled={submittingTask}
-                                        className="flex-1 py-3 bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-95 text-white text-xs font-bold rounded-xl transition shadow"
+                                        className={`flex-1 py-3 text-white text-xs font-bold rounded-xl transition shadow flex items-center justify-center gap-2 ${
+                                            selectedTaskForSubmission.status === 'resubmission_required'
+                                                ? 'bg-amber-500 hover:bg-amber-600 shadow-amber-500/20'
+                                                : 'bg-gradient-to-r from-brand-primary to-brand-secondary hover:opacity-95'
+                                        }`}
                                     >
-                                        {submittingTask ? 'Pushing Commit...' : 'Send Solution'}
+                                        {submittingTask ? (
+                                            'Pushing Commit...'
+                                        ) : selectedTaskForSubmission.status === 'resubmission_required' ? (
+                                            <>
+                                                <RotateCcw className="w-3.5 h-3.5" />
+                                                <span>Resubmit Solution</span>
+                                            </>
+                                        ) : (
+                                            'Send Solution'
+                                        )}
                                     </button>
                                 </div>
                             </form>
