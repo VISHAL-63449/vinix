@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     Sparkles, Award, ArrowRight, Code, Users, Briefcase, Mail
 } from 'lucide-react';
+import FounderProfile from '../components/FounderProfile';
 
 const Linkedin = ({ size = 18 }: { size?: number }) => (
     <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-linkedin">
@@ -134,53 +135,20 @@ export const About: React.FC = () => {
 
             {/* LEADERSHIP / FOUNDER SECTION */}
             <section className="py-20 bg-slate-50/40 dark:bg-slate-900/10 border-t border-slate-100 dark:border-slate-850">
-                <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 text-center space-y-12">
-
-                    <div className="space-y-4">
+                <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 space-y-12">
+                    <div className="text-center space-y-4 max-w-2xl mx-auto">
                         <span className="inline-flex px-3.5 py-1 text-[10px] font-extrabold uppercase bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 rounded-full tracking-wide">
                             Founder & Leadership
                         </span>
-                        <h2 className="text-3xl sm:text-4xl font-extrabold text-indigo-950 dark:text-white tracking-tight">
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                             Meet the Founder
                         </h2>
-                        <p className="text-sm text-slate-500 max-w-lg mx-auto font-semibold">
+                        <p className="text-sm text-slate-500 dark:text-slate-400 max-w-lg mx-auto font-semibold">
                             Powering student opportunities and building pathways to engineering careers.
                         </p>
                     </div>
 
-                    {/* Vishal R detailed Profile Card */}
-                    <div className="mx-auto max-w-xl p-8 bg-white dark:bg-slate-900 rounded-[32px] border border-slate-200 dark:border-slate-800 shadow-xl flex flex-col md:flex-row items-center gap-8 text-left hover:shadow-2xl transition duration-300">
-
-                        {/* Founder Avatar Display */}
-                        <div className="w-28 h-28 rounded-full bg-gradient-to-tr from-blue-700 to-indigo-900 flex items-center justify-center text-white text-3xl font-extrabold shadow-md flex-shrink-0">
-                            VR
-                        </div>
-
-                        <div className="space-y-3">
-                            <div className="space-y-0.5">
-                                <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Vishal R</h3>
-                                <span className="text-xs font-extrabold text-blue-600 dark:text-blue-400 uppercase tracking-widest block font-mono">Founder & CEO</span>
-                            </div>
-
-                            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400 leading-relaxed">
-                                Vishal R leads Vinix with the vision of making high-fidelity project internships free and accessible to students. Aiming to provide hands-on experience, guidance, and portfolio projects that help engineers scale key developer positions.
-                            </p>
-
-                            <div className="flex items-center space-x-3 pt-1">
-                                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-100 hover:bg-blue-50 text-slate-600 hover:text-blue-650 rounded-lg transition dark:bg-slate-800 dark:text-slate-350 dark:hover:bg-slate-700">
-                                    <Linkedin size={14} />
-                                </a>
-                                <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="p-2 bg-slate-100 hover:bg-slate-50 text-slate-600 hover:text-slate-900 rounded-lg transition dark:bg-slate-800 dark:text-slate-355 dark:hover:bg-slate-700">
-                                    <Github size={14} />
-                                </a>
-                                <a href="mailto:ceo@vinix.online" className="p-2 bg-slate-100 hover:bg-red-50 text-slate-600 hover:text-red-650 rounded-lg transition dark:bg-slate-800 dark:text-slate-355 dark:hover:bg-slate-700">
-                                    <Mail size={14} />
-                                </a>
-                            </div>
-                        </div>
-
-                    </div>
-
+                    <FounderProfile showPillBadge={true} />
                 </div>
             </section>
 
