@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import { useToast, ToastContainer } from '../components/Toast';
+import StudentNavbar from '../components/StudentNavbar';
 import {
     LayoutDashboard, BookOpen, Layers, FileCode, Award, User,
     CheckCircle2, XCircle, ExternalLink, FileDown, Play, CheckCheck,
@@ -699,108 +700,13 @@ const Dashboard: React.FC = () => {
 
 
 
-            {/* Top Navigation Bar / Replaced Sidebar */}
-            <nav className="sticky top-0 z-50 w-full border-b bg-white/80 backdrop-blur-md border-slate-200/80 dark:bg-slate-950/80 dark:border-slate-800/80 shadow-sm no-print">
-                <div className="mx-auto max-w-[1400px] px-4 sm:px-6 lg:px-8">
-                    <div className="flex h-16 items-center justify-between">
-                        {/* Logo & Brand */}
-                        <div className="flex items-center gap-6">
-                            <button onClick={() => navigate('/')} className="flex items-center hover:opacity-90 transition cursor-pointer shrink-0">
-                                <img
-                                    src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'}
-                                    alt="Vinix"
-                                    className="h-7 sm:h-8 w-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:invert transition-all duration-300"
-                                />
-                            </button>
-
-                            {/* Desktop Nav Links */}
-                            <div className="hidden lg:flex items-center space-x-7 ml-8">
-                                <button onClick={() => setActiveTab('overview')} className={`flex items-center space-x-2 text-sm font-semibold transition-colors ${activeTab === 'overview' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'}`}>
-                                    <Home className="w-[18px] h-[18px]" />
-                                    <span>Home</span>
-                                </button>
-
-                                <button onClick={() => setActiveTab('overview')} className={`flex items-center space-x-2 text-sm font-semibold transition-colors text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400`}>
-                                    <ClipboardList className="w-[18px] h-[18px]" />
-                                    <span>My Tasks</span>
-                                </button>
-
-                                <button onClick={() => navigate('/internships')} className={`flex items-center space-x-2 text-sm font-semibold transition-colors text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400`}>
-                                    <Briefcase className="w-[18px] h-[18px]" />
-                                    <span>My Internships</span>
-                                </button>
-
-                                <button onClick={() => setActiveTab('payment')} className={`flex items-center space-x-2 text-sm font-semibold transition-colors ${activeTab === 'payment' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'}`}>
-                                    <CreditCard className="w-[18px] h-[18px]" />
-                                    <span>Payment</span>
-                                </button>
-
-                                <button onClick={() => { if (activeEnrollment) setActiveTab('certificates'); else showToast('Please register/enroll in an active internship track first.', 'warning'); }} className={`flex items-center space-x-2 text-sm font-semibold transition-colors ${activeTab === 'certificates' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'}`}>
-                                    <Award className="w-[18px] h-[18px]" />
-                                    <span>Certificates</span>
-                                </button>
-
-                                <button onClick={() => setActiveTab('settings')} className={`flex items-center space-x-2 text-sm font-semibold transition-colors ${activeTab === 'settings' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'}`}>
-                                    <User className="w-[18px] h-[18px]" />
-                                    <span>Profile</span>
-                                </button>
-
-                                <button className="flex items-center space-x-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-[20px] text-sm font-bold transition shadow-md shadow-blue-500/20 ml-2">
-                                    <MessageSquare className="w-4 h-4" />
-                                    <span>Review</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        {/* Right side actions */}
-                        <div className="flex items-center gap-3 sm:gap-4">
-                            <button onClick={async () => { await supabase.auth.signOut(); navigate('/login'); }} className="flex items-center justify-center gap-2 px-4 py-2 border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 text-xs font-bold transition shadow-sm">
-                                <LogOut className="w-4 h-4 text-slate-400" />
-                                <span>Logout</span>
-                            </button>
-
-                            <div className="hidden sm:flex items-center gap-2 px-2 py-1 rounded-full border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900">
-                                <div className="w-7 h-7 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-300 dark:border-slate-700">
-                                    {profile?.avatar_url ? (
-                                        <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-                                    ) : (
-                                        <span className="text-xs font-bold text-slate-500">{profile?.full_name?.charAt(0) || 'U'}</span>
-                                    )}
-                                </div>
-                                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 pr-2">{profile?.full_name?.split(' ')[0] || 'User'}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Mobile Scrollable Nav */}
-                <div className="lg:hidden flex overflow-x-auto gap-5 px-4 py-3 bg-white dark:bg-slate-950 border-t border-slate-200/80 dark:border-slate-800/80 no-scrollbar">
-                    <button onClick={() => setActiveTab('overview')} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors ${activeTab === 'overview' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300'}`}>
-                        <Home className="w-4 h-4" />
-                        <span>Home</span>
-                    </button>
-                    <button onClick={() => setActiveTab('overview')} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors text-slate-600 dark:text-slate-300`}>
-                        <ClipboardList className="w-4 h-4" />
-                        <span>My Tasks</span>
-                    </button>
-                    <button onClick={() => navigate('/internships')} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors text-slate-600 dark:text-slate-300`}>
-                        <Briefcase className="w-4 h-4" />
-                        <span>My Internships</span>
-                    </button>
-                    <button onClick={() => setActiveTab('payment')} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors ${activeTab === 'payment' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300'}`}>
-                        <CreditCard className="w-4 h-4" />
-                        <span>Payment</span>
-                    </button>
-                    <button onClick={() => { if (activeEnrollment) setActiveTab('certificates'); else showToast('Please register/enroll in an active internship track first.', 'warning'); }} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors ${activeTab === 'certificates' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300'}`}>
-                        <Award className="w-4 h-4" />
-                        <span>Certificates</span>
-                    </button>
-                    <button onClick={() => setActiveTab('settings')} className={`shrink-0 flex items-center space-x-1.5 text-xs font-bold transition-colors ${activeTab === 'settings' ? 'text-blue-600' : 'text-slate-600 dark:text-slate-300'}`}>
-                        <User className="w-4 h-4" />
-                        <span>Profile</span>
-                    </button>
-                </div>
-            </nav>
+            {/* Student Navigation Bar - Matching Sample Design */}
+            <StudentNavbar
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                activeEnrollment={activeEnrollment}
+                onReviewClick={() => navigate('/reviews')}
+            />
 
             {/* Main Content Pane */}
             <div className="flex-grow p-4 md:p-8 max-w-7xl mx-auto w-full">
@@ -861,7 +767,7 @@ const Dashboard: React.FC = () => {
                                 </div>
 
                                 {/* Quest Log Header */}
-                                <div>
+                                <div id="tasks-section">
                                     <div className="flex items-center gap-2 mb-4">
                                         <h3 className="text-lg font-black text-slate-800 dark:text-white flex items-center gap-2">
                                             <BookOpen className="w-5 h-5 text-blue-650" />
@@ -1314,7 +1220,7 @@ const Dashboard: React.FC = () => {
                                 )}
 
                                 {/* Workspace Tasks Grid (Same Size Tasks Layout) */}
-                                <div className="mt-12 space-y-6">
+                                <div id="tasks-section" className="mt-12 space-y-6">
                                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                                         <div className="relative w-full max-w-lg shadow-sm">
                                             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
