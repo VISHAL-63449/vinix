@@ -15,6 +15,10 @@ const Footer: React.FC = () => {
     // Hide footer on mobile devices on login or register pages
     const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
 
+    if (location.pathname === '/dashboard' || location.pathname === '/admin' || location.pathname.startsWith('/admin')) {
+        return null;
+    }
+
     return (
         <footer className={`border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-brand-cardDark transition-colors duration-300 no-print ${isAuthPage ? 'hidden lg:block' : ''}`}>
 

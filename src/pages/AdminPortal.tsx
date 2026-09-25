@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase, supabaseAdmin } from '../utils/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast, ToastContainer } from '../components/Toast';
@@ -6,7 +7,8 @@ import {
     LayoutDashboard, CheckSquare, Search, ShieldCheck, User, FolderOpen,
     Award, FileText, Briefcase, CalendarDays, Settings, CreditCard, ArrowRight, FileSpreadsheet, Plus, Trash2, Edit3, X, Megaphone, Mail,
     Sparkles, PlusCircle, Bell, Moon, ChevronDown, ListTodo, Users, ExternalLink,
-    BookOpen, Layers, Check, Activity, GraduationCap, RefreshCw, Clock, History
+    BookOpen, Layers, Check, Activity, GraduationCap, RefreshCw, Clock, History,
+    Menu, Sun, Rocket, LogOut, Tag, IndianRupee, Percent
 } from 'lucide-react';
 
 interface Internship {
@@ -130,12 +132,55 @@ const formatLastActive = (updatedAtStr?: string) => {
 };
 
 const AdminPortal: React.FC = () => {
-    const { user, profile } = useAuth();
+    const navigate = useNavigate();
+    const { user, profile, signOut } = useAuth();
     const { toasts, showToast, dismiss } = useToast();
-    const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'submissions' | 'certificates' | 'domains' | 'students' | 'student-detail' | 'payments'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'submissions' | 'certificates' | 'domains' | 'students' | 'student-detail' | 'payments' | 'coupons' | 'promotions'>('overview');
     const [subTab, setSubTab] = useState<'domains' | 'internships'>('domains');
     const [selectedStudentForDetail, setSelectedStudentForDetail] = useState<Enrollment | null>(null);
     const [studentsSearch, setStudentsSearch] = useState('');
+    const [adminName, setAdminName] = useState<string>('Vishal R');
+    const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
+    const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+    const [darkMode, setDarkMode] = useState(() => {
+        return document.documentElement.classList.contains('dark') ||
+            localStorage.getItem('darkMode') === 'true';
+    });
+
+    const toggleDarkMode = () => {
+        const nextDark = !darkMode;
+        setDarkMode(nextDark);
+        if (nextDark) {
+            document.documentElement.classList.add('dark');
+            localStorage.setItem('darkMode', 'true');
+        } else {
+            document.documentElement.classList.remove('dark');
+            localStorage.setItem('darkMode', 'false');
+        }
+    };
+
+    const handleLogout = async () => {
+        try {
+            setMobileDrawerOpen(false);
+            setProfileDropdownOpen(false);
+            showToast('Signing out...', 'info');
+            if (signOut) {
+                await signOut().catch(err => console.error('Sign out error:', err));
+            }
+            try {
+                localStorage.removeItem('supabase.auth.token');
+                localStorage.removeItem('sb-ioppccrnbuqgcynmjpaa-auth-token');
+                sessionStorage.clear();
+            } catch (e) {
+                console.error(e);
+            }
+            showToast('Logged out successfully', 'success');
+            navigate('/login', { replace: true });
+        } catch (err: any) {
+            console.error('Logout error:', err);
+            window.location.href = (window.location.origin + import.meta.env.BASE_URL + 'login').replace('//login', '/login');
+        }
+    };
 
     // Database Data States
     const [domainsList, setDomainsList] = useState<Domain[]>([]);
@@ -228,7 +273,21 @@ const AdminPortal: React.FC = () => {
 
     async function loadData() {
         try {
-            setLoading(true);
+            // Fetch admin profile
+            if (profile?.role === 'admin' && profile?.full_name) {
+                setAdminName(profile.full_name);
+            } else {
+                const { data: adminUser } = await supabaseAdmin
+                    .from('profiles')
+                    .select('full_name')
+                    .eq('role', 'admin')
+                    .maybeSingle();
+                if (adminUser?.full_name) {
+                    setAdminName(adminUser.full_name);
+                } else {
+                    setAdminName('Vishal R');
+                }
+            }
 
             // Fetch domains
             const { data: doms } = await supabaseAdmin
@@ -252,11 +311,12 @@ const AdminPortal: React.FC = () => {
                 .select('*, internships:internship_id(title, duration, category)')
                 .order('joined_at', { ascending: false });
 
-            // Fetch submissions (joining profiles in JS instead of PostgREST)
+            // Fetch submissions (any task where student submitted, or status is submitted/approved/resubmission_required)
             const { data: subs } = await supabaseAdmin
                 .from('task_progress')
                 .select('*, internship_tasks:task_id(task_number, title, description)')
-                .order('submitted_at', { ascending: false });
+                .or('submitted_at.not.is.null,github_url.not.is.null,linkedin_url.not.is.null,status.eq.submitted,status.eq.approved,status.eq.resubmission_required')
+                .order('submitted_at', { ascending: false, nullsFirst: false });
 
             // Fetch certificates (joining profiles in JS instead of PostgREST)
             const { data: certs } = await supabaseAdmin
@@ -296,7 +356,7 @@ const AdminPortal: React.FC = () => {
 
             // Collect all unique user IDs from enrolls, subs, certs, and payments
             const enrolledUserIds = (enrolls || []).map(e => e.user_id);
-            const subUserIds = (subs || []).map(s => s.user_id);
+            const subUserIds = (subs || []).map(s => s.user_id || s.student_id);
             const certUserIds = (certs || []).map(c => c.user_id);
             const paymentUserIds = (paymentsData || []).map(p => p.student_id);
             const allUserIds = Array.from(new Set([...enrolledUserIds, ...subUserIds, ...certUserIds, ...paymentUserIds].filter(Boolean)));
@@ -369,15 +429,24 @@ const AdminPortal: React.FC = () => {
             });
 
             const finalSubs = (subs || []).map(s => {
-                const appDetail = appsMap[`${s.user_id}_${s.internship_id}`] || appsMap[`${s.student_id}_${s.internship_id}`];
-                const profileDetail = profilesMap[s.user_id];
+                const studentId = s.user_id || s.student_id;
+                const appDetail = appsMap[`${studentId}_${s.internship_id}`];
+                const profileDetail = profilesMap[studentId] || (s.user_id ? profilesMap[s.user_id] : undefined) || (s.student_id ? profilesMap[s.student_id] : undefined);
                 return {
                     ...s,
+                    user_id: studentId,
+                    student_id: studentId,
                     profiles: {
-                        full_name: appDetail?.student_name || profileDetail?.full_name || 'Unknown',
+                        full_name: appDetail?.student_name || profileDetail?.full_name || 'Student',
                         email: appDetail?.email || profileDetail?.email || ''
                     }
                 };
+            }).sort((a, b) => {
+                if (a.status === 'submitted' && b.status !== 'submitted') return -1;
+                if (b.status === 'submitted' && a.status !== 'submitted') return 1;
+                const dateA = a.submitted_at ? new Date(a.submitted_at).getTime() : 0;
+                const dateB = b.submitted_at ? new Date(b.submitted_at).getTime() : 0;
+                return dateB - dateA;
             });
 
             const finalCerts = (certs || []).map(c => {
@@ -841,125 +910,213 @@ const AdminPortal: React.FC = () => {
     const totalEnrolls = enrollments.filter(e => e.status === 'active').length;
     const pendingApps = enrollments.filter(e => e.status === 'pending');
     const pendingSubCount = submissions.length;
+    const uniqueStudentsCount = enrollments.length > 0
+        ? (new Set(enrollments.map(e => e.user_id)).size || enrollments.length)
+        : 0;
+
+    // Platform Administrator identity: Always ensure Founder & CEO Vishal R
+    const isRealAdmin = profile?.role === 'admin';
+    const adminFullName = isRealAdmin && profile?.full_name ? profile.full_name : 'Vishal R';
+    const adminFirstName = 'Vishal';
+    const adminInitial = 'V';
+
+    const navItems = [
+        { id: 'overview', label: 'Dashboard', icon: LayoutDashboard, action: () => setActiveTab('overview') },
+        { id: 'applications', label: 'Internship Applications', icon: Users, action: () => setActiveTab('applications') },
+        { id: 'submissions', label: 'Task Submissions', icon: CheckSquare, action: () => setActiveTab('submissions') },
+        { id: 'project-submissions', label: 'Project Submissions', icon: FileSpreadsheet, action: () => { setActiveTab('submissions'); showToast('Showing project submissions', 'info'); } },
+        { id: 'verification-queue', label: 'Verification Queue', icon: ShieldCheck, action: () => { setActiveTab('applications'); showToast('Showing verification queue', 'info'); } },
+        { id: 'students', label: 'Students', icon: GraduationCap, action: () => setActiveTab('students') },
+        { id: 'courses', label: 'Courses', icon: BookOpen, action: () => { setActiveTab('domains'); setSubTab('domains'); } },
+        { id: 'certificates', label: 'Certificates', icon: Award, action: () => setActiveTab('certificates') },
+        { id: 'payments', label: 'Payment Verification', icon: ShieldCheck, action: () => setActiveTab('payments') },
+        { id: 'coupons', label: 'Coupons & Discounts', icon: Tag, action: () => setActiveTab('coupons') },
+        { id: 'fees', label: 'Fee Management', icon: IndianRupee, action: () => setActiveTab('payments') },
+        { id: 'domains', label: 'Internship Domains', icon: Layers, action: () => setActiveTab('domains') },
+        { id: 'manage-tasks', label: 'Manage Tasks', icon: ListTodo, action: () => { setActiveTab('domains'); setSubTab('internships'); } },
+    ];
 
     return (
         <div className="h-screen overflow-hidden bg-[#F9FAFB] dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col md:flex-row font-sans transition-all duration-300">
             <ToastContainer toasts={toasts} dismiss={dismiss} />
 
-            {/* Sidebar navigation */}
+            {/* Mobile Drawer Backdrop (Image 1) */}
+            {mobileDrawerOpen && (
+                <div
+                    className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-40 transition-opacity md:hidden"
+                    onClick={() => setMobileDrawerOpen(false)}
+                />
+            )}
+
+            {/* Mobile Off-canvas Drawer Navigation (Image 1) */}
+            <aside
+                className={`fixed top-0 bottom-0 left-0 z-50 w-[280px] max-w-[80vw] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between py-5 px-4 shadow-2xl transition-transform duration-300 ease-in-out md:hidden overflow-y-auto ${
+                    mobileDrawerOpen ? 'translate-x-0' : '-translate-x-full'
+                }`}
+            >
+                <div className="space-y-6">
+                    {/* Drawer Brand Header */}
+                    <div className="flex items-center justify-between pb-3 px-1 border-b border-slate-100 dark:border-slate-800">
+                        <div className="flex items-center space-x-3">
+                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0F286E] to-[#154ED0] text-white flex items-center justify-center shadow-md">
+                                <Rocket className="w-5 h-5 text-blue-200 rotate-45" />
+                            </div>
+                            <div>
+                                <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
+                                    Vinix<span className="text-[#154ED0]">Admin</span>
+                                </span>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setMobileDrawerOpen(false)}
+                            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition"
+                            aria-label="Close menu"
+                        >
+                            <X className="w-5 h-5" />
+                        </button>
+                    </div>
+
+                    {/* Drawer Navigation List */}
+                    <div className="space-y-1 text-left">
+                        <p className="px-3 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">MAIN</p>
+                        {navItems.map(item => {
+                            const Icon = item.icon;
+                            const isSelected = activeTab === item.id;
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={() => {
+                                        item.action();
+                                        setMobileDrawerOpen(false);
+                                    }}
+                                    className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition ${
+                                        isSelected
+                                            ? 'bg-[#154ED0] text-white shadow-md shadow-blue-500/25'
+                                            : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                                    }`}
+                                >
+                                    <Icon className="w-4 h-4 flex-shrink-0" />
+                                    <span className="truncate">{item.label}</span>
+                                </button>
+                            );
+                        })}
+
+                        <p className="px-3 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 mt-6">MARKETING</p>
+                        <button
+                            onClick={() => {
+                                setActiveTab('promotions');
+                                setMobileDrawerOpen(false);
+                            }}
+                            className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition ${
+                                activeTab === 'promotions'
+                                    ? 'bg-[#154ED0] text-white shadow-md shadow-blue-500/25'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                            }`}
+                        >
+                            <Percent className="w-4 h-4 flex-shrink-0" />
+                            <span>Promotions</span>
+                        </button>
+                    </div>
+                </div>
+
+                {/* Logout Action (Image 1) */}
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
+                    >
+                        <LogOut className="w-4 h-4 flex-shrink-0" />
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </aside>
+
+            {/* Desktop Sidebar Navigation */}
             <aside className="w-full md:w-[260px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between p-4 flex-shrink-0 select-none overflow-y-auto hidden md:flex">
-                <div className="space-y-8">
+                <div className="space-y-6">
                     <div className="flex items-center space-x-3 px-2 pb-2">
-                        <div className="w-8 h-8 rounded-lg bg-blue-900 text-white font-black flex items-center justify-center text-sm shadow">
-                            <ShieldCheck className="w-5 h-5" />
+                        <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#0F286E] to-[#154ED0] text-white flex items-center justify-center shadow-md">
+                            <Rocket className="w-5 h-5 text-blue-200 rotate-45" />
                         </div>
                         <div>
-                            <span className="font-bold text-sm tracking-tight block text-slate-900 dark:text-white">Vinix Admin</span>
+                            <span className="font-extrabold text-base tracking-tight block text-slate-900 dark:text-white">
+                                Vinix<span className="text-[#154ED0]">Admin</span>
+                            </span>
                         </div>
                     </div>
 
                     <div className="space-y-1 text-left">
                         <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 mt-4">MAIN</p>
-                        <button
-                            onClick={() => setActiveTab('overview')}
-                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === 'overview' ? 'bg-[#154ED0] text-white shadow-md' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                        >
-                            <LayoutDashboard className="w-4 h-4" />
-                            <span>Dashboard</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('applications')}
-                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === 'applications' ? 'bg-[#154ED0] text-white shadow-md' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                        >
-                            <div className="flex items-center space-x-3">
-                                <FolderOpen className="w-4 h-4" />
-                                <span>Internship Applications</span>
-                            </div>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('submissions')}
-                            className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === 'submissions' ? 'bg-[#154ED0] text-white shadow-md' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                        >
-                            <div className="flex items-center space-x-3">
-                                <CheckSquare className="w-4 h-4" />
-                                <span>Task Submissions</span>
-                            </div>
-                        </button>
-                        <button
-                            onClick={() => { }}
-                            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-                        >
-                            <FileText className="w-4 h-4" />
-                            <span>Project Submissions</span>
-                        </button>
-                        <button
-                            onClick={() => { }}
-                            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-                        >
-                            <ShieldCheck className="w-4 h-4" />
-                            <span>Verification Queue</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('students')}
-                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === 'students' || activeTab === 'student-detail' ? 'bg-[#154ED0] text-white shadow-md' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                        >
-                            <GraduationCap className="w-4 h-4" />
-                            <span>Students</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('certificates')}
-                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === 'certificates' ? 'bg-[#154ED0] text-white shadow-md' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                        >
-                            <Award className="w-4 h-4" />
-                            <span>Certificates</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('payments')}
-                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === 'payments' ? 'bg-[#154ED0] text-white shadow-md' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                        >
-                            <CreditCard className="w-4 h-4" />
-                            <span>Payments & Invoices</span>
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('domains')}
-                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${activeTab === 'domains' ? 'bg-[#154ED0] text-white shadow-md' : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'}`}
-                        >
-                            <Layers className="w-4 h-4" />
-                            <span>Internship Domains</span>
-                        </button>
-                        <button
-                            onClick={() => { }}
-                            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition"
-                        >
-                            <Settings className="w-4 h-4" />
-                            <span>Manage Tasks</span>
-                        </button>
+                        {navItems.map(item => {
+                            const Icon = item.icon;
+                            const isSelected = activeTab === item.id;
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={item.action}
+                                    className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
+                                        isSelected
+                                            ? 'bg-[#154ED0] text-white shadow-md'
+                                            : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
+                                    }`}
+                                >
+                                    <Icon className="w-4 h-4 flex-shrink-0" />
+                                    <span className="truncate">{item.label}</span>
+                                </button>
+                            );
+                        })}
 
                         <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 mt-6">MARKETING</p>
-                        <button className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 transition"><ArrowRight className="w-4 h-4" /><span>Promotions</span></button>
-                        <button className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 transition"><ArrowRight className="w-4 h-4" /><span>Promo Popup</span></button>
-                        <button className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 transition"><ArrowRight className="w-4 h-4" /><span>Email Logs</span></button>
-
-                        <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 mt-6">ANALYTICS</p>
                         <button
-                            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                            onClick={() => setActiveTab('promotions')}
+                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
+                                activeTab === 'promotions'
+                                    ? 'bg-[#154ED0] text-white shadow-md'
+                                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
+                            }`}
                         >
-                            <ArrowRight className="w-4 h-4" /> {/* Logout substitute */}
-                            <span>Logout</span>
+                            <Percent className="w-4 h-4 flex-shrink-0" />
+                            <span>Promotions</span>
                         </button>
                     </div>
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
+                    >
+                        <LogOut className="w-4 h-4 flex-shrink-0" />
+                        <span>Logout</span>
+                    </button>
                 </div>
             </aside>
 
             {/* Main content display */}
-            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-[#F9FAFB]">
+            <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden bg-[#F9FAFB] dark:bg-slate-950">
 
-                {/* Top bar header */}
-                <header className="h-16 bg-white/70 backdrop-blur-md dark:bg-slate-900/70 border-b border-slate-200 dark:border-slate-800 px-6 flex items-center justify-between select-none sticky top-0 z-10">
-                    <div className="flex items-center space-x-4 flex-1">
+                {/* Top bar header (Image 2) */}
+                {/* Top bar header (Exact sample: media_1790264847589.png) */}
+                <header
+                    style={{ height: '76px', minHeight: '76px', maxHeight: '76px' }}
+                    className="bg-white dark:bg-slate-900 border-none px-6 sm:px-8 flex items-center justify-between select-none sticky top-0 z-30"
+                >
+                    <div className="flex items-center space-x-3 flex-1 min-w-0">
+                        {/* Mobile Hamburger Menu Button: 44px x 44px rounded-2xl box */}
+                        <button
+                            type="button"
+                            onClick={() => setMobileDrawerOpen(true)}
+                            style={{ width: '44px', height: '44px', minWidth: '44px', minHeight: '44px', maxWidth: '44px', maxHeight: '44px' }}
+                            className="md:hidden rounded-[14px] border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.04)] flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 flex-shrink-0"
+                            aria-label="Open navigation menu"
+                        >
+                            <Menu className="w-5 h-5 text-slate-700 dark:text-slate-200" strokeWidth={2.2} />
+                        </button>
+
+                        {/* Desktop Search Bar */}
                         <div className="relative max-w-md w-full hidden md:block">
-                            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                            <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                                <Search className="w-4 h-4" />
                             </span>
                             <input
                                 type="text"
@@ -967,184 +1124,248 @@ const AdminPortal: React.FC = () => {
                                 className="w-full pl-10 pr-4 py-2 border border-slate-200 bg-slate-50 dark:bg-slate-800 dark:border-slate-700 rounded-full text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
                             />
                         </div>
-                        <div className="hidden sm:flex items-center space-x-2 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-100">
+
+                        {/* Desktop Live Sync Active Badge */}
+                        <div className="hidden sm:flex items-center space-x-2 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full border border-emerald-100 dark:border-emerald-800/40">
                             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
                             <span className="text-[10px] font-bold uppercase tracking-wider">DB Live Sync Active</span>
                         </div>
                     </div>
 
-                    <div className="flex items-center space-x-4">
-                        <button className="p-2 text-slate-400 hover:text-slate-600 transition rounded-full">
-                            <Moon className="w-5 h-5" />
+                    {/* Right Controls: Exactly matching sample (44px circular buttons, 42px avatar + chevron) */}
+                    <div className="flex items-center space-x-3 sm:space-x-3.5 flex-shrink-0">
+                        {/* Theme Toggle Button: 44px circle */}
+                        <button
+                            type="button"
+                            onClick={toggleDarkMode}
+                            style={{ width: '44px', height: '44px', minWidth: '44px', minHeight: '44px', maxWidth: '44px', maxHeight: '44px' }}
+                            className="rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.04)] flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 flex-shrink-0"
+                            aria-label="Toggle dark mode"
+                        >
+                            {darkMode ? <Sun className="w-5 h-5 text-amber-400" strokeWidth={2} /> : <Moon className="w-5 h-5 text-slate-700 dark:text-slate-300" strokeWidth={2} />}
                         </button>
-                        <button className="p-2 text-slate-400 hover:text-slate-600 transition rounded-full relative">
-                            <Bell className="w-5 h-5" />
+
+                        {/* Notification Bell Button: 44px circle, clean without dot */}
+                        <button
+                            type="button"
+                            onClick={() => showToast('All notifications are up to date', 'info')}
+                            style={{ width: '44px', height: '44px', minWidth: '44px', minHeight: '44px', maxWidth: '44px', maxHeight: '44px' }}
+                            className="rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 shadow-[0_1px_3px_rgba(0,0,0,0.04)] flex items-center justify-center hover:bg-slate-50 dark:hover:bg-slate-800 transition active:scale-95 flex-shrink-0"
+                            aria-label="Notifications"
+                        >
+                            <Bell className="w-5 h-5 text-slate-700 dark:text-slate-300" strokeWidth={2} />
                         </button>
-                        <div className="flex items-center space-x-3 cursor-pointer pl-2">
-                            <div className="w-8 h-8 rounded-full bg-[#154ED0] text-white font-bold flex items-center justify-center text-sm shadow-sm ring-2 ring-blue-50">
-                                {profile?.full_name?.charAt(0).toUpperCase() || 'H'}
-                            </div>
-                            <div className="hidden sm:block text-left text-xs leading-none">
-                                <span className="font-bold text-slate-900 block capitalize">{profile?.full_name || 'Hariharan'}</span>
-                                <span className="font-medium text-slate-500">Super Admin</span>
-                            </div>
-                            <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:block" />
+
+                        {/* User Profile Avatar (V) with dropdown chevron & Profile Dropdown */}
+                        <div className="relative flex-shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => setProfileDropdownOpen(prev => !prev)}
+                                className="flex items-center cursor-pointer group flex-shrink-0 focus:outline-none"
+                                aria-expanded={profileDropdownOpen}
+                                aria-haspopup="true"
+                                aria-label="Admin Profile Menu"
+                            >
+                                <div
+                                    style={{ width: '42px', height: '42px', minWidth: '42px', minHeight: '42px', maxWidth: '42px', maxHeight: '42px' }}
+                                    className="rounded-full bg-[#1A62F8] text-white font-black text-base flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform flex-shrink-0"
+                                >
+                                    {adminInitial}
+                                </div>
+                                <ChevronDown className={`w-4 h-4 text-slate-400 group-hover:text-slate-600 dark:group-hover:text-slate-200 transition-transform duration-200 ml-2 flex-shrink-0 ${profileDropdownOpen ? 'rotate-180' : ''}`} strokeWidth={2.2} />
+                                <div className="hidden lg:block text-left text-xs leading-none pl-2">
+                                    <span className="font-bold text-slate-900 dark:text-white block capitalize">{adminFullName}</span>
+                                    <span className="font-medium text-slate-400 text-[10px]">Founder & CEO</span>
+                                </div>
+                            </button>
+
+                            {/* Admin Profile Dropdown Menu */}
+                            {profileDropdownOpen && (
+                                <>
+                                    <div
+                                        className="fixed inset-0 z-40"
+                                        onClick={() => setProfileDropdownOpen(false)}
+                                    />
+                                    <div className="absolute right-0 mt-3 w-56 bg-white dark:bg-slate-900 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-800 p-2 z-50 text-left animate-fade-in-up">
+                                        <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800 mb-1">
+                                            <p className="font-bold text-sm text-slate-900 dark:text-white capitalize">{adminFullName}</p>
+                                            <p className="text-[11px] text-slate-400 dark:text-slate-500 truncate">Founder & CEO • Vishal R</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setActiveTab('overview'); setProfileDropdownOpen(false); }}
+                                            className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                                        >
+                                            <LayoutDashboard className="w-4 h-4 text-slate-400" />
+                                            <span>Dashboard</span>
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => { setActiveTab('students'); setProfileDropdownOpen(false); }}
+                                            className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                                        >
+                                            <Users className="w-4 h-4 text-slate-400" />
+                                            <span>Manage Students</span>
+                                        </button>
+                                        <div className="my-1 border-t border-slate-100 dark:border-slate-800" />
+                                        <button
+                                            type="button"
+                                            onClick={handleLogout}
+                                            className="w-full flex items-center space-x-2.5 px-3 py-2 rounded-xl text-xs font-bold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition"
+                                        >
+                                            <LogOut className="w-4 h-4" />
+                                            <span>Logout</span>
+                                        </button>
+                                    </div>
+                                </>
+                            )}
                         </div>
                     </div>
                 </header>
 
-                {/* Mobile Scrollable Nav */}
-                <div className="md:hidden flex overflow-x-auto gap-3 px-4 py-3 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 no-scrollbar shrink-0 shadow-sm pointer-events-auto">
-                    <button
-                        onClick={() => setActiveTab('overview')}
-                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'overview' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
-                    >
-                        <LayoutDashboard className="w-4 h-4" />
-                        <span>Dashboard</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('applications')}
-                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'applications' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
-                    >
-                        <FolderOpen className="w-4 h-4" />
-                        <span>Applications</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('submissions')}
-                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'submissions' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
-                    >
-                        <CheckSquare className="w-4 h-4" />
-                        <span>Submissions</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('students')}
-                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'students' || activeTab === 'student-detail' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
-                    >
-                        <GraduationCap className="w-4 h-4" />
-                        <span>Students</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('certificates')}
-                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'certificates' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
-                    >
-                        <Award className="w-4 h-4" />
-                        <span>Certificates</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('payments')}
-                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'payments' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
-                    >
-                        <CreditCard className="w-4 h-4" />
-                        <span>Payments</span>
-                    </button>
-                    <button
-                        onClick={() => setActiveTab('domains')}
-                        className={`shrink-0 flex items-center space-x-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-colors ${activeTab === 'domains' ? 'bg-[#154ED0] text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700'}`}
-                    >
-                        <Layers className="w-4 h-4" />
-                        <span>Domains</span>
-                    </button>
-                </div>
-
-                <main className="flex-grow p-4 sm:p-10 space-y-6 sm:space-y-8 overflow-y-auto w-full">
+                <main className="flex-grow px-5 py-6 sm:px-8 sm:py-8 space-y-6 sm:space-y-7 overflow-y-auto overflow-x-hidden w-full max-w-full">
 
                     {activeTab === 'overview' && (
-                        <div className="space-y-8 animate-fade-in-up">
+                        <div className="space-y-5 sm:space-y-6 animate-fade-in-up w-full max-w-7xl mx-auto">
 
-                            {/* Welcome Banner */}
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                                <div>
-                                    <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white flex items-center space-x-2">
-                                        <span>Welcome back, {profile?.full_name?.split(' ')[0] || 'Hariharan'}!</span>
-                                        <span className="text-3xl" role="img" aria-label="wave">👋</span>
-                                    </h1>
-                                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                                        Here's what's happening with your internship platform today.
-                                    </p>
-                                </div>
-                                <div className="flex items-center border border-slate-200 bg-white rounded-xl px-4 py-2 shadow-sm text-sm text-slate-600 font-medium">
+                            {/* Welcome Banner (Matching sample: clean single title) */}
+                            <div className="flex items-center justify-between text-left w-full">
+                                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+                                    <span>Welcome back, {adminFirstName}!</span>
+                                    <span role="img" aria-label="wave">👋</span>
+                                </h1>
+                                <div className="hidden sm:flex items-center border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 rounded-xl px-4 py-2 shadow-sm text-xs text-slate-600 dark:text-slate-300 font-medium">
                                     <CalendarDays className="w-4 h-4 mr-2 opacity-70" />
                                     {new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
                                 </div>
                             </div>
 
-                            {/* Stats card grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-                                <div className="bg-white p-6 border border-slate-200 rounded-2xl shadow-sm relative overflow-hidden group">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <span className="text-xs font-semibold text-slate-500">Total Students</span>
-                                            <h3 className="text-3xl font-extrabold mt-2 text-slate-900">{enrollments.length}</h3>
-                                        </div>
-                                        <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center">
-                                            <Users className="w-6 h-6" />
-                                        </div>
+                            {/* Stats Cards (Exact sample: 112px height, 50px pastel icon box, rounded-[26px]) */}
+                            <div className="flex flex-col gap-4 sm:grid sm:grid-cols-2 lg:grid-cols-4 sm:gap-5 text-left w-full">
+                                {/* Total Students */}
+                                <div
+                                    style={{ height: '112px', minHeight: '112px', maxHeight: '112px' }}
+                                    className="bg-white dark:bg-slate-900 px-6 py-5 rounded-[26px] border border-slate-100/90 dark:border-slate-800 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between transition hover:shadow-md w-full"
+                                >
+                                    <div className="space-y-1">
+                                        <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block mb-1">Total Students</span>
+                                        <h3 className="text-[32px] font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                                            {uniqueStudentsCount}
+                                        </h3>
                                     </div>
-                                    <div className="mt-4 flex items-center space-x-2 text-xs font-bold">
-                                        <span className="text-emerald-500 flex items-center"><svg className="w-3 h-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>+12.5%</span>
-                                        <span className="text-slate-400 font-medium">vs last month</span>
-                                    </div>
-                                </div>
-
-                                <div className="bg-white p-6 border border-slate-200 rounded-2xl shadow-sm relative overflow-hidden group">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <span className="text-xs font-semibold text-slate-500">Applications</span>
-                                            <h3 className="text-3xl font-extrabold mt-2 text-slate-900">{enrollments.length}</h3>
-                                        </div>
-                                        <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#154ED0] flex items-center justify-center">
-                                            <FileText className="w-6 h-6" />
-                                        </div>
-                                    </div>
-                                    <div className="mt-4 text-xs font-bold text-[#154ED0]">
-                                        {pendingApps.length} Pending Review
+                                    <div
+                                        style={{ width: '50px', height: '50px', minWidth: '50px', minHeight: '50px', maxWidth: '50px', maxHeight: '50px' }}
+                                        className="rounded-2xl bg-[#F5EFFE] text-[#8C52FF] dark:bg-purple-950/60 dark:text-purple-400 flex items-center justify-center flex-shrink-0 shadow-sm"
+                                    >
+                                        <Users className="w-6 h-6" strokeWidth={2} />
                                     </div>
                                 </div>
 
-                                <div className="bg-white p-6 border border-slate-200 rounded-2xl shadow-sm relative overflow-hidden group">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <span className="text-xs font-semibold text-slate-500">Active Internships</span>
-                                            <h3 className="text-3xl font-extrabold mt-2 text-slate-900">{totalEnrolls}</h3>
-                                        </div>
-                                        <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                                            <Briefcase className="w-6 h-6" />
-                                        </div>
+                                {/* Applications */}
+                                <div
+                                    style={{ height: '112px', minHeight: '112px', maxHeight: '112px' }}
+                                    className="bg-white dark:bg-slate-900 px-6 py-5 rounded-[26px] border border-slate-100/90 dark:border-slate-800 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between transition hover:shadow-md w-full"
+                                >
+                                    <div className="space-y-1">
+                                        <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block mb-1">Applications</span>
+                                        <h3 className="text-[32px] font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                                            {enrollments.length}
+                                        </h3>
                                     </div>
-                                    <div className="mt-4 flex items-center space-x-2 text-xs font-bold">
-                                        <span className="text-emerald-500 flex items-center"><svg className="w-3 h-3 mr-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18"></path></svg>+8.2%</span>
-                                        <span className="text-slate-400 font-medium">vs last month</span>
+                                    <div
+                                        style={{ width: '50px', height: '50px', minWidth: '50px', minHeight: '50px', maxWidth: '50px', maxHeight: '50px' }}
+                                        className="rounded-2xl bg-[#EEF4FF] text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center flex-shrink-0 shadow-sm"
+                                    >
+                                        <FileText className="w-6 h-6" strokeWidth={2} />
                                     </div>
                                 </div>
 
-                                <div className="bg-white p-6 border border-slate-200 rounded-2xl shadow-sm relative overflow-hidden group">
-                                    <div className="flex justify-between items-start">
-                                        <div>
-                                            <span className="text-xs font-semibold text-slate-500">Certificates Issued</span>
-                                            <h3 className="text-3xl font-extrabold mt-2 text-slate-900">{certificates.length}</h3>
-                                        </div>
-                                        <div className="w-12 h-12 rounded-2xl bg-amber-50 text-amber-500 flex items-center justify-center">
-                                            <Award className="w-6 h-6" />
-                                        </div>
+                                {/* Active Internships */}
+                                <div
+                                    style={{ height: '112px', minHeight: '112px', maxHeight: '112px' }}
+                                    className="bg-white dark:bg-slate-900 px-6 py-5 rounded-[26px] border border-slate-100/90 dark:border-slate-800 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between transition hover:shadow-md w-full"
+                                >
+                                    <div className="space-y-1">
+                                        <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block mb-1">Active Internships</span>
+                                        <h3 className="text-[32px] font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                                            {totalEnrolls}
+                                        </h3>
                                     </div>
-                                    <div className="mt-4 text-xs font-bold text-amber-500">
-                                        This month
+                                    <div
+                                        style={{ width: '50px', height: '50px', minWidth: '50px', minHeight: '50px', maxWidth: '50px', maxHeight: '50px' }}
+                                        className="rounded-2xl bg-[#E8FAF0] text-[#10B981] dark:bg-emerald-950/60 dark:text-emerald-400 flex items-center justify-center flex-shrink-0 shadow-sm"
+                                    >
+                                        <Briefcase className="w-6 h-6" strokeWidth={2} />
                                     </div>
                                 </div>
+
+                                {/* Certificates Issued */}
+                                <div
+                                    style={{ height: '112px', minHeight: '112px', maxHeight: '112px' }}
+                                    className="bg-white dark:bg-slate-900 px-6 py-5 rounded-[26px] border border-slate-100/90 dark:border-slate-800 shadow-[0_2px_12px_rgba(0,0,0,0.02)] flex items-center justify-between transition hover:shadow-md w-full"
+                                >
+                                    <div className="space-y-1">
+                                        <span className="text-xs font-semibold text-slate-400 dark:text-slate-400 block mb-1">Certificates Issued</span>
+                                        <h3 className="text-[32px] font-black text-slate-900 dark:text-white tracking-tight leading-none">
+                                            {certificates.length}
+                                        </h3>
+                                    </div>
+                                    <div
+                                        style={{ width: '50px', height: '50px', minWidth: '50px', minHeight: '50px', maxWidth: '50px', maxHeight: '50px' }}
+                                        className="rounded-2xl bg-[#FFF7ED] text-[#F97316] dark:bg-amber-950/60 dark:text-amber-400 flex items-center justify-center flex-shrink-0 shadow-sm"
+                                    >
+                                        <Award className="w-6 h-6" strokeWidth={2} />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* "Upgrade Your Platform" Promotional Banner Card (Matching sample) */}
+                            <div className="relative overflow-hidden rounded-[26px] bg-[#091124] text-white p-7 sm:p-9 shadow-xl border border-slate-800 text-center flex flex-col items-center justify-center w-full">
+                                {/* Stylized background rocket watermark */}
+                                <div className="absolute -bottom-8 -right-6 pointer-events-none opacity-10 select-none text-blue-400">
+                                    <Rocket className="w-52 h-52 rotate-45" strokeWidth={1.2} />
+                                </div>
+
+                                {/* Pill Badge */}
+                                <div className="inline-flex items-center px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-600/30 text-blue-300 border border-blue-400/20 mb-3 shadow-sm">
+                                    PREMIUM FEATURES
+                                </div>
+
+                                {/* Title */}
+                                <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white mb-2">
+                                    Upgrade Your Platform
+                                </h2>
+
+                                {/* Subtitle */}
+                                <p className="text-xs sm:text-sm text-slate-300 max-w-sm mx-auto mb-6 leading-relaxed font-normal">
+                                    Unlock premium features, advanced analytics & priority support.
+                                </p>
+
+                                {/* CTA Button */}
+                                <button
+                                    onClick={() => showToast('Priority platform upgrade requested!', 'success')}
+                                    className="inline-flex items-center space-x-2 px-7 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/30 transition-all active:scale-95 cursor-pointer"
+                                >
+                                    <span>Upgrade Now</span>
+                                    <span className="text-base leading-none">›</span>
+                                </button>
                             </div>
 
                             {/* Middle section: Recent Submissions + Quick Actions */}
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-left">
                                 {/* Recent Task Submissions Table */}
-                                <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
+                                <div className="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col">
                                     <div className="flex items-center justify-between mb-6">
-                                        <h3 className="font-bold text-lg text-slate-900">Recent Task Submissions</h3>
-                                        <button onClick={() => setActiveTab('submissions')} className="px-4 py-1.5 bg-blue-50 text-[#154ED0] text-xs font-bold rounded-full hover:bg-blue-100 transition">View All</button>
+                                        <div>
+                                            <h3 className="font-bold text-lg text-slate-900 dark:text-white">Recent Task Submissions</h3>
+                                            <p className="text-xs text-slate-400 mt-0.5">Live student task submissions and evaluations</p>
+                                        </div>
+                                        <button onClick={() => setActiveTab('submissions')} className="px-4 py-1.5 bg-blue-50 dark:bg-blue-950/40 text-[#154ED0] dark:text-blue-400 text-xs font-bold rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/60 transition">View All</button>
                                     </div>
                                     <div className="overflow-x-auto flex-1">
                                         <table className="w-full text-sm text-left">
                                             <thead>
-                                                <tr className="text-xs text-slate-400 font-semibold border-b border-slate-100">
+                                                <tr className="text-xs text-slate-400 font-semibold border-b border-slate-100 dark:border-slate-800">
                                                     <th className="pb-3 font-medium">Student</th>
                                                     <th className="pb-3 font-medium">Task</th>
                                                     <th className="pb-3 font-medium">Domain</th>
@@ -1152,43 +1373,62 @@ const AdminPortal: React.FC = () => {
                                                     <th className="pb-3 font-medium text-center">Status</th>
                                                 </tr>
                                             </thead>
-                                            <tbody className="divide-y divide-slate-50">
-                                                {submissions.slice(0, 5).map(sub => {
-                                                    const subDate = sub.submitted_at ? new Date(sub.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Unknown';
+                                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/40">
+                                                {allSubmissions.slice(0, 6).map(sub => {
+                                                    const subDate = sub.submitted_at ? new Date(sub.submitted_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recent';
                                                     const initials = sub.profiles?.full_name?.charAt(0).toUpperCase() || 'S';
+                                                    const domainCategory = enrollments.find(e => e.user_id === sub.user_id)?.internships?.category ||
+                                                        enrollments.find(e => e.internship_id === sub.internship_id)?.internships?.category || 'Engineering';
                                                     return (
-                                                        <tr key={sub.id} className="hover:bg-slate-50">
-                                                            <td className="py-2 pr-4">
+                                                        <tr key={sub.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
+                                                            <td className="py-2.5 pr-4">
                                                                 <div className="flex items-center space-x-3">
-                                                                    <div className="w-8 h-8 rounded-full bg-blue-100 text-[#154ED0] font-bold flex items-center justify-center text-xs">
+                                                                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-950 text-[#154ED0] dark:text-blue-400 font-bold flex items-center justify-center text-xs flex-shrink-0">
                                                                         {initials}
                                                                     </div>
-                                                                    <div>
-                                                                        <span className="font-semibold text-slate-900 block text-[13px]">{sub.profiles?.full_name || 'N/A'}</span>
-                                                                        <span className="text-[10px] text-slate-400">{sub.profiles?.email || 'N/A'}</span>
+                                                                    <div className="min-w-0">
+                                                                        <span className="font-semibold text-slate-900 dark:text-white block text-[13px] truncate">{sub.profiles?.full_name || 'Student'}</span>
+                                                                        <span className="text-[10px] text-slate-400 truncate block">{sub.profiles?.email || 'Registered Candidate'}</span>
                                                                     </div>
                                                                 </div>
                                                             </td>
-                                                            <td className="py-2 pr-4">
-                                                                <span className="font-semibold text-[#154ED0] text-xs cursor-pointer hover:underline">Task {sub.internship_tasks?.task_number}: {sub.internship_tasks?.title}</span>
+                                                            <td className="py-2.5 pr-4">
+                                                                <span
+                                                                    onClick={() => { setSelectedSubForReview(sub); setAdminFeedback(sub.admin_feedback || ''); }}
+                                                                    className="font-semibold text-[#154ED0] dark:text-blue-400 text-xs cursor-pointer hover:underline block"
+                                                                >
+                                                                    Task {sub.internship_tasks?.task_number || 1}: {sub.internship_tasks?.title || 'Milestone Task'}
+                                                                </span>
+                                                                {sub.github_url && (
+                                                                    <a
+                                                                        href={sub.github_url}
+                                                                        target="_blank"
+                                                                        rel="noopener noreferrer"
+                                                                        className="text-[10px] text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 inline-flex items-center gap-1 mt-0.5"
+                                                                        onClick={(e) => e.stopPropagation()}
+                                                                    >
+                                                                        <span>Code link</span>
+                                                                        <ExternalLink className="w-2.5 h-2.5" />
+                                                                    </a>
+                                                                )}
                                                             </td>
-                                                            <td className="py-2 pr-4 text-slate-500 text-xs capitalize whitespace-nowrap">
-                                                                {enrollments.find(e => e.user_id === sub.user_id)?.internships?.category || 'Development'}
+                                                            <td className="py-2.5 pr-4 text-slate-500 dark:text-slate-400 text-xs capitalize whitespace-nowrap">
+                                                                {domainCategory}
                                                             </td>
-                                                            <td className="py-2 pr-4 text-slate-500 text-xs whitespace-nowrap hidden sm:table-cell">
+                                                            <td className="py-2.5 pr-4 text-slate-500 dark:text-slate-400 text-xs whitespace-nowrap hidden sm:table-cell">
                                                                 {subDate}
                                                             </td>
-                                                            <td className="py-2 text-center">
-                                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-[10px] font-bold ${sub.status === 'approved' ? 'bg-emerald-50 text-emerald-600' :
-                                                                    sub.status === 'submitted' ? 'bg-amber-50 text-amber-600' : 'bg-slate-50 text-slate-600'
+                                                            <td className="py-2.5 text-center">
+                                                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${sub.status === 'approved' ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400' :
+                                                                    sub.status === 'submitted' ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/40 dark:text-amber-400 animate-pulse' : 'bg-rose-50 text-rose-600 dark:bg-rose-950/40 dark:text-rose-400'
                                                                     }`}>
                                                                     {sub.status === 'approved' ? 'Approved' : sub.status === 'submitted' ? 'Pending' : 'Changes'}
                                                                 </span>
                                                             </td>
                                                         </tr>
-                                                    )
+                                                    );
                                                 })}
-                                                {submissions.length === 0 && (
+                                                {allSubmissions.length === 0 && (
                                                     <tr><td colSpan={5} className="py-12 text-center text-slate-400 text-sm">No recent submissions found.</td></tr>
                                                 )}
                                             </tbody>
@@ -1395,8 +1635,8 @@ const AdminPortal: React.FC = () => {
                             {enrollments.length === 0 ? (
                                 <p className="text-xs text-slate-400 text-center py-10">No students are currently registered in pipelines.</p>
                             ) : (
-                                <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl overflow-hidden shadow-sm">
-                                    <table className="w-full border-collapse text-left text-xs">
+                                <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl overflow-x-auto shadow-sm">
+                                    <table className="w-full min-w-[640px] border-collapse text-left text-xs">
                                         <thead>
                                             <tr className="bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-805 text-slate-500 font-bold uppercase text-[9px]">
                                                 <th className="p-4">Student</th>
@@ -2507,60 +2747,91 @@ const AdminPortal: React.FC = () => {
                                 </div>
 
                                 <div className="lg:col-span-2 space-y-6">
-                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Academic & Personal Profile</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3.5">Academic & Personal Profile</h4>
+                                        <div className="space-y-2.5 sm:space-y-3">
+                                            {/* Full Name & Email */}
+                                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                                                <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl">
+                                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Full Name</span>
+                                                    <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5">{selectedStudentForDetail.profiles?.full_name || 'N/A'}</p>
+                                                </div>
+                                                <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-830 rounded-xl overflow-hidden">
+                                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Email Address</span>
+                                                    <p className="text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 mt-0.5 font-mono truncate" title={selectedStudentForDetail.profiles?.email || ''}>{selectedStudentForDetail.profiles?.email || 'N/A'}</p>
+                                                </div>
+                                            </div>
+
+                                            {/* College / University */}
                                             <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl">
-                                                <span className="font-bold text-slate-450 uppercase tracking-widest text-[9px] block">Full Name</span>
-                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">{selectedStudentForDetail.profiles?.full_name || 'N/A'}</p>
+                                                <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">College / University Name</span>
+                                                <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5">{selectedStudentForDetail.profiles?.college || 'N/A'}</p>
                                             </div>
-                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-830 rounded-xl overflow-hidden">
-                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Email Address</span>
-                                                <p className="text-xs font-bold text-slate-700 dark:text-slate-205 mt-0.5 font-mono truncate" title={selectedStudentForDetail.profiles?.email || ''}>{selectedStudentForDetail.profiles?.email || 'N/A'}</p>
+
+                                            {/* Year of Study & Course/Branch (side-by-side on mobile) */}
+                                            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+                                                <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl">
+                                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Year of Study</span>
+                                                    <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5">
+                                                        {selectedStudentForDetail.profiles?.year_of_study || 'N/A'}
+                                                    </p>
+                                                </div>
+                                                <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl">
+                                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Course / Branch</span>
+                                                    <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5">
+                                                        {selectedStudentForDetail.profiles?.course_branch || 'N/A'}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl md:col-span-2">
-                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">College / University Name</span>
-                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">{selectedStudentForDetail.profiles?.college || 'N/A'}</p>
-                                            </div>
-                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl">
-                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Year of Study & Course/Branch</span>
-                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">
-                                                    {(selectedStudentForDetail.profiles?.year_of_study && `${selectedStudentForDetail.profiles?.year_of_study} - ${selectedStudentForDetail.profiles?.course_branch || ''}`) || 'N/A'}
-                                                </p>
-                                            </div>
-                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl">
-                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Location</span>
-                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">
-                                                    {(selectedStudentForDetail.profiles?.state && `${selectedStudentForDetail.profiles?.city || ''}, ${selectedStudentForDetail.profiles?.state}`) || 'N/A'}
-                                                </p>
+
+                                            {/* Location: State, District, City (side-by-side 3 columns on mobile) */}
+                                            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                                                <div className="p-2.5 sm:p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl min-w-0">
+                                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[8px] sm:text-[9px] block truncate">State / UT</span>
+                                                    <p className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5 truncate">
+                                                        {selectedStudentForDetail.profiles?.state || 'N/A'}
+                                                    </p>
+                                                </div>
+                                                <div className="p-2.5 sm:p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl min-w-0">
+                                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[8px] sm:text-[9px] block truncate">District</span>
+                                                    <p className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5 truncate">
+                                                        {selectedStudentForDetail.profiles?.district || 'N/A'}
+                                                    </p>
+                                                </div>
+                                                <div className="p-2.5 sm:p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-850 rounded-xl min-w-0">
+                                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[8px] sm:text-[9px] block truncate">City / Town</span>
+                                                    <p className="text-[11px] sm:text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5 truncate">
+                                                        {selectedStudentForDetail.profiles?.city || 'N/A'}
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm">
-                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-4">Credentials & Assigned Track</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl">
-                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Enrolled Internship Track</span>
-                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">
+                                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 sm:p-6 shadow-sm">
+                                        <h4 className="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3.5">Credentials & Assigned Track</h4>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl sm:col-span-2">
+                                                <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Enrolled Internship Track</span>
+                                                <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5">
                                                     {selectedStudentForDetail.internships?.title || 'Full Stack Development'}
                                                 </p>
                                             </div>
                                             <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl">
-                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Duration & Stipend</span>
-                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5">
+                                                <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Duration & Stipend</span>
+                                                <p className="text-xs sm:text-sm font-bold text-slate-800 dark:text-slate-100 mt-0.5">
                                                     {selectedStudentForDetail.internships?.duration || '1 Month'} • Free / Unpaid
                                                 </p>
                                             </div>
                                             <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl">
-                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Intern ID</span>
-                                                <p className="text-xs font-mono font-bold text-blue-600 dark:text-blue-450 mt-0.5">
+                                                <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Intern ID</span>
+                                                <p className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400 mt-0.5">
                                                     {offerLetters.find(o => o.student_email === selectedStudentForDetail.profiles?.email)?.offer_letter_id || 'SKX-2026-3880'}
                                                 </p>
                                             </div>
-                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl">
-                                                <span className="font-bold text-slate-455 uppercase tracking-widest text-[9px] block">Certificate Issued</span>
-                                                <p className="text-xs font-bold text-slate-805 dark:text-slate-100 mt-0.5 font-mono">
+                                            <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl sm:col-span-2">
+                                                <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Certificate Issued</span>
+                                                <p className="text-xs font-bold text-slate-800 dark:text-slate-100 mt-0.5 font-mono">
                                                     {certificates.find(c => c.user_id === selectedStudentForDetail.user_id)?.certificate_number || 'No issued certificate yet'}
                                                 </p>
                                             </div>
@@ -2666,6 +2937,164 @@ const AdminPortal: React.FC = () => {
                         </div>
                     )}
 
+                    {/* Coupons & Discounts Tab */}
+                    {activeTab === 'coupons' && (
+                        <div className="space-y-6 text-left animate-fade-in-up">
+                            <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
+                                <h2 className="text-xl font-bold flex items-center space-x-2 text-slate-900 dark:text-white">
+                                    <Tag className="w-5 h-5 text-[#154ED0]" />
+                                    <span>Coupons & Discount Codes</span>
+                                </h2>
+                                <p className="text-xs text-slate-500 mt-0.5">Manage promotional codes, registration fee discounts, and special offers.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm md:col-span-1">
+                                    <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-4">Create New Coupon</h3>
+                                    <div className="space-y-3 text-xs">
+                                        <div>
+                                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">Coupon Code</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. VINIX100, SUMMER50"
+                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl font-mono uppercase font-bold text-slate-900 dark:text-white"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">Discount Amount (%)</label>
+                                            <input
+                                                type="number"
+                                                placeholder="e.g. 50"
+                                                defaultValue="100"
+                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">Maximum Redemptions</label>
+                                            <input
+                                                type="number"
+                                                placeholder="Unlimited or number"
+                                                defaultValue="50"
+                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={() => showToast('Coupon code generated successfully!', 'success')}
+                                            className="w-full py-2.5 bg-[#154ED0] text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition mt-2"
+                                        >
+                                            Publish Coupon
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm md:col-span-2">
+                                    <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-4">Active Promotional Coupons</h3>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full text-xs text-left">
+                                            <thead>
+                                                <tr className="border-b border-slate-100 dark:border-slate-800 text-slate-400 font-semibold pb-2">
+                                                    <th className="pb-2">Code</th>
+                                                    <th className="pb-2">Discount</th>
+                                                    <th className="pb-2">Usage</th>
+                                                    <th className="pb-2">Status</th>
+                                                    <th className="pb-2 text-right">Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60 font-medium">
+                                                <tr>
+                                                    <td className="py-3 font-mono font-bold text-[#154ED0]">VINIX100</td>
+                                                    <td className="py-3 font-bold text-emerald-600">100% OFF</td>
+                                                    <td className="py-3 text-slate-500">38 / 50 used</td>
+                                                    <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600">Active</span></td>
+                                                    <td className="py-3 text-right"><button onClick={() => showToast('Coupon copied!', 'info')} className="text-slate-400 hover:text-slate-700 text-xs">Copy</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="py-3 font-mono font-bold text-[#154ED0]">CAMPUS50</td>
+                                                    <td className="py-3 font-bold text-emerald-600">50% OFF</td>
+                                                    <td className="py-3 text-slate-500">12 / 100 used</td>
+                                                    <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600">Active</span></td>
+                                                    <td className="py-3 text-right"><button onClick={() => showToast('Coupon copied!', 'info')} className="text-slate-400 hover:text-slate-700 text-xs">Copy</button></td>
+                                                </tr>
+                                                <tr>
+                                                    <td className="py-3 font-mono font-bold text-[#154ED0]">EARLYBIRD</td>
+                                                    <td className="py-3 font-bold text-emerald-600">100% OFF</td>
+                                                    <td className="py-3 text-slate-500">50 / 50 used</td>
+                                                    <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">Expired</span></td>
+                                                    <td className="py-3 text-right"><button onClick={() => showToast('Coupon expired', 'warning')} className="text-slate-400 hover:text-slate-700 text-xs">View</button></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Marketing & Promotions Tab */}
+                    {activeTab === 'promotions' && (
+                        <div className="space-y-6 text-left animate-fade-in-up">
+                            <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
+                                <h2 className="text-xl font-bold flex items-center space-x-2 text-slate-900 dark:text-white">
+                                    <Percent className="w-5 h-5 text-[#154ED0]" />
+                                    <span>Promotions & Announcements</span>
+                                </h2>
+                                <p className="text-xs text-slate-500 mt-0.5">Broadcast alerts, banner notifications, and marketing updates across candidate dashboards.</p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                                    <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-4">Compose Broadcast Notice</h3>
+                                    <div className="space-y-3 text-xs">
+                                        <div>
+                                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">Notice Headline</label>
+                                            <input
+                                                type="text"
+                                                placeholder="e.g. Summer Batch Certificate Verification Drive"
+                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">Message Content</label>
+                                            <textarea
+                                                rows={4}
+                                                placeholder="Enter full announcement details for enrolled candidates..."
+                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white"
+                                            />
+                                        </div>
+                                        <button
+                                            onClick={() => showToast('Announcement broadcasted to all students!', 'success')}
+                                            className="w-full py-2.5 bg-[#154ED0] text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition"
+                                        >
+                                            Broadcast Announcement
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm flex flex-col justify-between">
+                                    <div>
+                                        <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-4">Recent Broadcasts</h3>
+                                        <div className="space-y-3">
+                                            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                <div className="flex items-center justify-between text-[11px] font-bold">
+                                                    <span className="text-slate-900 dark:text-white">Milestone Evaluation Guidelines Updated</span>
+                                                    <span className="text-slate-400 text-[9px]">2 days ago</span>
+                                                </div>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Students are requested to post GitHub solution links with proper README documentation.</p>
+                                            </div>
+                                            <div className="p-3 bg-slate-50 dark:bg-slate-800/40 rounded-xl border border-slate-100 dark:border-slate-800">
+                                                <div className="flex items-center justify-between text-[11px] font-bold">
+                                                    <span className="text-slate-900 dark:text-white">Certificate Verification Live</span>
+                                                    <span className="text-slate-400 text-[9px]">5 days ago</span>
+                                                </div>
+                                                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Offer letters and certificates can now be validated instantly with official QR codes.</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                 </main>
             </div>
 
@@ -2741,86 +3170,131 @@ const AdminPortal: React.FC = () => {
 
             {/* Student Details Dialog Modal */}
             {selectedEnrollForDetails && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm select-none">
-                    <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl max-w-xl w-full p-6 shadow-2xl relative text-left">
-                        <div className="flex justify-between items-center pb-3 border-b border-slate-200 dark:border-slate-850">
-                            <h3 className="text-base font-bold flex items-center space-x-2">
-                                <User className="w-5 h-5 text-brand-primary" />
-                                <span>Student Application Profile</span>
-                            </h3>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-sm select-none animate-fade-in">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-lg w-full p-4 sm:p-6 shadow-2xl relative text-left max-h-[92vh] flex flex-col">
+                        {/* Modal Header */}
+                        <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
+                            <div className="flex items-center space-x-3 min-w-0">
+                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0F286E] to-[#154ED0] text-white flex items-center justify-center font-bold text-sm shadow-md flex-shrink-0">
+                                    {(selectedEnrollForDetails.profiles?.full_name || 'S').charAt(0).toUpperCase()}
+                                </div>
+                                <div className="min-w-0">
+                                    <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
+                                        {selectedEnrollForDetails.profiles?.full_name || 'Student Profile'}
+                                    </h3>
+                                    <p className="text-[11px] text-slate-400 font-medium truncate">
+                                        {selectedEnrollForDetails.internships?.title || 'Internship Candidate'}
+                                    </p>
+                                </div>
+                            </div>
                             <button
+                                type="button"
                                 onClick={() => setSelectedEnrollForDetails(null)}
-                                className="text-slate-400 hover:text-slate-650 transition p-1 cursor-pointer"
+                                className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer flex-shrink-0"
+                                aria-label="Close dialog"
                             >
-                                <X className="w-5 h-5" />
+                                <X className="w-4 h-4" />
                             </button>
                         </div>
 
-                        <div className="mt-4 space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-xl">
+                        {/* Modal Body */}
+                        <div className="mt-3.5 space-y-2.5 overflow-y-auto pr-1 flex-1">
+                            {/* Full Name & Email */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                                <div className="p-2.5 sm:p-3 bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 rounded-xl">
                                     <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Full Name</span>
-                                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5">
+                                    <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5 truncate">
                                         {selectedEnrollForDetails.profiles?.full_name || 'N/A'}
                                     </p>
                                 </div>
-                                <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-855 rounded-xl overflow-hidden">
+                                <div className="p-2.5 sm:p-3 bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 rounded-xl overflow-hidden">
                                     <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Email Address</span>
-                                    <p className="text-sm font-semibold text-slate-855 dark:text-slate-100 mt-0.5 font-mono truncate" title={selectedEnrollForDetails.profiles?.email || ''}>
+                                    <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5 font-mono truncate" title={selectedEnrollForDetails.profiles?.email || ''}>
                                         {selectedEnrollForDetails.profiles?.email || 'N/A'}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-xl">
+                            {/* College / University */}
+                            <div className="p-2.5 sm:p-3 bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 rounded-xl">
                                 <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">College / University Name</span>
-                                <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5">
+                                <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5">
                                     {selectedEnrollForDetails.profiles?.college || 'N/A'}
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-xl">
+                            {/* Year of Study & Course/Branch (2 columns side-by-side on mobile) */}
+                            <div className="grid grid-cols-2 gap-2.5">
+                                <div className="p-2.5 sm:p-3 bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 rounded-xl">
                                     <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Year of Study</span>
-                                    <p className="text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5">
+                                    <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5">
                                         {selectedEnrollForDetails.profiles?.year_of_study || 'N/A'}
                                     </p>
                                 </div>
-                                <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-855 rounded-xl">
+                                <div className="p-2.5 sm:p-3 bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 rounded-xl">
                                     <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Course / Branch</span>
-                                    <p className="text-sm font-semibold text-slate-855 dark:text-slate-100 mt-0.5">
+                                    <p className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 mt-0.5">
                                         {selectedEnrollForDetails.profiles?.course_branch || 'N/A'}
                                     </p>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                                <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl">
-                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">State / UT</span>
-                                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 mt-0.5">
+                            {/* Location: State, District, City (3 columns side-by-side on mobile) */}
+                            <div className="grid grid-cols-3 gap-2 sm:gap-2.5">
+                                <div className="p-2 sm:p-3 bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 rounded-xl min-w-0">
+                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[8px] sm:text-[9px] block truncate">State / UT</span>
+                                    <p className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-100 mt-0.5 truncate">
                                         {selectedEnrollForDetails.profiles?.state || 'N/A'}
                                     </p>
                                 </div>
-                                <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl">
-                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">District</span>
-                                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 mt-0.5">
+                                <div className="p-2 sm:p-3 bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 rounded-xl min-w-0">
+                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[8px] sm:text-[9px] block truncate">District</span>
+                                    <p className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-100 mt-0.5 truncate">
                                         {selectedEnrollForDetails.profiles?.district || 'N/A'}
                                     </p>
                                 </div>
-                                <div className="p-3 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-800 rounded-xl">
-                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">City / Town</span>
-                                    <p className="text-xs font-semibold text-slate-850 dark:text-slate-100 mt-0.5">
+                                <div className="p-2 sm:p-3 bg-slate-50/80 dark:bg-slate-800/40 border border-slate-200/70 dark:border-slate-700/60 rounded-xl min-w-0">
+                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[8px] sm:text-[9px] block truncate">City / Town</span>
+                                    <p className="text-[11px] sm:text-xs font-semibold text-slate-800 dark:text-slate-100 mt-0.5 truncate">
                                         {selectedEnrollForDetails.profiles?.city || 'N/A'}
                                     </p>
                                 </div>
                             </div>
+
+                            {/* Enrolled Track Badge Card */}
+                            <div className="p-2.5 sm:p-3 bg-blue-50/70 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-xl flex items-center justify-between">
+                                <div className="min-w-0">
+                                    <span className="font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest text-[9px] block">Assigned Internship</span>
+                                    <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-0.5 truncate">
+                                        {selectedEnrollForDetails.internships?.title || 'Virtual Internship'}
+                                    </p>
+                                </div>
+                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider flex-shrink-0 ${
+                                    selectedEnrollForDetails.status === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' :
+                                    selectedEnrollForDetails.status === 'completed' ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300' :
+                                    selectedEnrollForDetails.status === 'pending' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300' :
+                                    'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300'
+                                }`}>
+                                    {selectedEnrollForDetails.status || 'Active'}
+                                </span>
+                            </div>
                         </div>
 
-                        <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-850 flex justify-end">
+                        {/* Modal Footer */}
+                        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-shrink-0">
+                            {selectedEnrollForDetails.profiles?.email ? (
+                                <a
+                                    href={`mailto:${selectedEnrollForDetails.profiles.email}`}
+                                    className="px-3.5 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5"
+                                >
+                                    <Mail className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                                    <span>Send Email</span>
+                                </a>
+                            ) : <div />}
                             <button
                                 type="button"
                                 onClick={() => setSelectedEnrollForDetails(null)}
-                                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition shadow cursor-pointer justify-center flex items-center"
+                                className="px-5 py-2 bg-[#154ED0] hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow cursor-pointer"
                             >
                                 Close Details
                             </button>

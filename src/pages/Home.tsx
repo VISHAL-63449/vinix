@@ -7,11 +7,11 @@ import {
     BookOpen, Calendar, FolderOpen, ShieldCheck, ChevronDown
 } from 'lucide-react';
 
-/* ─── Floating Tech Icons ─── */
+/* ─── Floating Tech Icons (Desktop only to prevent cluttering mobile text) ─── */
 const FloatTechLogo = ({ children, style, className = "" }: { children: React.ReactNode; style: React.CSSProperties; className?: string }) => (
     <div
         style={style}
-        className={`absolute z-0 pointer-events-none opacity-[0.16] dark:opacity-[0.08] transition duration-500 hover:scale-110 select-none ${className}`}
+        className={`hidden lg:block absolute z-0 pointer-events-none opacity-[0.16] dark:opacity-[0.08] transition duration-500 hover:scale-110 select-none ${className}`}
     >
         {children}
     </div>
@@ -83,11 +83,11 @@ const FeatureItem = ({
     textClass: string;
     borderClass: string;
 }) => (
-    <div className={`flex items-center gap-3 px-5 py-3 rounded-2xl border ${bgClass} ${borderClass} ${textClass} shadow-sm hover:shadow transition duration-300 hover:scale-[1.03]`}>
-        <div className="p-1 rounded-lg">
-            <Icon size={16} className="flex-shrink-0 animate-pulse" />
+    <div className={`flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border ${bgClass} ${borderClass} ${textClass} shadow-xs hover:shadow transition-all duration-300 w-full min-w-0`}>
+        <div className="w-6.5 h-6.5 sm:w-7.5 sm:h-7.5 rounded-lg flex items-center justify-center flex-shrink-0 bg-white/70 dark:bg-slate-900/50 shadow-xs">
+            <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
         </div>
-        <span className="text-xs font-extrabold whitespace-nowrap">{label}</span>
+        <span className="text-[11px] sm:text-xs font-bold leading-tight break-words truncate sm:whitespace-nowrap">{label}</span>
     </div>
 );
 
@@ -280,13 +280,17 @@ export const Home: React.FC = () => {
 
             {/* ═══════ HERO SECTION ═══════ */}
             <section className="relative z-10 overflow-hidden">
-                {/* Background Image Overlay */}
+                {/* Background Image Overlay: Mobile vs Desktop */}
                 <div
-                    className="absolute inset-0 z-[-2] bg-cover bg-top sm:bg-center bg-no-repeat"
+                    className="block sm:hidden absolute inset-0 z-[-2] bg-cover bg-top bg-no-repeat transition-opacity duration-300 dark:opacity-25"
+                    style={{ backgroundImage: `url('${window.location.origin}${import.meta.env.BASE_URL}mobile-hero-background.png?v=2')` }}
+                ></div>
+                <div
+                    className="hidden sm:block absolute inset-0 z-[-2] bg-cover bg-top sm:bg-center bg-no-repeat"
                     style={{ backgroundImage: `url('${window.location.origin}${import.meta.env.BASE_URL}background.png')` }}
                 ></div>
                 {/* Gradient Overlay for Readability */}
-                <div className="absolute inset-0 z-[-1] bg-gradient-to-br from-blue-50/20 via-white/10 to-transparent dark:from-slate-900/40 dark:via-slate-955/20 dark:to-transparent pointer-events-none"></div>
+                <div className="absolute inset-0 z-[-1] bg-gradient-to-br from-blue-50/10 via-white/5 to-transparent dark:from-slate-900/60 dark:via-slate-950/40 dark:to-slate-950/80 pointer-events-none"></div>
 
                 {/* Float background Tech stack labels matching screenshot */}
                 <FloatTechLogo style={{ top: '6%', left: '6%' }}>
@@ -314,27 +318,27 @@ export const Home: React.FC = () => {
                     <AWSLogo />
                 </FloatTechLogo>
 
-                <div className="max-w-7xl mx-auto px-6 lg:px-12 py-16 md:py-24 relative z-10">
-                    <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-8">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-16 md:py-24 relative z-10">
+                    <div className="flex flex-col lg:flex-row items-center gap-8 sm:gap-12 lg:gap-8">
 
                         {/* ── LEFT Hero details ── */}
-                        <div className="flex-1 min-w-0 flex flex-col gap-6">
+                        <div className="flex-1 min-w-0 flex flex-col gap-5 sm:gap-6">
 
                             {/* Pill */}
-                            <div className="inline-flex items-center gap-2 self-start px-3.5 py-1.5
-                                            rounded-full bg-blue-50/50 dark:bg-blue-955/20
-                                            border border-blue-100/50 dark:border-blue-900/30
-                                            text-[10px] font-black tracking-wider uppercase
-                                            text-blue-700 dark:text-blue-350 shadow-sm animate-float">
-                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                                <span>🎓 India's Most Practical Virtual Internship Platform</span>
+                            <div className="inline-flex items-center gap-2 self-start px-3 sm:px-3.5 py-1.5
+                                            rounded-full bg-blue-50/70 dark:bg-blue-950/30
+                                            border border-blue-100/70 dark:border-blue-900/40
+                                            text-[9.5px] sm:text-[10px] font-black tracking-wider uppercase
+                                            text-blue-700 dark:text-blue-350 shadow-xs animate-float max-w-full">
+                                <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
+                                <span className="truncate">🎓 India's Most Practical Virtual Internship Platform</span>
                             </div>
 
                             {/* Main Headings */}
-                            <h1 className="font-extrabold text-slate-900 dark:text-white leading-[1.08] tracking-tight text-[44px] sm:text-5xl md:text-6xl">
+                            <h1 className="font-extrabold text-slate-900 dark:text-white leading-[1.1] tracking-tight text-3xl xs:text-4xl sm:text-5xl md:text-6xl">
                                 <div>Build Skills.</div>
                                 <div>Gain Experience.</div>
-                                <div className="text-blue-600 dark:text-blue-400 flex items-center min-h-[4.5rem]">
+                                <div className="text-blue-600 dark:text-blue-400 flex items-center min-h-[3rem] sm:min-h-[4.5rem]">
                                     <span>{typed}</span>
                                     <span
                                         className="inline-block w-[3px] rounded-sm bg-blue-600 dark:bg-blue-400 ml-1 align-middle animate-pulse"
@@ -347,50 +351,50 @@ export const Home: React.FC = () => {
                             </h1>
 
                             {/* Hero Subtitle */}
-                            <p className="text-slate-550 dark:text-slate-400 text-sm sm:text-base leading-relaxed max-w-lg font-medium">
+                            <p className="text-slate-600 dark:text-slate-350 text-sm sm:text-base leading-relaxed max-w-lg font-medium">
                                 Vinix Internship Program helps students and professionals work on
                                 real-world projects, gain practical skills, and receive
                                 industry-recognized certificates.
                             </p>
 
                             {/* Styled pastel Features Grid */}
-                            <div className="grid grid-cols-2 gap-3.5 max-w-lg">
+                            <div className="grid grid-cols-2 gap-2 sm:gap-3.5 w-full max-w-lg">
                                 <FeatureItem
                                     icon={Code2}
                                     label="Real-world Projects"
-                                    bgClass="bg-blue-50/60 dark:bg-blue-955/20"
-                                    borderClass="border-blue-100/50 dark:border-blue-900/30"
-                                    textClass="text-blue-750 dark:text-blue-300"
+                                    bgClass="bg-blue-50/60 dark:bg-blue-950/20"
+                                    borderClass="border-blue-100/70 dark:border-blue-900/30"
+                                    textClass="text-blue-700 dark:text-blue-300"
                                 />
                                 <FeatureItem
                                     icon={Users}
                                     label="Mentor Guidance"
-                                    bgClass="bg-purple-50/50 dark:bg-purple-955/20"
-                                    borderClass="border-purple-100/50 dark:border-purple-900/30"
-                                    textClass="text-purple-755 dark:text-purple-300"
+                                    bgClass="bg-purple-50/50 dark:bg-purple-950/20"
+                                    borderClass="border-purple-100/70 dark:border-purple-900/30"
+                                    textClass="text-purple-700 dark:text-purple-300"
                                 />
                                 <FeatureItem
                                     icon={Award}
                                     label="Certificate & LOR"
-                                    bgClass="bg-emerald-50/60 dark:bg-emerald-955/20"
-                                    borderClass="border-emerald-100/50 dark:border-emerald-900/30"
-                                    textClass="text-emerald-755 dark:text-emerald-300"
+                                    bgClass="bg-emerald-50/60 dark:bg-emerald-950/20"
+                                    borderClass="border-emerald-100/70 dark:border-emerald-900/30"
+                                    textClass="text-emerald-700 dark:text-emerald-300"
                                 />
                                 <FeatureItem
                                     icon={Globe}
                                     label="100% Remote"
-                                    bgClass="bg-amber-50/50 dark:bg-amber-955/20"
-                                    borderClass="border-amber-100/50 dark:border-amber-900/30"
-                                    textClass="text-amber-755 dark:text-amber-300"
+                                    bgClass="bg-amber-50/50 dark:bg-amber-950/20"
+                                    borderClass="border-amber-100/70 dark:border-amber-900/30"
+                                    textClass="text-amber-700 dark:text-amber-300"
                                 />
                             </div>
 
                             {/* CTA Action Triggers */}
-                            <div className="flex flex-col sm:flex-row gap-4 pt-4 w-full">
+                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4 w-full">
                                 <button
                                     onClick={() => navigate('/internships')}
-                                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-8 py-4 bg-blue-600
-                                               hover:bg-blue-750 text-white font-bold rounded-2xl
+                                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-7 py-3.5 sm:px-8 sm:py-4 bg-blue-600
+                                               hover:bg-blue-700 text-white font-bold rounded-xl sm:rounded-2xl
                                                shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 transition active:scale-[0.97]"
                                 >
                                     <span>Explore Internships</span>

@@ -70,7 +70,8 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
         navigate('/login');
     };
 
-    if (location.pathname === '/dashboard') {
+    const currentPath = (location.pathname || '').toLowerCase();
+    if (currentPath.includes('/dashboard') || currentPath.includes('/admin')) {
         return null;
     }
 
