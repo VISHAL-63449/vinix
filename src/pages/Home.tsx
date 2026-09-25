@@ -84,10 +84,10 @@ const FeatureItem = ({
     borderClass: string;
 }) => (
     <div className={`flex items-center gap-2 sm:gap-2.5 px-2.5 sm:px-3.5 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl border ${bgClass} ${borderClass} ${textClass} shadow-xs hover:shadow transition-all duration-300 w-full min-w-0`}>
-        <div className="w-6.5 h-6.5 sm:w-7.5 sm:h-7.5 rounded-lg flex items-center justify-center flex-shrink-0 bg-white/70 dark:bg-slate-900/50 shadow-xs">
+        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-white/70 dark:bg-slate-900/50 shadow-xs">
             <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" />
         </div>
-        <span className="text-[11px] sm:text-xs font-bold leading-tight break-words truncate sm:whitespace-nowrap">{label}</span>
+        <span className="text-[10px] xs:text-[11px] sm:text-xs font-bold leading-tight break-words truncate sm:whitespace-nowrap">{label}</span>
     </div>
 );
 
@@ -280,9 +280,15 @@ export const Home: React.FC = () => {
 
             {/* ═══════ HERO SECTION ═══════ */}
             <section className="relative z-10 overflow-hidden">
-                {/* Background Image Overlay: Mobile vs Desktop */}
+                {/* Background: Clean, modern ambient lighting on mobile, high-res graphic on desktop */}
                 <div
-                    className="block sm:hidden absolute inset-0 z-[-2] bg-cover bg-top bg-no-repeat transition-opacity duration-300 dark:opacity-25"
+                    className="block sm:hidden absolute inset-0 z-[-2] bg-gradient-to-b from-blue-50/70 via-white to-blue-50/30 dark:from-slate-950 dark:via-slate-900/90 dark:to-slate-950"
+                >
+                    <div className="absolute top-0 right-0 w-72 h-72 bg-blue-400/10 dark:bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                    <div className="absolute top-48 left-0 w-64 h-64 bg-indigo-400/10 dark:bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                </div>
+                <div
+                    className="block sm:hidden absolute inset-0 z-[-2] bg-cover bg-top bg-no-repeat opacity-[0.08] dark:opacity-[0.04] pointer-events-none transition-opacity duration-300"
                     style={{ backgroundImage: `url('${window.location.origin}${import.meta.env.BASE_URL}mobile-hero-background.png?v=2')` }}
                 ></div>
                 <div
@@ -322,13 +328,13 @@ export const Home: React.FC = () => {
                     <div className="flex flex-col lg:flex-row items-center gap-8 sm:gap-12 lg:gap-8">
 
                         {/* ── LEFT Hero details ── */}
-                        <div className="flex-1 min-w-0 flex flex-col gap-5 sm:gap-6">
+                        <div className="flex-1 min-w-0 flex flex-col gap-4 xs:gap-5 sm:gap-6">
 
                             {/* Pill */}
-                            <div className="inline-flex items-center gap-2 self-start px-3 sm:px-3.5 py-1.5
+                            <div className="inline-flex items-center gap-1.5 xs:gap-2 self-start px-2.5 xs:px-3 sm:px-3.5 py-1.5
                                             rounded-full bg-blue-50/70 dark:bg-blue-950/30
                                             border border-blue-100/70 dark:border-blue-900/40
-                                            text-[9.5px] sm:text-[10px] font-black tracking-wider uppercase
+                                            text-[8.5px] xs:text-[9.5px] sm:text-[10px] font-black tracking-wider uppercase
                                             text-blue-700 dark:text-blue-350 shadow-xs animate-float max-w-full">
                                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
                                 <span className="truncate">🎓 India's Most Practical Virtual Internship Platform</span>
@@ -338,7 +344,7 @@ export const Home: React.FC = () => {
                             <h1 className="font-extrabold text-slate-900 dark:text-white leading-[1.1] tracking-tight text-3xl xs:text-4xl sm:text-5xl md:text-6xl">
                                 <div>Build Skills.</div>
                                 <div>Gain Experience.</div>
-                                <div className="text-blue-600 dark:text-blue-400 flex items-center min-h-[3rem] sm:min-h-[4.5rem]">
+                                <div className="text-blue-600 dark:text-blue-400 flex items-center min-h-[2.5rem] xs:min-h-[3rem] sm:min-h-[4.5rem]">
                                     <span>{typed}</span>
                                     <span
                                         className="inline-block w-[3px] rounded-sm bg-blue-600 dark:bg-blue-400 ml-1 align-middle animate-pulse"
@@ -351,7 +357,7 @@ export const Home: React.FC = () => {
                             </h1>
 
                             {/* Hero Subtitle */}
-                            <p className="text-slate-600 dark:text-slate-350 text-sm sm:text-base leading-relaxed max-w-lg font-medium">
+                            <p className="text-slate-600 dark:text-slate-350 text-xs xs:text-sm sm:text-base leading-relaxed max-w-lg font-medium">
                                 Vinix Internship Program helps students and professionals work on
                                 real-world projects, gain practical skills, and receive
                                 industry-recognized certificates.
@@ -390,10 +396,10 @@ export const Home: React.FC = () => {
                             </div>
 
                             {/* CTA Action Triggers */}
-                            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-2 sm:pt-4 w-full">
+                            <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 pt-1 sm:pt-4 w-full">
                                 <button
                                     onClick={() => navigate('/internships')}
-                                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-7 py-3.5 sm:px-8 sm:py-4 bg-blue-600
+                                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-blue-600
                                                hover:bg-blue-700 text-white font-bold rounded-xl sm:rounded-2xl
                                                shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 transition active:scale-[0.97]"
                                 >
@@ -405,10 +411,10 @@ export const Home: React.FC = () => {
                                         const el = document.getElementById('how-it-works');
                                         if (el) el.scrollIntoView({ behavior: 'smooth' });
                                     }}
-                                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-7 py-4 bg-slate-50
+                                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-slate-50
                                                dark:bg-slate-900 border border-slate-200/80
                                                dark:border-slate-800 text-slate-700 dark:text-slate-200
-                                               font-bold rounded-2xl transition hover:bg-slate-100
+                                               font-bold rounded-xl sm:rounded-2xl transition hover:bg-slate-100
                                                dark:hover:bg-slate-800 active:scale-[0.97]"
                                 >
                                     <Play size={13} className="text-slate-400 fill-slate-400" />
@@ -418,23 +424,23 @@ export const Home: React.FC = () => {
                         </div>
 
                         {/* ── RIGHT Side Image with Dynamic Floating Cards ── */}
-                        <div className="flex-1 relative z-10 w-full min-w-[320px] max-w-[550px] lg:max-w-none flex justify-center items-center py-6">
+                        <div className="flex-1 relative z-10 w-full max-w-[550px] lg:max-w-none flex justify-center items-center py-6 sm:py-10">
                             {/* Glowing blue backdrops */}
                             <div className="w-[100%] h-[100%] bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 rounded-full filter blur-[70px] absolute -z-10 animate-pulse"></div>
 
-                            <div className="relative w-[340px] h-[230px] sm:w-[480px] sm:h-[320px] lg:w-[500px] lg:h-[340px] flex justify-center items-center">
+                            <div className="relative w-full max-w-[340px] h-[225px] xs:h-[240px] sm:max-w-none sm:w-[480px] sm:h-[320px] lg:w-[500px] lg:h-[340px] flex justify-center items-center mx-auto">
                                 <img
                                     src={window.location.origin + import.meta.env.BASE_URL + 'home-image.jpeg?v=2'}
                                     alt="Vinix Internships"
-                                    className="w-full h-full object-cover rounded-3xl border border-slate-100/50 select-none transform hover:scale-[1.01] transition-transform duration-500"
+                                    className="w-full h-full object-cover rounded-2xl sm:rounded-3xl border border-slate-150/80 dark:border-slate-800/80 shadow-lg select-none transform hover:scale-[1.01] transition-transform duration-500"
                                 />
 
                                 {/* Overlay/floating cards: display on both mobile and desktop (resizes responsively) */}
-                                <div className="absolute inset-0 select-none pointer-events-auto block">
+                                <div className="absolute inset-0 select-none pointer-events-auto">
                                     {/* Card 1: Your Progress */}
-                                    <div className="absolute -top-8 -left-10 sm:-top-12 sm:-left-12 lg:-top-8 lg:-left-32 xl:-left-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-36 sm:w-52 animate-float pointer-events-auto">
+                                    <div className="absolute -top-4 sm:-top-12 left-0 sm:-left-12 lg:-top-8 lg:-left-32 xl:-left-40 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-[138px] xs:w-[148px] sm:w-52 animate-float pointer-events-auto">
                                         <div className="flex items-center justify-between mb-1 sm:mb-1.5">
-                                            <span className="text-[7.5px] sm:text-[9px] font-black uppercase text-slate-400 tracking-wider">Your Progress</span>
+                                            <span className="text-[7px] xs:text-[7.5px] sm:text-[9px] font-black uppercase text-slate-400 tracking-wider">Your Progress</span>
                                             <div className="grid grid-cols-3 gap-0.5 opacity-60">
                                                 <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-400"></span>
                                                 <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-slate-400"></span>
@@ -451,90 +457,90 @@ export const Home: React.FC = () => {
                                                     <circle cx="20" cy="20" r="16" className="text-blue-600" strokeWidth="3" fill="transparent" strokeDasharray="100.5" strokeDashoffset="25.1" strokeLinecap="round" stroke="currentColor" />
                                                 </svg>
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
-                                                    <span className="text-[7.5px] sm:text-[10px] font-black text-slate-800 dark:text-white leading-none">75%</span>
-                                                    <span className="text-[4.5px] sm:text-[6px] text-slate-405 dark:text-slate-500 font-bold uppercase leading-none mt-0.5">Done</span>
+                                                    <span className="text-[7px] xs:text-[7.5px] sm:text-[10px] font-black text-slate-800 dark:text-white leading-none">75%</span>
+                                                    <span className="text-[4px] xs:text-[4.5px] sm:text-[6px] text-slate-400 dark:text-slate-500 font-bold uppercase leading-none mt-0.5">Done</span>
                                                 </div>
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-[8px] sm:text-[11px] font-black text-blue-600 dark:text-blue-400 leading-tight">Great job!</p>
-                                                <p className="text-[6.5px] sm:text-[9px] text-slate-500 dark:text-slate-400 leading-tight font-semibold">Keep going strong.</p>
+                                                <p className="text-[7.5px] xs:text-[8px] sm:text-[11px] font-black text-blue-600 dark:text-blue-400 leading-tight truncate">Great job!</p>
+                                                <p className="text-[6px] xs:text-[6.5px] sm:text-[9px] text-slate-500 dark:text-slate-400 leading-tight font-semibold truncate">Keep going strong.</p>
                                             </div>
                                         </div>
-                                        <div className="mt-1.5 sm:mt-2.5 pt-1.5 sm:pt-2 border-t border-slate-100 dark:border-slate-800">
+                                        <div className="mt-1 sm:mt-2.5 pt-1 sm:pt-2 border-t border-slate-100 dark:border-slate-800">
                                             <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 sm:h-1.5 rounded-full overflow-hidden">
                                                 <div className="bg-blue-600 h-full rounded-full" style={{ width: '75%' }}></div>
                                             </div>
-                                            <span className="text-[6px] sm:text-[8px] font-extrabold text-slate-455 dark:text-slate-505 mt-1 block">3 of 4 milestones completed</span>
+                                            <span className="text-[5.5px] xs:text-[6px] sm:text-[8px] font-extrabold text-slate-400 dark:text-slate-500 mt-0.5 sm:mt-1 block truncate">3 of 4 milestones completed</span>
                                         </div>
                                     </div>
 
                                     {/* Card 2: Live Projects */}
-                                    <div className="absolute -bottom-4 -left-6 sm:-bottom-6 sm:-left-12 lg:-left-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-36 sm:w-48 animate-float-delayed pointer-events-auto">
+                                    <div className="absolute -bottom-3 sm:-bottom-6 left-0 sm:-left-12 lg:-left-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-[138px] xs:w-[148px] sm:w-48 animate-float-delayed pointer-events-auto">
                                         <div className="flex items-center justify-between mb-1 sm:mb-1.5">
-                                            <div className="flex items-center gap-1">
-                                                <span className="p-0.5 sm:p-1 bg-blue-500 text-white rounded flex items-center justify-center">
+                                            <div className="flex items-center gap-1 min-w-0">
+                                                <span className="p-0.5 sm:p-1 bg-blue-500 text-white rounded flex items-center justify-center flex-shrink-0">
                                                     <Code2 size={9} className="stroke-[3] sm:w-[10px] sm:h-[10px]" />
                                                 </span>
-                                                <span className="text-[7.5px] sm:text-[9px] font-extrabold text-slate-850 dark:text-white">Live Projects</span>
+                                                <span className="text-[7px] xs:text-[7.5px] sm:text-[9px] font-extrabold text-slate-800 dark:text-white truncate">Live Projects</span>
                                             </div>
-                                            <span className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[5px] sm:text-[7px] text-slate-405">→</span>
+                                            <span className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[5px] sm:text-[7px] text-slate-400 flex-shrink-0">→</span>
                                         </div>
                                         <div className="flex items-center gap-1 sm:gap-1.5">
-                                            <span className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-455 flex items-center justify-center text-[6.5px] sm:text-[8px] font-bold">✓</span>
-                                            <span className="text-xs sm:text-base font-black text-slate-850 dark:text-white">12 Completed</span>
+                                            <span className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-[6px] xs:text-[6.5px] sm:text-[8px] font-bold flex-shrink-0">✓</span>
+                                            <span className="text-[11px] xs:text-xs sm:text-base font-black text-slate-800 dark:text-white">12 Completed</span>
                                         </div>
-                                        <p className="text-[6.5px] sm:text-[8px] text-slate-550 dark:text-slate-400 mt-1 sm:mt-1.5 font-semibold leading-normal">
+                                        <p className="text-[6px] xs:text-[6.5px] sm:text-[8px] text-slate-500 dark:text-slate-400 mt-0.5 sm:mt-1.5 font-semibold leading-tight line-clamp-2">
                                             Keep building real-world projects and enhance your portfolio.
                                         </p>
-                                        <div className="absolute -bottom-1.5 -right-1.5 sm:-bottom-2 sm:-right-2 w-4.5 h-4.5 sm:w-6 sm:h-6 rounded-full bg-purple-650 text-white flex items-center justify-center shadow border border-purple-500 animate-bounce text-[7px] sm:text-[10px]">
+                                        <div className="absolute -bottom-1.5 -right-1.5 sm:-bottom-2 sm:-right-2 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-purple-600 text-white flex items-center justify-center shadow border border-purple-500 animate-bounce text-[8px] sm:text-[10px]">
                                             🚀
                                         </div>
                                     </div>
 
                                     {/* Card 3: Certificate Earned */}
-                                    <div className="absolute -top-8 -right-8 sm:-top-12 sm:-right-16 lg:-top-12 lg:-right-32 xl:-right-36 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white p-2.5 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-800 shadow-md w-36 sm:w-56 animate-float-delayed pointer-events-auto">
-                                        <div className="flex justify-between items-start mb-1 sm:mb-2">
-                                            <div className="space-y-0.5">
-                                                <span className="text-[6.5px] sm:text-[8px] font-bold text-teal-405 uppercase tracking-wider leading-none">Certificate Earned</span>
-                                                <h4 className="text-[8px] sm:text-[11px] font-black text-white leading-tight font-sans">Full Stack Web Developer</h4>
-                                                <p className="text-[7.5px] sm:text-[9px] text-indigo-200 opacity-90 leading-none">Virtual Internship</p>
+                                    <div className="absolute -top-4 sm:-top-12 right-0 sm:-right-16 lg:-top-12 lg:-right-32 xl:-right-36 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-950 text-white p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-800 shadow-md w-[140px] xs:w-[150px] sm:w-56 animate-float-delayed pointer-events-auto">
+                                        <div className="flex justify-between items-start mb-0.5 sm:mb-2">
+                                            <div className="space-y-0.5 min-w-0 pr-1">
+                                                <span className="text-[6px] xs:text-[6.5px] sm:text-[8px] font-bold text-teal-400 uppercase tracking-wider leading-none block truncate">Certificate Earned</span>
+                                                <h4 className="text-[7.5px] xs:text-[8px] sm:text-[11px] font-black text-white leading-tight font-sans truncate">Full Stack Web Developer</h4>
+                                                <p className="text-[6.5px] xs:text-[7.5px] sm:text-[9px] text-indigo-200 opacity-90 leading-none truncate">Virtual Internship</p>
                                             </div>
-                                            <div className="w-6 h-6 sm:w-[30px] sm:h-[30px] rounded-full bg-gradient-to-tr from-yellow-400 to-amber-500 text-slate-900 flex items-center justify-center shadow text-[10px] sm:text-xs">
+                                            <div className="w-6 h-6 sm:w-[30px] sm:h-[30px] rounded-full bg-gradient-to-tr from-yellow-400 to-amber-500 text-slate-900 flex items-center justify-center shadow text-[9px] sm:text-xs flex-shrink-0">
                                                 🏆
                                             </div>
                                         </div>
 
-                                        <div className="mt-2.5 sm:mt-3.5 pt-1 sm:pt-1.5 border-t border-slate-800/80 flex items-center justify-between animate-pulse-glow">
-                                            <div className="text-[6px] sm:text-[8px] text-slate-400">
+                                        <div className="mt-1.5 sm:mt-3.5 pt-1 sm:pt-1.5 border-t border-slate-800/80 flex items-center justify-between">
+                                            <div className="text-[5.5px] xs:text-[6px] sm:text-[8px] text-slate-400 truncate">
                                                 Issued on 20 May 2025
                                             </div>
                                             <button
                                                 onClick={() => navigate('/verify')}
-                                                className="flex items-center gap-0.5 text-[6.5px] sm:text-[8px] font-black text-blue-405 hover:text-blue-300 transition"
+                                                className="flex items-center gap-0.5 text-[6px] xs:text-[6.5px] sm:text-[8px] font-black text-blue-400 hover:text-blue-300 transition flex-shrink-0"
                                             >
-                                                <span>View Certificate</span>
+                                                <span>Verify</span>
                                                 <span className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-[5px] sm:text-[7px]">→</span>
                                             </button>
                                         </div>
                                     </div>
 
                                     {/* Card 4: Skills Gained */}
-                                    <div className="absolute -bottom-4 -right-6 sm:-bottom-6 sm:-right-8 lg:-right-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-34 sm:w-48 animate-float pointer-events-auto">
+                                    <div className="absolute -bottom-3 sm:-bottom-6 right-0 sm:-right-8 lg:-right-16 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-[140px] xs:w-[150px] sm:w-48 animate-float pointer-events-auto">
                                         <div className="flex items-center justify-between mb-1 sm:mb-1.5">
-                                            <span className="text-[7.5px] sm:text-[9px] font-black uppercase text-slate-400 tracking-wider">Skills Gained</span>
-                                            <span className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[5px] sm:text-[7px] text-slate-455">→</span>
+                                            <span className="text-[7px] xs:text-[7.5px] sm:text-[9px] font-black uppercase text-slate-400 tracking-wider">Skills Gained</span>
+                                            <span className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 flex items-center justify-center text-[5px] sm:text-[7px] text-slate-400 flex-shrink-0">→</span>
                                         </div>
-                                        <div className="flex flex-wrap gap-0.5 sm:gap-1 items-center my-1 sm:my-1.5 font-sans">
-                                            <span className="px-1 py-0.5 bg-orange-100 text-orange-700 rounded text-[6px] sm:text-[7px] font-black">HTML</span>
-                                            <span className="px-1 py-0.5 bg-blue-100 text-blue-700 rounded text-[6px] sm:text-[7px] font-black">CSS</span>
-                                            <span className="px-1 py-0.5 bg-yellow-105 text-yellow-800 rounded text-[6px] sm:text-[7px] font-black">JS</span>
-                                            <span className="px-1 py-0.5 bg-cyan-100 text-cyan-705 rounded text-[6px] sm:text-[7px] font-black">React</span>
-                                            <span className="px-1 py-0.5 bg-purple-100 text-purple-750 rounded text-[6px] sm:text-[7px] font-black">+8</span>
+                                        <div className="flex flex-wrap gap-0.5 sm:gap-1 items-center my-0.5 sm:my-1.5 font-sans">
+                                            <span className="px-1 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300 rounded text-[5.5px] xs:text-[6px] sm:text-[7px] font-black">HTML</span>
+                                            <span className="px-1 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded text-[5.5px] xs:text-[6px] sm:text-[7px] font-black">CSS</span>
+                                            <span className="px-1 py-0.5 bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-300 rounded text-[5.5px] xs:text-[6px] sm:text-[7px] font-black">JS</span>
+                                            <span className="px-1 py-0.5 bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300 rounded text-[5.5px] xs:text-[6px] sm:text-[7px] font-black">React</span>
+                                            <span className="px-1 py-0.5 bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded text-[5.5px] xs:text-[6px] sm:text-[7px] font-black">+8</span>
                                         </div>
-                                        <p className="text-[6.5px] sm:text-[8px] text-slate-500 dark:text-slate-400 leading-normal font-semibold">
+                                        <p className="text-[6px] xs:text-[6.5px] sm:text-[8px] text-slate-500 dark:text-slate-400 leading-normal font-semibold truncate">
                                             HTML, CSS, JS, React, Node, DB...
                                         </p>
-                                        <div className="absolute -bottom-1.5 -left-1.5 sm:-bottom-2 sm:-left-2 w-4.5 h-4.5 sm:w-6 sm:h-6 rounded-full bg-cyan-500 text-white flex items-center justify-center shadow border border-cyan-400/80 text-[7px] sm:text-[10px]">
+                                        <div className="absolute -bottom-1.5 -left-1.5 sm:-bottom-2 sm:-left-2 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-cyan-500 text-white flex items-center justify-center shadow border border-cyan-400/80 text-[8px] sm:text-[10px]">
                                             🌐
                                         </div>
                                     </div>
