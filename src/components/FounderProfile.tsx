@@ -176,11 +176,11 @@ export const FounderProfile: React.FC<FounderProfileProps> = ({ showPillBadge = 
                         <span>GitHub</span>
                     </a>
                     <a
-                        href="mailto:ceo@vinix.online"
+                        href="mailto:foundervinix@gmail.com"
                         className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/90 hover:bg-red-50 dark:hover:bg-red-950/40 text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 text-xs font-bold transition border border-slate-200 dark:border-slate-700 shadow-sm"
                     >
                         <MailIcon size={14} />
-                        <span>ceo@vinix.online</span>
+                        <span>foundervinix@gmail.com</span>
                     </a>
                 </div>
             </div>

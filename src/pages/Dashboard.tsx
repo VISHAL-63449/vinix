@@ -2197,7 +2197,7 @@ const Dashboard: React.FC = () => {
                                 {/* Center Column: Text */}
                                 <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.45, color: '#64748b' }}>
                                     <strong style={{ color: '#0f2942' }}>VINIX Technologies Private Limited</strong><br />
-                                    UDYAM Registry: UDYAM-TN-17-0076606<br />
+                                    UDYAM Registry: UDYAM-TN-21-0066185<br />
                                     academic@vinix.online | www.vinix.online
                                 </div>
                                 {/* Right Column: Yrnovatech */}
