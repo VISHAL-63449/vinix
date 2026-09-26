@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vinix - Official Student Internship ID Card</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at 50% 20%, #e9f0f8 0%, #d5e2f0 55%, #c5d7e8 100%);
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 40px 15px;
+      color: #0f172a;
+    }
+
+    /* Print styling */
+    @media print {
+      body {
+        background: transparent !important;
+        padding: 0 !important;
+      }
+      .no-print {
+        display: none !important;
+      }
+      .badge-rig {
+        margin: 0 !important;
+      }
+      .id-card {
+        box-shadow: none !important;
+        border: 1px solid #cbd5e1 !important;
+      }
+    }
+
+    /* Floating control bar (no-print) */
+    .action-bar {
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      z-index: 50;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      border: 1px solid rgba(2, 132, 199, 0.2);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: #0284c7;
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(2, 132, 199, 0.3);
+    }
+    .btn-primary:hover {
+      background: #0369a1;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: #0f172a;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .btn-secondary:hover {
+      background: #f8fafc;
+      transform: translateY(-1px);
+    }
+
+    /* ── LANYARD & STRAP CLIP ── */
+    .badge-rig {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .clip-assembly {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      z-index: 10;
+      margin-bottom: -16px;
+    }
+
+    .clip-strap-top {
+      width: 44px;
+      height: 42px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 246, 252, 0.88) 100%);
+      border: 1px solid rgba(203, 213, 225, 0.95);
+      border-radius: 9px 9px 4px 4px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), inset 0 1px 1px #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Metallic rivet snap */
+    .clip-rivet {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: radial-gradient(circle at 35% 30%, #ffffff 0%, #cbd5e1 55%, #94a3b8 100%);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.22), inset 0 1px 2px #ffffff;
+      position: relative;
+    }
+    .clip-rivet::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #64748b;
+      opacity: 0.65;
+    }
+
+    .clip-strap-loop {
+      width: 34px;
+      height: 32px;
+      margin-top: -6px;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.5) 0%, rgba(226, 232, 240, 0.7) 60%, rgba(203, 213, 225, 0.92) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      border-radius: 5px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+    }
+
+    /* ── ID CARD CONTAINER ── */
+    .id-card {
+      width: 386px;
+      background: #ffffff;
+      border-radius: 28px;
+      box-shadow:
+        0 26px 58px -12px rgba(15, 23, 42, 0.18),
+        0 12px 28px -8px rgba(15, 23, 42, 0.09),
+        0 0 0 1px rgba(226, 232, 240, 0.95);
+      position: relative;
+      overflow: hidden;
+      padding: 16px 22px 20px;
+      z-index: 2;
+    }
+
+    /* Lanyard punch slot */
+    .slot-hole {
+      width: 48px;
+      height: 11px;
+      background: #e2e8f0;
+      border-radius: 6px;
+      margin: 0 auto 12px;
+      border: 1px solid #cbd5e1;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.22);
+    }
+
+    /* Cyber vector circuits */
+    .circuit-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .card-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    /* ── HEADER / BRAND WITH OFFICIAL COMPANY LOGO ── */
+    .brand-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 18px;
+    }
+
+    .brand-logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-height: 48px;
+      width: 100%;
+      padding: 2px 0;
+    }
+
+    .company-logo-img {
+      max-height: 44px;
+      max-width: 220px;
+      object-fit: contain;
+      display: block;
+    }
+
+    .brand-tagline {
+      font-size: 8.5px;
+      font-weight: 800;
+      color: #475569;
+      letter-spacing: 3.5px;
+      text-transform: uppercase;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .brand-tagline span {
+      font-size: 7px;
+      color: #94a3b8;
+    }
+
+    /* ── MID SECTION: PHOTO & STUDENT DETAILS ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 118px 1fr;
+      column-gap: 14px;
+      align-items: start;
+      margin-bottom: 16px;
+      position: relative;
+    }
+
+    /* Photo column */
+    .photo-pane {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding-top: 2px;
+    }
+
+    .avatar-halo {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      padding: 3px;
+      background: linear-gradient(135deg, #38bdf8 0%, #0284c7 60%, #0369a1 100%);
+      box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.25), 0 8px 20px rgba(2, 132, 199, 0.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .avatar-placeholder {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+      border: 2px solid #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 38px;
+      font-weight: 900;
+      color: #0284c7;
+      text-transform: uppercase;
+      box-shadow: inset 0 2px 6px rgba(2, 132, 199, 0.12);
+    }
+
+    .avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #e2e8f0;
+      border: 2px solid #ffffff;
+      display: block;
+    }
+
+    .avatar-caption {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0f172a;
+      margin-top: 8px;
+      letter-spacing: -0.2px;
+      text-align: center;
+      line-height: 1.2;
+    }
+
+    .cyan-node-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 6px #38bdf8;
+      margin-top: 5px;
+    }
+
+    /* Details column */
+    .details-pane {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .data-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .data-label {
+      font-size: 8px;
+      font-weight: 800;
+      color: #64748b;
+      letter-spacing: 0.9px;
+      text-transform: uppercase;
+      line-height: 1.2;
+      margin-bottom: 1px;
+    }
+
+    .data-val {
+      font-size: 12.5px;
+      font-weight: 800;
+      color: #0f172a;
+      line-height: 1.25;
+      letter-spacing: -0.2px;
+    }
+
+    .data-val.name-lg {
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: -0.3px;
+      color: #0b1329;
+    }
+
+    .data-val.role-blue {
+      font-size: 13px;
+      font-weight: 800;
+      color: #0284c7;
+      letter-spacing: -0.2px;
+    }
+
+    .data-val.email-blue {
+      font-size: 11.5px;
+      font-weight: 700;
+      color: #0284c7;
+      letter-spacing: -0.2px;
+      word-break: break-all;
+    }
+
+    .dates-split {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      column-gap: 6px;
+    }
+
+    /* ── DASHED SEPARATOR ── */
+    .dashed-divider {
+      border-top: 1.5px dashed #bfdbfe;
+      margin: 2px 0 14px;
+      width: 100%;
+    }
+
+    /* ── LOWER ROW (CHIP + VERIFIED + WORKING QR) ── */
+    .lower-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding: 0 2px;
+    }
+
+    .verification-block {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .badge-and-status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    /* Holographic Chip */
+    .authentic-chip {
+      width: 46px;
+      height: 46px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 50%, #e0f2fe 100%);
+      border: 1.5px solid #bae6fd;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.22), inset 0 1px 2px #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 2px;
+      flex-shrink: 0;
+    }
+
+    .authentic-chip svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .authentic-chip-text {
+      font-size: 5.5px;
+      font-weight: 900;
+      color: #0369a1;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-top: 1px;
+    }
+
+    .status-text {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .verified-headline {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      color: #0284c7;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .verified-headline svg {
+      width: 13px;
+      height: 13px;
+      fill: #0284c7;
+    }
+
+    .rfid-sub {
+      font-size: 7.5px;
+      font-weight: 700;
+      color: #64748b;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .portal-unit {
+      display: flex;
+      flex-direction: column;
+      margin-top: 2px;
+    }
+
+    .portal-label {
+      font-size: 7.5px;
+      font-weight: 800;
+      color: #64748b;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+    }
+
+    .portal-link {
+      font-size: 14px;
+      font-weight: 800;
+      color: #0284c7;
+      letter-spacing: -0.3px;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    .portal-link:hover {
+      color: #0369a1;
+      text-decoration: underline;
+    }
+
+    /* Working QR Code */
+    .qr-block {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .qr-heading {
+      font-size: 7.5px;
+      font-weight: 800;
+      color: #64748b;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .qr-frame {
+      width: 72px;
+      height: 72px;
+      border-radius: 8px;
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      padding: 3px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+    .qr-frame:hover {
+      transform: scale(1.05);
+      border-color: #38bdf8;
+      box-shadow: 0 4px 12px rgba(56, 189, 248, 0.25);
+    }
+
+    .qr-frame img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border-radius: 4px;
+    }
+
+    /* ── FOOTER PILL CAPSULE ── */
+    .pill-capsule {
+      background: #ffffff;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 6px 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    }
+
+    .capsule-badge {
+      width: 20px;
+      height: 20px;
+      border-radius: 5px;
+      background: #e0f2fe;
+      border: 1px solid #7dd3fc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .capsule-badge svg {
+      width: 12px;
+      height: 12px;
+    }
+
+    .capsule-contact {
+      font-size: 10.5px;
+      font-weight: 700;
+      color: #1e293b;
+      letter-spacing: -0.2px;
+      text-align: center;
+      flex: 1;
+    }
+
+    .capsule-dots {
+      display: grid;
+      grid-template-columns: repeat(3, 4px);
+      grid-gap: 3px;
+      flex-shrink: 0;
+    }
+
+    .capsule-dots span {
+      width: 3.5px;
+      height: 3.5px;
+      border-radius: 50%;
+      background: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- FLOATING ACTION CONTROLS -->
+  <div class="action-bar no-print">
+    <button class="btn btn-primary" onclick="window.print()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+      Print / Save as PDF
+    </button>
+    <label class="btn btn-secondary" style="cursor: pointer;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+      Upload My Photo
+      <input type="file" accept="image/*" style="display:none;" onchange="handleStudentPhotoUpload(event)">
+    </label>
+    <a href="https://vinix.online/verify/offer/VINIX-OFFER-6391" target="_blank" class="btn btn-secondary">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+      Test QR Profile Link
+    </a>
+  </div>
+
+  <div class="badge-rig">
+    <!-- Clip Assembly -->
+    <div class="clip-assembly">
+      <div class="clip-strap-top">
+        <div class="clip-rivet"></div>
+      </div>
+      <div class="clip-strap-loop"></div>
+    </div>
+
+    <!-- ID Card Container -->
+    <div class="id-card">
+
+      <!-- Lanyard punch slot -->
+      <div class="slot-hole"></div>
+
+      <!-- Cyber Circuit Lines (Vector lines + glowing nodes matching image) -->
+      <svg class="circuit-lines" viewBox="0 0 380 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M 295 170 L 270 170 L 255 188 L 255 228" stroke="#7dd3fc" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+        <circle cx="255" cy="228" r="3.2" fill="#ffffff" stroke="#38bdf8" stroke-width="1.5" opacity="0.9"/>
+        <path d="M 255 228 L 276 228 L 276 260 L 295 280" stroke="#7dd3fc" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+
+        <path d="M 262 296 L 262 316 L 288 332" stroke="#7dd3fc" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.5"/>
+        <circle cx="262" cy="296" r="2.5" fill="#38bdf8" opacity="0.85"/>
+
+        <path d="M 98 285 L 98 310 L 82 328 L 82 355" stroke="#7dd3fc" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>
+
+        <path d="M 102 382 L 108 382 L 118 396" stroke="#7dd3fc" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.6"/>
+        <circle cx="108" cy="382" r="2" fill="#38bdf8"/>
+        <path d="M 134 402 L 158 402 L 172 416 L 198 416" stroke="#7dd3fc" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>
+      </svg>
+
+      <div class="card-content">
+
+        <!-- OFFICIAL COMPANY LOGO HEADER -->
+        <header class="brand-header">
+          <div class="brand-logo-container">
+            <img 
+              class="company-logo-img" 
+              src="COMPANY%20LOGO.png" 
+              alt="Vinix Logo"
+              onerror="this.onerror=null; this.src='vinix-title.png'; this.onerror=function(){this.src='https://vinix.online/vinix-title.png';};"
+            >
+          </div>
+          <div class="brand-tagline">
+            BUILD <span>•</span> DESIGN <span>•</span> GROW
+          </div>
+        </header>
+
+        <!-- MAIN MIDDLE INFO: ORIGINAL STUDENT DATA -->
+        <main class="info-grid">
+
+          <!-- LEFT: Photo column (NO fake image; only student uploaded image or clean initial badge) -->
+          <div class="photo-pane">
+            <div class="avatar-halo">
+              <div class="avatar-placeholder" id="avatarInitial">V</div>
+              <img 
+                id="avatarImg"
+                class="avatar-img" 
+                src="" 
+                alt="Vishal Rajesh" 
+                style="display: none;"
+                onload="this.style.display='block'; document.getElementById('avatarInitial').style.display='none';"
+                onerror="this.style.display='none'; document.getElementById('avatarInitial').style.display='flex';"
+              >
+            </div>
+            <div class="avatar-caption">Vishal Rajesh</div>
+            <div class="cyan-node-dot"></div>
+          </div>
+
+          <!-- RIGHT: Details Column -->
+          <div class="details-pane">
+
+            <div class="data-group">
+              <span class="data-label">STUDENT ID:</span>
+              <span class="data-val">VINIX-2026-6391</span>
+            </div>
+
+            <div class="data-group">
+              <span class="data-label">NAME:</span>
+              <span class="data-val name-lg">Vishal Rajesh</span>
+            </div>
+
+            <div class="data-group">
+              <span class="data-label">ROLE:</span>
+              <span class="data-val role-blue">Full Stack Developer Intern</span>
+            </div>
+
+            <div class="data-group">
+              <span class="data-label">DEPARTMENT:</span>
+              <span class="data-val">Software &amp; Web Engg</span>
+            </div>
+
+            <div class="dates-split">
+              <div class="data-group">
+                <span class="data-label">JOINING:</span>
+                <span class="data-val">22 Aug 2026</span>
+              </div>
+              <div class="data-group">
+                <span class="data-label">VALID THRU:</span>
+                <span class="data-val">August 2027</span>
+              </div>
+            </div>
+
+            <div class="data-group">
+              <span class="data-label">GMAIL:</span>
+              <span class="data-val email-blue">vr271028@gmail.com</span>
+            </div>
+
+          </div>
+        </main>
+
+        <!-- DASHED DIVIDER -->
+        <div class="dashed-divider"></div>
+
+        <!-- LOWER VERIFIED + WORKING QR SECTION -->
+        <section class="lower-row">
+
+          <div class="verification-block">
+            <div class="badge-and-status">
+              <!-- Authentic Hologram Chip -->
+              <div class="authentic-chip">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M6 7 L12 18 L18 7" stroke="url(#vChipGradOnlineCard)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                  <defs>
+                    <linearGradient id="vChipGradOnlineCard" x1="6" y1="7" x2="18" y2="18" gradientUnits="userSpaceOnUse">
+                      <stop stop-color="#0284c7"/>
+                      <stop offset="1" stop-color="#2563eb"/>
+                    </linearGradient>
+                  </defs>
+                </svg>
+                <span class="authentic-chip-text">AUTHENTIC</span>
+              </div>
+
+              <!-- Verified Status Text -->
+              <div class="status-text">
+                <div class="verified-headline">
+                  <svg viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
+                  </svg>
+                  VERIFIED ID
+                </div>
+                <div class="rfid-sub">RFID &amp; ENCRYPTED</div>
+              </div>
+            </div>
+
+            <!-- Portal URL -->
+            <div class="portal-unit">
+              <span class="portal-label">PORTAL:</span>
+              <a href="https://vinix.online" target="_blank" class="portal-link">vinix.online</a>
+            </div>
+          </div>
+
+          <!-- Working Student QR Code -->
+          <div class="qr-block">
+            <div class="qr-heading">SCAN FOR PROFILE</div>
+            <a href="https://vinix.online/verify/offer/VINIX-OFFER-6391" target="_blank" class="qr-frame" title="Click or scan to verify student credentials">
+              <img 
+                src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=https%3A%2F%2Fvinix.online%2Fverify%2Foffer%2FVINIX-OFFER-6391&margin=0" 
+                alt="Student Verification QR Code" 
+                width="64" 
+                height="64"
+              >
+            </a>
+          </div>
+
+        </section>
+
+        <!-- FOOTER PILL CAPSULE -->
+        <footer class="pill-capsule">
+          <div class="capsule-badge">
+            <svg viewBox="0 0 20 20" fill="none">
+              <path d="M5 6 L10 15 L15 6" stroke="#0284c7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="capsule-contact">vinix.online &nbsp;|&nbsp; contact@vinix.online</div>
+          <div class="capsule-dots">
+            <span></span><span></span><span></span>
+            <span></span><span></span><span></span>
+          </div>
+        </footer>
+
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function handleStudentPhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.getElementById('avatarImg');
+        const initial = document.getElementById('avatarInitial');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        initial.style.display = 'none';
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
+
+</body>
+</html>

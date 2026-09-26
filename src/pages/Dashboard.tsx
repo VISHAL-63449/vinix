@@ -1448,143 +1448,235 @@ const Dashboard: React.FC = () => {
                         {/* Tab display: virtual student ID card */}
                         {activeTab === 'idcard' && (
                             <div className="space-y-6">
-                                <div className="border-b border-slate-205 dark:border-slate-805 pb-4 no-print">
-                                    <h2 className="text-xl font-bold flex items-center space-x-2">
-                                        <CreditCard className="w-5 h-5 text-brand-primary" />
-                                        <span>Virtual Internship ID Card</span>
-                                    </h2>
-                                    <p className="text-xs text-slate-450 mt-0.5">
-                                        Download your official intern badge. Keep it printed during remote meetings.
-                                    </p>
+                                <div className="border-b border-slate-200 dark:border-slate-800 pb-4 no-print flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div>
+                                        <h2 className="text-xl font-bold flex items-center space-x-2 text-slate-800 dark:text-white">
+                                            <CreditCard className="w-5 h-5 text-brand-primary" />
+                                            <span>Virtual Internship ID Card</span>
+                                        </h2>
+                                        <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                            Official digital credentials and authentic badge for Vinix interns.
+                                        </p>
+                                    </div>
+                                    <button
+                                        onClick={handleIdCardPrint}
+                                        className="inline-flex items-center justify-center space-x-2 px-5 py-2.5 bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold rounded-xl shadow-lg shadow-sky-500/20 transition-all active:scale-95"
+                                    >
+                                        <Printer className="w-4 h-4" />
+                                        <span>Print / Save as PDF</span>
+                                    </button>
                                 </div>
 
-                                {/* HIGH FIDELITY ID CARD BODY */}
-                                <div className="flex flex-col items-center justify-center py-6">
+                                {/* HIGH FIDELITY ID CARD BODY WITH LANYARD RIG */}
+                                <div className="flex flex-col items-center justify-center py-6 select-none">
 
-                                    <div
-                                        id="id-card-print-area"
-                                        className="w-72 aspect-[0.63] rounded-3xl bg-white border border-slate-200/80 shadow-2xl p-[14px] flex flex-col justify-between relative overflow-hidden select-none"
-                                    >
-                                        {/* Double border frame line (matches the certificate and offer letter) */}
-                                        <div className="absolute top-1.5 left-1.5 right-1.5 bottom-1.5 border border-[#0f2942]/10 rounded-[22px] pointer-events-none z-0"></div>
-                                        <div className="absolute top-[9px] left-[9px] right-[9px] bottom-[9px] border-[0.5px] border-[#cca353]/35 rounded-[19px] pointer-events-none z-0"></div>
-
-                                        {/* Elegant inner background glows */}
-                                        <div className="absolute -top-12 -left-12 w-32 h-32 bg-blue-50/40 rounded-full blur-2xl pointer-events-none"></div>
-                                        <div className="absolute top-1/2 -right-8 w-24 h-24 bg-indigo-50/30 rounded-full blur-2xl pointer-events-none"></div>
-                                        <div className="absolute inset-0 bg-[radial-gradient(#e0e7ff_1px,transparent_1px)] [background-size:16px_16px] opacity-15 pointer-events-none"></div>
-
-                                        {/* Header logo */}
-                                        <div className="flex items-center justify-between z-10 border-b border-slate-100 pb-2">
-                                            <div className="flex items-center space-x-1.5">
-                                                <img
-                                                    src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'}
-                                                    alt="VINIX Logo"
-                                                    className="h-6 w-auto object-contain"
-                                                />
-                                            </div>
-                                            <span className="text-[6px] font-extrabold text-teal-700 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-200 uppercase tracking-widest leading-none">
-                                                INTERN IDENTITY
-                                            </span>
-                                        </div>
-
-                                        {/* Main Photo Preset */}
-                                        <div className="flex flex-col items-center justify-center text-center mt-3 z-10 space-y-2">
-                                            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-50 to-indigo-50 border border-slate-200 p-1 flex items-center justify-center relative overflow-hidden shadow-sm">
-                                                {profile?.avatar_url ? (
-                                                    <img
-                                                        src={profile.avatar_url}
-                                                        alt={profile.full_name || 'Intern'}
-                                                        className="w-full h-full object-cover rounded-[12px]"
-                                                    />
-                                                ) : (
-                                                    <div className="w-full h-full bg-blue-50/50 text-blue-900 rounded-[12px] flex items-center justify-center font-sans font-bold text-3xl">
-                                                        {(profile?.full_name || 'U').charAt(0).toUpperCase()}
-                                                    </div>
-                                                )}
-                                            </div>
-                                            <div>
-                                                <h4 className="text-[#0f2942] font-black text-sm tracking-wide capitalize select-all">
-                                                    {profile?.full_name || 'Vinix Candidate'}
-                                                </h4>
-                                                <p className="text-[8px] font-bold text-blue-600 uppercase tracking-widest mt-0.5">
-                                                    {activeEnrollment ? activeEnrollment.internship.title.split(' ')[0] : 'Junior'} Developer
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        {/* Details Box */}
-                                        <div className="bg-slate-50/80 border border-slate-200/50 rounded-xl p-2.5 space-y-1.5 text-left z-10 text-[8.5px] font-medium font-sans">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-slate-500 uppercase font-bold tracking-wider">INTERN ID</span>
-                                                <span className="text-slate-800 font-mono font-bold select-all">
-                                                    {activeOffer ? activeOffer.offer_letter_id : 'VINIX-PENDING'}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between items-center border-t border-slate-200/40 pt-1.5">
-                                                <span className="text-slate-400 uppercase font-bold tracking-wider">COLLEGE</span>
-                                                <span className="text-slate-800 truncate max-w-[130px] font-bold">{studentProfile?.college || 'Pending Info'}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center border-t border-slate-200/40 pt-1.5">
-                                                <span className="text-slate-400 uppercase font-bold tracking-wider">DURATION</span>
-                                                <span className="text-slate-800 font-bold">{activeEnrollment ? activeEnrollment.internship.duration : '3 Months'}</span>
-                                            </div>
-                                        </div>
-
-                                        {/* Footer signature and MSME block */}
-                                        <div className="z-10 pt-2 border-t border-slate-100 flex flex-col gap-2.5">
-                                            {/* Row 1: QR Code, Signature, and MSME Logo */}
-                                            <div className="flex justify-between items-end">
-                                                {/* Left: QR Code */}
-                                                <div className="bg-white p-0.5 rounded border border-slate-200 shadow-sm flex-shrink-0">
-                                                    <img
-                                                        src={`https://api.qrserver.com/v1/create-qr-code/?size=45x45&data=${encodeURIComponent(
-                                                            window.location.origin + `/verify/offer/${activeOffer?.offer_letter_id || 'verification'}`
-                                                        )}`}
-                                                        alt="verify QR"
-                                                        className="w-9 h-9 object-contain"
-                                                    />
-                                                </div>
-
-                                                {/* Center: Founder Signature */}
-                                                <div className="flex flex-col items-center">
-                                                    <img
-                                                        src={window.location.origin + import.meta.env.BASE_URL + 'founder-sign.png'}
-                                                        alt="Founder Signature"
-                                                        className="h-6 w-auto object-contain"
-                                                    />
-                                                    <div className="w-16 h-[0.75px] bg-[#0f2942]/40 mt-1 mb-0.5"></div>
-                                                    <span className="text-[5.5px] font-bold text-[#0f2942]/60 uppercase tracking-widest leading-none">Founder's Sign</span>
-                                                </div>
-
-                                                {/* Right: MSME Logo (Big Size) */}
-                                                <div className="flex-shrink-0 flex items-center justify-end">
-                                                    <img
-                                                        src={window.location.origin + import.meta.env.BASE_URL + 'msme.jpeg'}
-                                                        alt="MSME Logo"
-                                                        className="h-10 w-auto object-contain"
-                                                    />
+                                    <div className="flex flex-col items-center relative">
+                                        {/* Metallic Clip Assembly */}
+                                        <div className="flex flex-col items-center relative z-10 -mb-4 no-print">
+                                            <div className="w-11 h-10 bg-gradient-to-b from-white/95 to-slate-100/90 border border-slate-300 rounded-t-lg rounded-b flex items-center justify-center shadow-md relative">
+                                                <div className="w-3.5 h-3.5 rounded-full bg-[radial-gradient(circle_at_35%_30%,#ffffff_0%,#cbd5e1_55%,#94a3b8_100%)] shadow-sm relative flex items-center justify-center">
+                                                    <div className="w-1 h-1 rounded-full bg-slate-500/70"></div>
                                                 </div>
                                             </div>
-
-                                            {/* Row 2: Final Company Active Record Brand Footer */}
-                                            <div className="flex justify-between items-center text-[5.5px] uppercase font-bold tracking-widest text-[#0f2942]/40 border-t border-slate-100/60 pt-1">
-                                                <span>VINIX TECHNOLOGIES</span>
-                                                <span className="text-[#cca353]">DATABASE ACTIVE RECORD</span>
-                                            </div>
+                                            <div className="w-8 h-7 -mt-1 bg-gradient-to-b from-white/50 via-slate-200/70 to-slate-300/90 border border-white/80 rounded shadow-sm"></div>
                                         </div>
 
-                                    </div>
-
-                                    {/* Print Badges option */}
-                                    <div className="mt-6 no-print">
-                                        <button
-                                            onClick={handleIdCardPrint}
-                                            className="px-6 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-205 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-850 text-slate-700 dark:text-slate-205 text-xs font-bold rounded-xl transition flex items-center space-x-2"
+                                        {/* Physical ID Card Container */}
+                                        <div
+                                            id="id-card-print-area"
+                                            className="w-[380px] max-w-[92vw] bg-white rounded-[28px] border border-slate-200/90 shadow-[0_24px_50px_-12px_rgba(15,23,42,0.18)] p-5 relative overflow-hidden text-left"
                                         >
-                                            <Printer className="w-4 h-4 text-brand-primary" />
-                                            <span>Download / Print ID Card</span>
-                                        </button>
+                                            {/* Lanyard punch slot */}
+                                            <div className="w-12 h-2.5 bg-slate-200 border border-slate-300 rounded-full mx-auto mb-3 shadow-inner"></div>
+
+                                            {/* Cyber vector circuit traces in background */}
+                                            <svg className="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 380 520" fill="none">
+                                                <path d="M 295 170 L 270 170 L 255 188 L 255 228" stroke="#7dd3fc" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+                                                <circle cx="255" cy="228" r="3.2" fill="#ffffff" stroke="#38bdf8" strokeWidth="1.5" opacity="0.9"/>
+                                                <path d="M 255 228 L 276 228 L 276 260 L 295 280" stroke="#7dd3fc" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+                                                <path d="M 262 296 L 262 316 L 288 332" stroke="#7dd3fc" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.45"/>
+                                                <circle cx="262" cy="296" r="2.5" fill="#38bdf8" opacity="0.85"/>
+                                                <path d="M 98 285 L 98 310 L 82 328 L 82 355" stroke="#7dd3fc" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"/>
+                                                <path d="M 102 382 L 108 382 L 118 396" stroke="#7dd3fc" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.5"/>
+                                                <circle cx="108" cy="382" r="2" fill="#38bdf8"/>
+                                                <path d="M 134 402 L 158 402 L 172 416 L 198 416" stroke="#7dd3fc" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" opacity="0.4"/>
+                                            </svg>
+
+                                            <div className="relative z-10 flex flex-col">
+                                                {/* Header Company Logo */}
+                                                <div className="flex flex-col items-center justify-center mb-4">
+                                                    <div className="h-10 flex items-center justify-center">
+                                                        <img
+                                                            src={window.location.origin + import.meta.env.BASE_URL + 'COMPANY LOGO.png'}
+                                                            onError={(e: any) => {
+                                                                e.target.onerror = null;
+                                                                e.target.src = window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png';
+                                                            }}
+                                                            alt="VINIX"
+                                                            className="h-9 max-w-[210px] object-contain"
+                                                        />
+                                                    </div>
+                                                    <div className="text-[8px] font-extrabold text-slate-500 uppercase tracking-[3px] mt-1.5 flex items-center gap-1.5">
+                                                        BUILD <span className="text-slate-400">•</span> DESIGN <span className="text-slate-400">•</span> GROW
+                                                    </div>
+                                                </div>
+
+                                                {/* Middle Student Info Grid */}
+                                                <div className="grid grid-cols-[112px_1fr] gap-3.5 items-start mb-3.5">
+                                                    {/* Photo Column */}
+                                                    <div className="flex flex-col items-center text-center">
+                                                        <div className="w-24 h-24 rounded-full p-[3px] bg-gradient-to-tr from-sky-400 via-sky-500 to-blue-600 shadow-[0_0_0_3px_rgba(56,189,248,0.25),0_6px_16px_rgba(2,132,199,0.25)] flex items-center justify-center overflow-hidden">
+                                                            {profile?.avatar_url ? (
+                                                                <img
+                                                                    src={profile.avatar_url}
+                                                                    alt={profile.full_name || 'Student'}
+                                                                    className="w-full h-full object-cover rounded-full border-2 border-white bg-slate-100"
+                                                                    onError={(e: any) => {
+                                                                        e.target.style.display = 'none';
+                                                                        const fallback = e.target.nextElementSibling;
+                                                                        if (fallback) fallback.style.display = 'flex';
+                                                                    }}
+                                                                />
+                                                            ) : null}
+                                                            <div
+                                                                className={`w-full h-full rounded-full border-2 border-white bg-gradient-to-br from-slate-50 via-sky-50 to-blue-100 items-center justify-center text-sky-800 font-black text-2xl tracking-wide select-none shadow-inner ${profile?.avatar_url ? 'hidden' : 'flex'}`}
+                                                            >
+                                                                {(profile?.full_name || 'S').trim().charAt(0).toUpperCase()}
+                                                            </div>
+                                                        </div>
+                                                        <div className="text-xs font-black text-slate-900 mt-2 leading-tight">
+                                                            {profile?.full_name || 'Student Name'}
+                                                        </div>
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-sky-400 shadow-[0_0_6px_#38bdf8] mt-1"></div>
+                                                    </div>
+
+                                                    {/* Details Column */}
+                                                    <div className="flex flex-col gap-1.5 text-left">
+                                                        <div>
+                                                            <span className="text-[7.5px] font-extrabold text-slate-500 uppercase tracking-wider block">STUDENT ID:</span>
+                                                            <span className="text-xs font-black text-slate-900 tracking-tight font-mono">
+                                                                {activeOffer?.offer_letter_id || 'VINIX-2026-6391'}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[7.5px] font-extrabold text-slate-500 uppercase tracking-wider block">NAME:</span>
+                                                            <span className="text-[14px] font-black text-slate-950 tracking-tight leading-tight block">
+                                                                {profile?.full_name || 'Vishal Rajesh'}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[7.5px] font-extrabold text-slate-500 uppercase tracking-wider block">ROLE:</span>
+                                                            <span className="text-xs font-extrabold text-[#0284c7] tracking-tight block">
+                                                                {activeEnrollment ? `${activeEnrollment.internship.title} Intern` : 'Full Stack Developer Intern'}
+                                                            </span>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[7.5px] font-extrabold text-slate-500 uppercase tracking-wider block">DEPARTMENT:</span>
+                                                            <span className="text-[11px] font-bold text-slate-800 tracking-tight block">
+                                                                {activeEnrollment?.internship.domain || 'Software & Web Engg'}
+                                                            </span>
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-1.5">
+                                                            <div>
+                                                                <span className="text-[7.5px] font-extrabold text-slate-500 uppercase tracking-wider block">JOINING:</span>
+                                                                <span className="text-[11px] font-bold text-slate-900 block">
+                                                                    {activeEnrollment?.joined_at ? new Date(activeEnrollment.joined_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : '22 Aug 2026'}
+                                                                </span>
+                                                            </div>
+                                                            <div>
+                                                                <span className="text-[7.5px] font-extrabold text-slate-500 uppercase tracking-wider block">VALID THRU:</span>
+                                                                <span className="text-[11px] font-bold text-slate-900 block">August 2027</span>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <span className="text-[7.5px] font-extrabold text-slate-500 uppercase tracking-wider block">GMAIL:</span>
+                                                            <span className="text-[10.5px] font-bold text-[#0284c7] break-all block">
+                                                                {user?.email || 'vr271028@gmail.com'}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Dashed Separator */}
+                                                <div className="border-t border-dashed border-sky-200 my-2.5 w-full"></div>
+
+                                                {/* Lower Row: Hologram Chip + Verified Status + Working QR Code */}
+                                                <div className="flex items-center justify-between gap-2 mb-3">
+                                                    <div className="flex flex-col gap-1.5">
+                                                        <div className="flex items-center gap-2.5">
+                                                            {/* Authentic Hologram Chip */}
+                                                            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-white via-sky-50 to-sky-100 border border-sky-300 shadow-sm flex flex-col items-center justify-center p-1 flex-shrink-0">
+                                                                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                                                                    <path d="M6 7 L12 18 L18 7" stroke="#0284c7" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                                                                </svg>
+                                                                <span className="text-[5px] font-black text-[#0369a1] tracking-wider uppercase mt-0.5">AUTHENTIC</span>
+                                                            </div>
+
+                                                            {/* Verified Badge */}
+                                                            <div>
+                                                                <div className="flex items-center gap-1 text-[10px] font-extrabold text-[#0284c7] uppercase tracking-wide">
+                                                                    <svg className="w-3 h-3 fill-[#0284c7]" viewBox="0 0 20 20">
+                                                                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
+                                                                    </svg>
+                                                                    VERIFIED ID
+                                                                </div>
+                                                                <div className="text-[7px] font-bold text-slate-500 uppercase tracking-wider mt-0.5">
+                                                                    RFID &amp; ENCRYPTED
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Portal Link */}
+                                                        <div>
+                                                            <span className="text-[7px] font-extrabold text-slate-500 uppercase tracking-wider block">PORTAL:</span>
+                                                            <a href="https://vinix.online" target="_blank" rel="noreferrer" className="text-xs font-black text-[#0284c7] hover:underline">
+                                                                vinix.online
+                                                            </a>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Working QR Code */}
+                                                    <div className="flex flex-col items-center flex-shrink-0">
+                                                        <span className="text-[7px] font-extrabold text-slate-500 uppercase tracking-wider mb-1">SCAN FOR PROFILE</span>
+                                                        <a
+                                                            href={`https://vinix.online/verify/offer/${activeOffer?.offer_letter_id || 'VINIX-OFFER-6391'}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            title="Click or scan to verify student credentials"
+                                                            className="w-16 h-16 p-1 bg-white rounded-lg border border-slate-200 shadow-sm flex items-center justify-center hover:scale-105 transition-transform hover:border-sky-400"
+                                                        >
+                                                            <img
+                                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(
+                                                                    `https://vinix.online/verify/offer/${activeOffer?.offer_letter_id || 'VINIX-OFFER-6391'}`
+                                                                )}&margin=0`}
+                                                                alt="Verify QR"
+                                                                className="w-full h-full object-contain"
+                                                            />
+                                                        </a>
+                                                    </div>
+                                                </div>
+
+                                                {/* Footer Pill Capsule */}
+                                                <div className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 flex items-center justify-between">
+                                                    <div className="w-5 h-5 rounded bg-sky-100 border border-sky-300 flex items-center justify-center flex-shrink-0">
+                                                        <svg className="w-3 h-3 text-[#0284c7]" viewBox="0 0 20 20" fill="none">
+                                                            <path d="M5 6 L10 15 L15 6" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                        </svg>
+                                                    </div>
+                                                    <span className="text-[9.5px] font-bold text-slate-700 tracking-tight text-center flex-1">
+                                                        vinix.online &nbsp;|&nbsp; contact@vinix.online
+                                                    </span>
+                                                    <div className="grid grid-cols-3 gap-0.5 flex-shrink-0">
+                                                        <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                                        <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                                        <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                                        <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                                        <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                                        <span className="w-1 h-1 rounded-full bg-slate-300"></span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
 
                                 </div>
