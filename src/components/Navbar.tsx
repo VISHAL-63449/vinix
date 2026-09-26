@@ -83,12 +83,12 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo & Brand */}
-                    <div className="flex items-center">
-                        <Link to="/" className="flex items-center hover:opacity-90 transition">
+                    <div className="flex items-center shrink-0">
+                        <Link to="/" className="flex items-center hover:opacity-90 transition shrink-0">
                             <img
                                 src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'}
                                 alt="Vinix"
-                                className="h-8 w-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:invert transition-all duration-300"
+                                className="h-8 w-auto shrink-0 object-contain mix-blend-multiply dark:mix-blend-normal dark:invert transition-all duration-300"
                             />
                         </Link>
                     </div>

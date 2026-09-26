@@ -272,16 +272,16 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                 <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 sm:h-[68px] items-center justify-between">
                         {/* Left: Brand Logo */}
-                        <div className="flex items-center gap-6">
+                        <div className="flex items-center gap-6 shrink-0">
                             <button
                                 onClick={() => handleNavClick('home')}
-                                className="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer group"
+                                className="flex items-center gap-2 hover:opacity-90 transition-opacity cursor-pointer group shrink-0"
                                 aria-label="Vinix Student Portal Home"
                             >
                                 <img
                                     src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'}
                                     alt="Vinix"
-                                    className="h-7 sm:h-8 w-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:invert transition-all duration-300"
+                                    className="h-7 sm:h-8 w-auto shrink-0 object-contain mix-blend-multiply dark:mix-blend-normal dark:invert transition-all duration-300"
                                 />
                             </button>
                         </div>
@@ -397,9 +397,9 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                         </nav>
 
                         {/* Right: Controls matching Image 2 */}
-                        <div className="flex items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                             {/* 1. Notification Bell Button */}
-                            <div className="relative" ref={notifRef}>
+                            <div className="relative shrink-0" ref={notifRef}>
                                 <button
                                     onClick={() => {
                                         setNotificationOpen(!notificationOpen);
@@ -483,7 +483,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             {/* 2. Dark Mode Toggle Button */}
                             <button
                                 onClick={toggleDarkMode}
-                                className="w-10 h-10 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors shadow-xs cursor-pointer focus:outline-none"
+                                className="w-10 h-10 rounded-2xl border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-center text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-850 transition-colors shadow-xs cursor-pointer focus:outline-none shrink-0"
                                 aria-label="Toggle dark mode"
                             >
                                 {isDarkMode ? (
@@ -493,14 +493,14 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                 )}
                             </button>
 
-                            {/* 3. User Avatar Pill with Dropdown Chevron - Matching Image 2 */}
-                            <div className="relative" ref={userDropdownRef}>
+                            {/* 3. User Avatar Pill with Dropdown Chevron - Compulsory name on laptop, avatar-only on mobile */}
+                            <div className="relative shrink-0" ref={userDropdownRef}>
                                 <button
                                     onClick={() => {
                                         setUserDropdownOpen(!userDropdownOpen);
                                         setNotificationOpen(false);
                                     }}
-                                    className="flex items-center gap-2.5 pl-1.5 pr-3 py-1.5 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 transition-all shadow-xs cursor-pointer focus:outline-none"
+                                    className="flex items-center gap-1.5 lg:gap-2.5 pl-1.5 pr-2.5 lg:pr-3 py-1.5 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 transition-all shadow-xs cursor-pointer focus:outline-none shrink-0"
                                     aria-label="Student profile menu"
                                 >
                                     {/* Circle Avatar with initial in vibrant blue matching Pic 2 */}
@@ -516,14 +516,14 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                         )}
                                     </div>
 
-                                    {/* Student username handle (e.g. vishal9932 / sandhiya) */}
-                                    <span className="text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 max-w-[140px] truncate">
+                                    {/* Student username handle: COMPULSORY in laptop view, HIDDEN in mobile view */}
+                                    <span className="hidden lg:inline-block text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-100 max-w-[140px] truncate select-none">
                                         {studentHandle}
                                     </span>
 
                                     {/* Chevron arrow flips when open */}
                                     <ChevronDown
-                                        className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${
+                                        className={`w-3.5 h-3.5 text-slate-400 shrink-0 transition-transform duration-200 ${
                                             userDropdownOpen ? 'rotate-180' : ''
                                         }`}
                                     />
@@ -608,11 +608,11 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                         {/* Drawer Header (Exact match to top bar with Close 'X') */}
                         <div className="flex h-16 sm:h-[68px] items-center justify-between px-5 border-b border-slate-100 dark:border-slate-800/80 bg-white dark:bg-slate-950 shrink-0">
                             {/* Brand Logo */}
-                            <div className="flex items-center">
+                            <div className="flex items-center shrink-0">
                                 <img
                                     src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'}
                                     alt="Vinix"
-                                    className="h-7 sm:h-8 w-auto object-contain mix-blend-multiply dark:mix-blend-normal dark:invert"
+                                    className="h-7 sm:h-8 w-auto shrink-0 object-contain mix-blend-multiply dark:mix-blend-normal dark:invert"
                                 />
                             </div>
 
