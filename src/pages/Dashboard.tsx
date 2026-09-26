@@ -23,6 +23,8 @@ interface Enrollment {
     certificate_status?: string;
     completion_status?: string;
     application_status?: string;
+    joined_at?: string;
+    created_at?: string;
     internship: {
         title: string;
         domain: string;
@@ -180,6 +182,8 @@ const Dashboard: React.FC = () => {
                 internship_id: e.internship_id,
                 progress: e.progress || 0,
                 status: e.status,
+                joined_at: e.created_at || e.joined_at || e.enrolled_at,
+                created_at: e.created_at,
                 certificate_status: e.certificate_status || 'NOT_ELIGIBLE',
                 completion_status: e.completion_status || 'IN_PROGRESS',
                 internship: {
