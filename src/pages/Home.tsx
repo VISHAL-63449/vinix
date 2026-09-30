@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import GoogleAd from '../components/GoogleAd';
 import type { LucideIcon } from 'lucide-react';
 import {
     ArrowRight, Code2, Users, Award, Globe, Play,
@@ -881,6 +882,11 @@ export const Home: React.FC = () => {
                     </div>
                 </div>
             </section>
+
+            {/* ═══════ GOOGLE AD UNIT ═══════ */}
+            <div className="max-w-6xl mx-auto px-6 py-6 relative z-10">
+                <GoogleAd />
+            </div>
 
             {/* ═══════ CTA BANNER SECTION ═══════ */}
             <section className="pb-20 max-w-7xl mx-auto px-6 lg:px-12 relative z-10">

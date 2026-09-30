@@ -11,6 +11,7 @@ const supabaseAdmin = createClient('https://ioppccrnbuqgcynmjpaa.supabase.co', s
     }
 });
 import { useAuth } from '../contexts/AuthContext';
+import GoogleAd from '../components/GoogleAd';
 import {
     ChevronDown, MapPin, Mail, Lock, ArrowRight,
     Star, CheckCircle2, Clock
@@ -1177,6 +1178,11 @@ const Internships: React.FC = () => {
                         </form>
                     )}
                 </div>
+            </div>
+
+            {/* Google Ad Unit */}
+            <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+                <GoogleAd />
             </div>
         </div>
     );
