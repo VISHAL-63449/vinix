@@ -18,6 +18,7 @@ import {
     X,
     Share2
 } from 'lucide-react';
+import { getGenuineStudentAvatar } from '../utils/studentAvatars';
 
 export interface StudentNavbarProps {
     activeTab: 'overview' | 'workspace' | 'idcard' | 'certificates' | 'settings' | 'payment';
@@ -184,6 +185,8 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
         (profile?.full_name && profile.full_name.trim().charAt(0)) ||
         'V'
     ).toUpperCase();
+
+    const authenticAvatar = getGenuineStudentAvatar(user?.id, user?.email, profile?.avatar_url);
 
     // Handlers
     const handleSignOut = async () => {
@@ -505,9 +508,9 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                 >
                                     {/* Circle Avatar with initial in vibrant blue matching Pic 2 */}
                                     <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center overflow-hidden shadow-xs shrink-0">
-                                        {profile?.avatar_url ? (
+                                        {authenticAvatar ? (
                                             <img
-                                                src={profile.avatar_url}
+                                                src={authenticAvatar}
                                                 alt={studentHandle}
                                                 className="w-full h-full object-cover"
                                             />
@@ -648,9 +651,9 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                 {/* User Pill Matching Pic 2 */}
                                 <div className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
                                     <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center overflow-hidden">
-                                        {profile?.avatar_url ? (
+                                        {authenticAvatar ? (
                                             <img
-                                                src={profile.avatar_url}
+                                                src={authenticAvatar}
                                                 alt={studentDisplayName}
                                                 className="w-full h-full object-cover"
                                             />
@@ -678,9 +681,9 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             <div className="bg-[#eff6ff] dark:bg-slate-900/80 border border-blue-100/80 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-xs">
                                 <div className="flex items-center gap-3.5 min-w-0">
                                     <div className="w-12 h-12 rounded-full bg-blue-600 text-white font-black text-lg flex items-center justify-center shadow-md shadow-blue-500/25 shrink-0 overflow-hidden">
-                                        {profile?.avatar_url ? (
+                                        {authenticAvatar ? (
                                             <img
-                                                src={profile.avatar_url}
+                                                src={authenticAvatar}
                                                 alt={studentDisplayName}
                                                 className="w-full h-full object-cover"
                                             />

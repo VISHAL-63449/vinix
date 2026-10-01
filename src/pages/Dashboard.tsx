@@ -14,6 +14,7 @@ import {
     Sparkles, Clock, CalendarDays, FileText, CheckCircle, LogOut, Home, ClipboardList,
     RotateCcw, AlertCircle
 } from 'lucide-react';
+import { getGenuineStudentAvatar } from '../utils/studentAvatars';
 
 interface Enrollment {
     id: string;
@@ -79,6 +80,7 @@ interface CertificateData {
 
 const Dashboard: React.FC = () => {
     const { user, profile, studentProfile, refreshProfile } = useAuth();
+    const authenticAvatar = getGenuineStudentAvatar(user?.id, user?.email, profile?.avatar_url);
     const navigate = useNavigate();
     const { toasts, showToast, dismiss } = useToast();
 
@@ -847,8 +849,8 @@ const Dashboard: React.FC = () => {
                                     {/* Avatar */}
                                     <div className="relative flex-shrink-0">
                                         <div className="w-14 h-14 sm:w-20 sm:h-20 rounded-[28%] border-[2px] sm:border-[3px] border-[#1d436a] bg-slate-800 overflow-hidden flex items-center justify-center shadow-md">
-                                            {profile?.avatar_url ? (
-                                                <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
+                                            {authenticAvatar ? (
+                                                <img src={authenticAvatar} alt="Profile" className="w-full h-full object-cover" />
                                             ) : (
                                                 <span className="text-xl sm:text-2xl font-extrabold text-white/50">{profile?.full_name?.charAt(0) || 'I'}</span>
                                             )}
@@ -1530,10 +1532,10 @@ const Dashboard: React.FC = () => {
                                                     {/* Photo Column */}
                                                     <div className="flex flex-col items-center text-center">
                                                         <div className="w-24 h-24 rounded-full p-[3px] bg-gradient-to-tr from-sky-400 via-sky-500 to-blue-600 shadow-[0_0_0_3px_rgba(56,189,248,0.25),0_6px_16px_rgba(2,132,199,0.25)] flex items-center justify-center overflow-hidden">
-                                                            {profile?.avatar_url ? (
+                                                            {authenticAvatar ? (
                                                                 <img
-                                                                    src={profile.avatar_url}
-                                                                    alt={profile.full_name || 'Student'}
+                                                                    src={authenticAvatar}
+                                                                    alt={profile?.full_name || 'Student'}
                                                                     className="w-full h-full object-cover rounded-full border-2 border-white bg-slate-100"
                                                                     onError={(e: any) => {
                                                                         e.target.style.display = 'none';
@@ -1543,7 +1545,7 @@ const Dashboard: React.FC = () => {
                                                                 />
                                                             ) : null}
                                                             <div
-                                                                className={`w-full h-full rounded-full border-2 border-white bg-gradient-to-br from-slate-50 via-sky-50 to-blue-100 items-center justify-center text-sky-800 font-black text-2xl tracking-wide select-none shadow-inner ${profile?.avatar_url ? 'hidden' : 'flex'}`}
+                                                                className={`w-full h-full rounded-full border-2 border-white bg-gradient-to-br from-slate-50 via-sky-50 to-blue-100 items-center justify-center text-sky-800 font-black text-2xl tracking-wide select-none shadow-inner ${authenticAvatar ? 'hidden' : 'flex'}`}
                                                             >
                                                                 {(profile?.full_name || 'S').trim().charAt(0).toUpperCase()}
                                                             </div>

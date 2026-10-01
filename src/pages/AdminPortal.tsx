@@ -10,6 +10,7 @@ import {
     BookOpen, Layers, Check, Activity, GraduationCap, RefreshCw, Clock, History,
     Menu, Sun, Rocket, LogOut, Tag, IndianRupee, Percent
 } from 'lucide-react';
+import { getGenuineStudentAvatar } from '../utils/studentAvatars';
 
 interface Internship {
     id: string;
@@ -33,6 +34,7 @@ interface Enrollment {
         full_name: string;
         email: string;
         college: string;
+        avatar_url?: string;
         year_of_study?: string;
         course_branch?: string;
         state?: string;
@@ -61,6 +63,7 @@ interface TaskProgress {
     profiles?: {
         full_name: string;
         email: string;
+        avatar_url?: string;
     };
     internship_tasks?: {
         task_number: number;
@@ -78,6 +81,7 @@ interface Certificate {
     status: string;
     profiles?: {
         full_name: string;
+        avatar_url?: string;
     };
 }
 
@@ -101,6 +105,8 @@ interface PaymentRecord {
     payment_date: string;
     profiles?: {
         full_name: string;
+        email?: string;
+        avatar_url?: string;
     };
     domain_name?: string;
 }
@@ -354,31 +360,28 @@ const AdminPortal: React.FC = () => {
                 }
             });
 
-            // Collect all unique user IDs from enrolls, subs, certs, and payments
-            const enrolledUserIds = (enrolls || []).map(e => e.user_id);
-            const subUserIds = (subs || []).map(s => s.user_id || s.student_id);
-            const certUserIds = (certs || []).map(c => c.user_id);
-            const paymentUserIds = (paymentsData || []).map(p => p.student_id);
-            const allUserIds = Array.from(new Set([...enrolledUserIds, ...subUserIds, ...certUserIds, ...paymentUserIds].filter(Boolean)));
+            // Fetch profiles in bulk including avatar_url (fast and reliable)
+            let profilesMap: Record<string, { full_name: string; email: string; college?: string; avatar_url?: string; updated_at?: string }> = {};
+            let profilesByEmail: Record<string, { full_name: string; email: string; college?: string; avatar_url?: string; updated_at?: string }> = {};
 
-            // Fetch profiles in bulk
-            let profilesMap: Record<string, { full_name: string; email: string; college?: string; updated_at?: string }> = {};
-            if (allUserIds.length > 0) {
-                const { data: profiles } = await supabaseAdmin
-                    .from('profiles')
-                    .select('id, full_name, email, college, updated_at')
-                    .in('id', allUserIds);
+            const { data: profiles } = await supabaseAdmin
+                .from('profiles')
+                .select('id, full_name, email, college, updated_at, avatar_url');
 
-                if (profiles) {
-                    profiles.forEach(p => {
-                        profilesMap[p.id] = {
-                            full_name: p.full_name || 'Alumnus',
-                            email: p.email || '',
-                            college: p.college || '',
-                            updated_at: p.updated_at
-                        };
-                    });
-                }
+            if (profiles) {
+                profiles.forEach(p => {
+                    const profObj = {
+                        full_name: p.full_name || 'Alumnus',
+                        email: p.email || '',
+                        college: p.college || '',
+                        avatar_url: getGenuineStudentAvatar(p.id, p.email, p.avatar_url || (p as any).photo_url || (p as any).profile_photo || (p as any).image),
+                        updated_at: p.updated_at
+                    };
+                    profilesMap[p.id] = profObj;
+                    if (p.email) {
+                        profilesByEmail[p.email.toLowerCase().trim()] = profObj;
+                    }
+                });
             }
 
             // Map internship applications by user_id + internship_id
@@ -386,6 +389,7 @@ const AdminPortal: React.FC = () => {
                 student_name: string;
                 email: string;
                 college?: string;
+                avatar_url?: string;
                 year_of_study?: string;
                 course_branch?: string;
                 state?: string;
@@ -399,6 +403,7 @@ const AdminPortal: React.FC = () => {
                         student_name: app.student_name,
                         email: app.email,
                         college: app.college,
+                        avatar_url: getGenuineStudentAvatar(app.student_id, app.email, app.avatar_url || app.photo_url || app.profile_photo || app.image),
                         year_of_study: app.year_of_study,
                         course_branch: app.course_branch,
                         state: app.state,
@@ -410,20 +415,29 @@ const AdminPortal: React.FC = () => {
 
             // Map profiles into the data array client-side (prioritizing custom details entered in the application form)
             const finalEnrolls = (enrolls || []).map(e => {
-                const appDetail = appsMap[`${e.user_id}_${e.internship_id}`] || appsMap[`${e.student_id}_${e.internship_id}`];
-                const profileDetail = profilesMap[e.user_id];
+                const sId = e.user_id || (e as any).student_id;
+                const appDetail = appsMap[`${e.user_id}_${e.internship_id}`] || (sId ? appsMap[`${sId}_${e.internship_id}`] : undefined);
+                const profileDetail = profilesMap[e.user_id] || (sId ? profilesMap[sId] : undefined);
+                const email = appDetail?.email || profileDetail?.email || '';
+                const fallbackProfileByEmail = email ? profilesByEmail[email.toLowerCase().trim()] : undefined;
+                const studentAvatar = getGenuineStudentAvatar(
+                    e.user_id || sId,
+                    email,
+                    profileDetail?.avatar_url || fallbackProfileByEmail?.avatar_url || appDetail?.avatar_url || (e.profiles as any)?.avatar_url
+                );
                 return {
                     ...e,
                     profiles: {
-                        full_name: appDetail?.student_name || profileDetail?.full_name || 'Alumnus',
-                        email: appDetail?.email || profileDetail?.email || '',
-                        college: appDetail?.college || profileDetail?.college || '',
+                        full_name: appDetail?.student_name || profileDetail?.full_name || fallbackProfileByEmail?.full_name || 'Alumnus',
+                        email: email,
+                        college: appDetail?.college || profileDetail?.college || fallbackProfileByEmail?.college || '',
+                        avatar_url: studentAvatar,
                         year_of_study: appDetail?.year_of_study || '',
                         course_branch: appDetail?.course_branch || '',
                         state: appDetail?.state || '',
                         district: appDetail?.district || '',
                         city: appDetail?.city || '',
-                        updated_at: profileDetail?.updated_at || e.updated_at
+                        updated_at: profileDetail?.updated_at || fallbackProfileByEmail?.updated_at || e.updated_at
                     }
                 };
             });
@@ -432,13 +446,21 @@ const AdminPortal: React.FC = () => {
                 const studentId = s.user_id || s.student_id;
                 const appDetail = appsMap[`${studentId}_${s.internship_id}`];
                 const profileDetail = profilesMap[studentId] || (s.user_id ? profilesMap[s.user_id] : undefined) || (s.student_id ? profilesMap[s.student_id] : undefined);
+                const email = appDetail?.email || profileDetail?.email || '';
+                const fallbackProfileByEmail = email ? profilesByEmail[email.toLowerCase().trim()] : undefined;
+                const studentAvatar = getGenuineStudentAvatar(
+                    studentId,
+                    email,
+                    profileDetail?.avatar_url || fallbackProfileByEmail?.avatar_url || appDetail?.avatar_url
+                );
                 return {
                     ...s,
                     user_id: studentId,
                     student_id: studentId,
                     profiles: {
-                        full_name: appDetail?.student_name || profileDetail?.full_name || 'Student',
-                        email: appDetail?.email || profileDetail?.email || ''
+                        full_name: appDetail?.student_name || profileDetail?.full_name || fallbackProfileByEmail?.full_name || 'Student',
+                        email: email,
+                        avatar_url: studentAvatar
                     }
                 };
             }).sort((a, b) => {
@@ -450,11 +472,17 @@ const AdminPortal: React.FC = () => {
             });
 
             const finalCerts = (certs || []).map(c => {
-                const profileDetail = profilesMap[c.user_id];
+                const profileDetail = profilesMap[c.user_id] || (c.user_id ? profilesByEmail[c.user_id.toLowerCase()] : undefined);
+                const studentAvatar = getGenuineStudentAvatar(
+                    c.user_id,
+                    profileDetail?.email,
+                    profileDetail?.avatar_url
+                );
                 return {
                     ...c,
                     profiles: {
-                        full_name: profileDetail?.full_name || 'Unknown'
+                        full_name: profileDetail?.full_name || 'Unknown',
+                        avatar_url: studentAvatar
                     }
                 };
             });
@@ -462,10 +490,17 @@ const AdminPortal: React.FC = () => {
             const finalPayments = (paymentsData || []).map(p => {
                 const profileDetail = profilesMap[p.student_id];
                 const activeEnrollment = (enrolls || []).find(e => e.user_id === p.student_id);
+                const studentAvatar = getGenuineStudentAvatar(
+                    p.student_id,
+                    profileDetail?.email,
+                    profileDetail?.avatar_url
+                );
                 return {
                     ...p,
                     profiles: {
-                        full_name: profileDetail?.full_name || 'Alumnus'
+                        full_name: profileDetail?.full_name || 'Alumnus',
+                        email: profileDetail?.email,
+                        avatar_url: studentAvatar
                     },
                     domain_name: activeEnrollment?.internships?.title || 'Unknown Domain'
                 };
@@ -1379,12 +1414,29 @@ const AdminPortal: React.FC = () => {
                                                     const initials = sub.profiles?.full_name?.charAt(0).toUpperCase() || 'S';
                                                     const domainCategory = enrollments.find(e => e.user_id === sub.user_id)?.internships?.category ||
                                                         enrollments.find(e => e.internship_id === sub.internship_id)?.internships?.category || 'Engineering';
+                                                    const avatarSrc = getGenuineStudentAvatar(sub.user_id || (sub as any).student_id, sub.profiles?.email, sub.profiles?.avatar_url);
                                                     return (
                                                         <tr key={sub.id} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition">
                                                             <td className="py-2.5 pr-4">
                                                                 <div className="flex items-center space-x-3">
-                                                                    <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-950 text-[#154ED0] dark:text-blue-400 font-bold flex items-center justify-center text-xs flex-shrink-0">
-                                                                        {initials}
+                                                                    <div className="relative w-8 h-8 flex-shrink-0 flex items-center justify-center">
+                                                                        {avatarSrc ? (
+                                                                            <img
+                                                                                src={avatarSrc}
+                                                                                alt={sub.profiles?.full_name || 'Student'}
+                                                                                className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/20 shadow-sm"
+                                                                                onError={(e) => {
+                                                                                    e.currentTarget.style.display = 'none';
+                                                                                    const fallback = e.currentTarget.parentElement?.querySelector('.sub-avatar-initials') as HTMLElement;
+                                                                                    if (fallback) fallback.style.display = 'flex';
+                                                                                }}
+                                                                            />
+                                                                        ) : null}
+                                                                        <div
+                                                                            className={`sub-avatar-initials w-8 h-8 rounded-full bg-blue-600 text-white items-center justify-center font-bold text-xs uppercase shadow-sm flex-shrink-0 ${avatarSrc ? 'hidden' : 'flex'}`}
+                                                                        >
+                                                                            {initials}
+                                                                        </div>
                                                                     </div>
                                                                     <div className="min-w-0">
                                                                         <span className="font-semibold text-slate-900 dark:text-white block text-[13px] truncate">{sub.profiles?.full_name || 'Student'}</span>
@@ -1647,17 +1699,42 @@ const AdminPortal: React.FC = () => {
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-                                            {enrollments.map(enroll => (
+                                            {enrollments.map(enroll => {
+                                                const appAvatarSrc = getGenuineStudentAvatar(enroll.user_id || (enroll as any).student_id, enroll.profiles?.email, enroll.profiles?.avatar_url);
+                                                return (
                                                 <tr key={enroll.id} className="hover:bg-slate-50/[0.4] dark:hover:bg-slate-900/[0.2]">
                                                     <td className="p-4">
-                                                        <span
-                                                            onClick={() => setSelectedEnrollForDetails(enroll)}
-                                                            className="font-bold flex items-center space-x-1 hover:text-brand-primary dark:hover:text-brand-accent cursor-pointer transition"
-                                                        >
-                                                            <span>{enroll.profiles?.full_name}</span>
-                                                            <ExternalLink className="w-3 h-3 opacity-60 inline flex-shrink-0" />
-                                                        </span>
-                                                        <span className="text-[10px] text-slate-400 font-mono">{enroll.profiles?.email}</span>
+                                                        <div className="flex items-center space-x-3 text-left">
+                                                            <div className="relative w-8 h-8 flex-shrink-0 flex items-center justify-center">
+                                                                {appAvatarSrc ? (
+                                                                    <img
+                                                                        src={appAvatarSrc}
+                                                                        alt={enroll.profiles?.full_name || 'Student'}
+                                                                        className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/20 shadow-sm"
+                                                                        onError={(e) => {
+                                                                            e.currentTarget.style.display = 'none';
+                                                                            const fallback = e.currentTarget.parentElement?.querySelector('.app-avatar-initials') as HTMLElement;
+                                                                            if (fallback) fallback.style.display = 'flex';
+                                                                        }}
+                                                                    />
+                                                                ) : null}
+                                                                <div
+                                                                    className={`app-avatar-initials w-8 h-8 rounded-full bg-blue-600 text-white items-center justify-center font-bold text-xs uppercase shadow-sm flex-shrink-0 ${appAvatarSrc ? 'hidden' : 'flex'}`}
+                                                                >
+                                                                    {enroll.profiles?.full_name?.charAt(0).toUpperCase() || 'S'}
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <span
+                                                                    onClick={() => setSelectedEnrollForDetails(enroll)}
+                                                                    className="font-bold flex items-center space-x-1 hover:text-brand-primary dark:hover:text-brand-accent cursor-pointer transition"
+                                                                >
+                                                                    <span>{enroll.profiles?.full_name}</span>
+                                                                    <ExternalLink className="w-3 h-3 opacity-60 inline flex-shrink-0" />
+                                                                </span>
+                                                                <span className="text-[10px] text-slate-400 font-mono block">{enroll.profiles?.email}</span>
+                                                            </div>
+                                                        </div>
                                                     </td>
                                                     <td className="p-4 font-bold">{enroll.internships?.title}</td>
                                                     <td className="p-4 text-slate-500">{enroll.profiles?.college}</td>
@@ -1689,7 +1766,7 @@ const AdminPortal: React.FC = () => {
                                                         )}
                                                     </td>
                                                 </tr>
-                                            ))}
+                                            );})}
                                         </tbody>
                                     </table>
                                 </div>
@@ -2037,12 +2114,30 @@ const AdminPortal: React.FC = () => {
                                                     if (displayStatus === 'verified') statusBadge = "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400";
                                                     if (displayStatus === 'rejected') statusBadge = "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400";
 
+                                                    const payAvatarSrc = getGenuineStudentAvatar(payment.student_id, payment.profiles?.email, payment.profiles?.avatar_url);
+
                                                     return (
                                                         <tr key={payment.payment_id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50 transition">
                                                             <td className="px-6 py-4">
                                                                 <div className="flex items-center space-x-4 text-left">
-                                                                    <div className="w-10 h-10 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center justify-center font-bold text-sm uppercase shadow-sm">
-                                                                        {initials}
+                                                                    <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center">
+                                                                        {payAvatarSrc ? (
+                                                                            <img
+                                                                                src={payAvatarSrc}
+                                                                                alt={payment.profiles?.full_name || 'Student'}
+                                                                                className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/20 shadow-sm"
+                                                                                onError={(e) => {
+                                                                                    e.currentTarget.style.display = 'none';
+                                                                                    const fallback = e.currentTarget.parentElement?.querySelector('.pay-avatar-initials') as HTMLElement;
+                                                                                    if (fallback) fallback.style.display = 'flex';
+                                                                                }}
+                                                                            />
+                                                                        ) : null}
+                                                                        <div
+                                                                            className={`pay-avatar-initials w-10 h-10 rounded-full bg-blue-600 text-white items-center justify-center font-bold text-sm uppercase shadow-sm flex-shrink-0 ${payAvatarSrc ? 'hidden' : 'flex'}`}
+                                                                        >
+                                                                            {initials}
+                                                                        </div>
                                                                     </div>
                                                                     <div>
                                                                         <span className="font-bold text-slate-800 dark:text-slate-100 block leading-tight text-sm">{payment.profiles?.full_name}</span>
@@ -2564,13 +2659,30 @@ const AdminPortal: React.FC = () => {
                                                         const lastSeen = new Date(profilUpdatedAt).getTime();
                                                         return Math.abs(Date.now() - lastSeen) < 3 * 60 * 1000;
                                                     })();
+                                                    const studentAvatar = getGenuineStudentAvatar(enroll.user_id || (enroll as any).student_id, enroll.profiles?.email, enroll.profiles?.avatar_url);
 
                                                     return (
                                                         <tr key={enroll.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50 transition">
                                                             <td className="px-6 py-4 font-semibold text-slate-800 dark:text-slate-100">
                                                                 <div className="flex items-center space-x-3 text-left">
-                                                                    <div className="w-9 h-9 rounded-full bg-slate-900 text-white flex items-center justify-center font-bold text-xs uppercase shadow-sm">
-                                                                        {initials}
+                                                                    <div className="relative w-9 h-9 flex-shrink-0 flex items-center justify-center">
+                                                                        {studentAvatar ? (
+                                                                            <img
+                                                                                src={studentAvatar}
+                                                                                alt={enroll.profiles?.full_name || 'Student'}
+                                                                                className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500/20 shadow-sm"
+                                                                                onError={(e) => {
+                                                                                    e.currentTarget.style.display = 'none';
+                                                                                    const fallback = e.currentTarget.parentElement?.querySelector('.avatar-initials') as HTMLElement;
+                                                                                    if (fallback) fallback.style.display = 'flex';
+                                                                                }}
+                                                                            />
+                                                                        ) : null}
+                                                                        <div
+                                                                            className={`avatar-initials w-9 h-9 rounded-full bg-blue-600 text-white items-center justify-center font-bold text-xs uppercase shadow-sm flex-shrink-0 ${studentAvatar ? 'hidden' : 'flex'}`}
+                                                                        >
+                                                                            {initials}
+                                                                        </div>
                                                                     </div>
                                                                     <div>
                                                                         <span className="font-bold text-slate-805 dark:text-slate-100 block leading-tight">{enroll.profiles?.full_name}</span>
@@ -2671,9 +2783,34 @@ const AdminPortal: React.FC = () => {
                             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                                 <div className="lg:col-span-1 space-y-6">
                                     <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm flex flex-col items-center text-center">
-                                        <div className="w-24 h-24 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-650 flex items-center justify-center font-bold text-3xl shadow-inner border border-blue-100 dark:border-blue-900/50">
-                                            {selectedStudentForDetail.profiles?.full_name?.charAt(0).toUpperCase() || 'S'}
-                                        </div>
+                                        {(() => {
+                                            const detailAvatarSrc = getGenuineStudentAvatar(
+                                                selectedStudentForDetail.user_id || (selectedStudentForDetail as any).student_id,
+                                                selectedStudentForDetail.profiles?.email,
+                                                selectedStudentForDetail.profiles?.avatar_url
+                                            );
+                                            return (
+                                                <div className="relative w-24 h-24 flex-shrink-0 flex items-center justify-center">
+                                                    {detailAvatarSrc ? (
+                                                        <img
+                                                            src={detailAvatarSrc}
+                                                            alt={selectedStudentForDetail.profiles?.full_name || 'Student'}
+                                                            className="w-24 h-24 rounded-full object-cover shadow-inner ring-4 ring-blue-500/20"
+                                                            onError={(e) => {
+                                                                e.currentTarget.style.display = 'none';
+                                                                const fallback = e.currentTarget.parentElement?.querySelector('.detail-avatar-initials') as HTMLElement;
+                                                                if (fallback) fallback.style.display = 'flex';
+                                                            }}
+                                                        />
+                                                    ) : null}
+                                                    <div
+                                                        className={`detail-avatar-initials w-24 h-24 rounded-full bg-blue-600 text-white items-center justify-center font-bold text-3xl shadow-inner ${detailAvatarSrc ? 'hidden' : 'flex'}`}
+                                                    >
+                                                        {selectedStudentForDetail.profiles?.full_name?.charAt(0).toUpperCase() || 'S'}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
                                         <h3 className="text-lg font-black text-slate-800 dark:text-white mt-4 leading-none">
                                             {selectedStudentForDetail.profiles?.full_name}
                                         </h3>
@@ -3175,9 +3312,34 @@ const AdminPortal: React.FC = () => {
                         {/* Modal Header */}
                         <div className="flex justify-between items-center pb-3 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
                             <div className="flex items-center space-x-3 min-w-0">
-                                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0F286E] to-[#154ED0] text-white flex items-center justify-center font-bold text-sm shadow-md flex-shrink-0">
-                                    {(selectedEnrollForDetails.profiles?.full_name || 'S').charAt(0).toUpperCase()}
-                                </div>
+                                {(() => {
+                                    const modalAvatar = getGenuineStudentAvatar(
+                                        selectedEnrollForDetails.user_id || (selectedEnrollForDetails as any).student_id,
+                                        selectedEnrollForDetails.profiles?.email,
+                                        selectedEnrollForDetails.profiles?.avatar_url
+                                    );
+                                    return (
+                                        <div className="relative w-10 h-10 flex-shrink-0 flex items-center justify-center">
+                                            {modalAvatar ? (
+                                                <img
+                                                    src={modalAvatar}
+                                                    alt={selectedEnrollForDetails.profiles?.full_name || 'Student'}
+                                                    className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/20 shadow-sm"
+                                                    onError={(e) => {
+                                                        e.currentTarget.style.display = 'none';
+                                                        const fallback = e.currentTarget.parentElement?.querySelector('.modal-avatar-initials') as HTMLElement;
+                                                        if (fallback) fallback.style.display = 'flex';
+                                                    }}
+                                                />
+                                            ) : null}
+                                            <div
+                                                className={`modal-avatar-initials w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md flex-shrink-0 ${modalAvatar ? 'hidden' : 'flex'}`}
+                                            >
+                                                {(selectedEnrollForDetails.profiles?.full_name || 'S').charAt(0).toUpperCase()}
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                                 <div className="min-w-0">
                                     <h3 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white truncate">
                                         {selectedEnrollForDetails.profiles?.full_name || 'Student Profile'}
