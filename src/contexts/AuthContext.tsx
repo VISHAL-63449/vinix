@@ -18,21 +18,48 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     const [user, setUser] = useState<User | null>(null);
     const [session, setSession] = useState<Session | null>(null);
-    const [profile, setProfile] = useState<ProfileModel | null>(null);
-    const [studentProfile, setStudentProfile] = useState<StudentProfileModel | null>(null);
-    const [loading, setLoading] = useState(true);
+    const [profile, setProfile] = useState<ProfileModel | null>(() => {
+        try {
+            const cached = localStorage.getItem('vinix_user_profile');
+            return cached ? JSON.parse(cached) : null;
+        } catch {
+            return null;
+        }
+    });
+    const [studentProfile, setStudentProfile] = useState<StudentProfileModel | null>(() => {
+        try {
+            const cached = localStorage.getItem('vinix_student_profile');
+            return cached ? JSON.parse(cached) : null;
+        } catch {
+            return null;
+        }
+    });
+    const [loading, setLoading] = useState<boolean>(() => {
+        try {
+            const cached = localStorage.getItem('vinix_user_profile');
+            return !cached;
+        } catch {
+            return true;
+        }
+    });
     const [dbError, setDbError] = useState(false);
+    const inFlightFetch = React.useRef<string | null>(null);
 
     const fetchProfileData = async (userId: string) => {
+        if (inFlightFetch.current === userId) return;
+        inFlightFetch.current = userId;
         try {
             setDbError(false);
 
-            // Fetch from profiles
-            const { data: profData, error: profErr } = await supabaseAdmin
-                .from('profiles')
-                .select('*')
-                .eq('id', userId)
-                .maybeSingle();
+            // Fetch profile and student profile in parallel for maximum speed
+            const [profRes, studRes] = await Promise.allSettled([
+                supabaseAdmin.from('profiles').select('*').eq('id', userId).maybeSingle(),
+                supabaseAdmin.from('student_profiles').select('*').eq('id', userId).maybeSingle()
+            ]);
+
+            const profData = profRes.status === 'fulfilled' ? profRes.value.data : null;
+            const profErr = profRes.status === 'fulfilled' ? profRes.value.error : null;
+            const studData = studRes.status === 'fulfilled' ? studRes.value.data : null;
 
             if (profErr) {
                 console.error('Error fetching profile:', profErr);
@@ -44,24 +71,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
             if (profData) {
                 setProfile(profData as ProfileModel);
+                try {
+                    localStorage.setItem('vinix_user_profile', JSON.stringify(profData));
+                } catch { }
 
-                // Fetch from student_profiles if user is a student
-                if (profData.role === 'student') {
-                    const { data: studData, error: studErr } = await supabaseAdmin
-                        .from('student_profiles')
-                        .select('*')
-                        .eq('id', userId)
-                        .maybeSingle();
-
-                    if (studErr) {
-                        console.error('Error fetching student profile:', studErr);
-                    } else if (studData) {
-                        setStudentProfile(studData as StudentProfileModel);
-                    }
+                if (studData) {
+                    setStudentProfile(studData as StudentProfileModel);
+                    try {
+                        localStorage.setItem('vinix_student_profile', JSON.stringify(studData));
+                    } catch { }
                 }
             } else {
                 // If logged in via auth.signUp but handle_new_user trigger hadn't fired or failed
-                // For development/robustness, try to create standard profile record from client
                 const email = session?.user?.email || '';
                 const name = session?.user?.user_metadata?.name || 'New User';
                 const role = session?.user?.user_metadata?.role || 'student';
@@ -86,9 +107,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                     }
                 } else if (newProf) {
                     setProfile(newProf as ProfileModel);
+                    try {
+                        localStorage.setItem('vinix_user_profile', JSON.stringify(newProf));
+                    } catch { }
 
                     if (role === 'student') {
-                        const { data: newStud, error: insStudErr } = await supabaseAdmin
+                        const { data: newStud } = await supabaseAdmin
                             .from('student_profiles')
                             .insert({
                                 id: userId,
@@ -99,12 +123,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
                         if (newStud) {
                             setStudentProfile(newStud as StudentProfileModel);
+                            try {
+                                localStorage.setItem('vinix_student_profile', JSON.stringify(newStud));
+                            } catch { }
                         }
                     }
                 }
             }
         } catch (err) {
             console.error('Failed to load user profile data:', err);
+        } finally {
+            inFlightFetch.current = null;
         }
     };
 
@@ -115,12 +144,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     useEffect(() => {
+        // Fast safety fallback: ensure loading is never held indefinitely
+        const safetyTimer = setTimeout(() => {
+            setLoading(false);
+        }, 1500);
+
         // 1. Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session);
             setUser(session?.user ?? null);
             if (session?.user?.id) {
-                fetchProfileData(session.user.id).then(() => setLoading(false));
+                fetchProfileData(session.user.id).finally(() => setLoading(false));
             } else {
                 setLoading(false);
             }
@@ -133,7 +167,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setUser(currentUser);
 
             if (currentUser?.id) {
-                setLoading(true);
                 await fetchProfileData(currentUser.id);
                 setLoading(false);
             } else {
@@ -144,6 +177,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         return () => {
+            clearTimeout(safetyTimer);
             subscription.unsubscribe();
         };
     }, []);
@@ -207,6 +241,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         }
         await supabase.auth.signOut();
+        try {
+            localStorage.removeItem('vinix_user_profile');
+            localStorage.removeItem('vinix_student_profile');
+        } catch {}
         setUser(null);
         setSession(null);
         setProfile(null);

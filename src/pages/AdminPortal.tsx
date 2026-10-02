@@ -5,7 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast, ToastContainer } from '../components/Toast';
 import {
     LayoutDashboard, CheckSquare, Search, ShieldCheck, User, FolderOpen,
-    Award, FileText, Briefcase, CalendarDays, Settings, CreditCard, ArrowRight, FileSpreadsheet, Plus, Trash2, Edit3, X, Megaphone, Mail,
+    Award, FileText, Briefcase, CalendarDays, Settings, CreditCard, ArrowRight, FileSpreadsheet, Plus, Trash2, Edit3, X, Megaphone, Mail, Eye,
     Sparkles, PlusCircle, Bell, Moon, ChevronDown, ListTodo, Users, ExternalLink,
     BookOpen, Layers, Check, Activity, GraduationCap, RefreshCw, Clock, History,
     Menu, Sun, Rocket, LogOut, Tag, IndianRupee, Percent
@@ -188,17 +188,51 @@ const AdminPortal: React.FC = () => {
         }
     };
 
+const ADMIN_CACHE_KEY = 'vinix_admin_cache_v3';
+
+function getAdminCache() {
+    try {
+        const raw = sessionStorage.getItem(ADMIN_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        if (Date.now() - (parsed._cachedAt || 0) < 15 * 60 * 1000) {
+            return parsed;
+        }
+        return null;
+    } catch {
+        return null;
+    }
+}
+
+function saveAdminCache(data: any) {
+    try {
+        sessionStorage.setItem(ADMIN_CACHE_KEY, JSON.stringify({
+            ...data,
+            _cachedAt: Date.now()
+        }));
+    } catch (e) {
+        console.warn('Failed to save admin cache:', e);
+    }
+}
+
     // Database Data States
-    const [domainsList, setDomainsList] = useState<Domain[]>([]);
-    const [internships, setInternships] = useState<Internship[]>([]);
-    const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-    const [submissions, setSubmissions] = useState<TaskProgress[]>([]);
-    const [allSubmissions, setAllSubmissions] = useState<TaskProgress[]>([]);
+    const initialAdminCache = React.useMemo(() => getAdminCache(), []);
+    const [domainsList, setDomainsList] = useState<Domain[]>(() => initialAdminCache?.domainsList || []);
+    const [internships, setInternships] = useState<Internship[]>(() => initialAdminCache?.internships || []);
+    const [enrollments, setEnrollments] = useState<Enrollment[]>(() => initialAdminCache?.enrollments || []);
+    const [submissions, setSubmissions] = useState<TaskProgress[]>(() => initialAdminCache?.submissions || []);
+    const [allSubmissions, setAllSubmissions] = useState<TaskProgress[]>(() => initialAdminCache?.allSubmissions || []);
     const [gradingSubTab, setGradingSubTab] = useState<'all' | 'pending' | 'resubmissions' | 'reviewed'>('all');
-    const [certificates, setCertificates] = useState<Certificate[]>([]);
-    const [offerLetters, setOfferLetters] = useState<OfferLetter[]>([]);
-    const [paymentsList, setPaymentsList] = useState<PaymentRecord[]>([]);
-    const [loading, setLoading] = useState(true);
+    const [certificates, setCertificates] = useState<Certificate[]>(() => initialAdminCache?.certificates || []);
+    const [offerLetters, setOfferLetters] = useState<OfferLetter[]>(() => initialAdminCache?.offerLetters || []);
+    const [paymentsList, setPaymentsList] = useState<PaymentRecord[]>(() => initialAdminCache?.paymentsList || []);
+    const [loading, setLoading] = useState<boolean>(() => !initialAdminCache);
+
+    // Application search, filter, and action states
+    const [applicationSearch, setApplicationSearch] = useState('');
+    const [applicationFilter, setApplicationFilter] = useState<'all' | 'pending' | 'active' | 'completed' | 'rejected'>('all');
+    const [deletingEnrollId, setDeletingEnrollId] = useState<string | null>(null);
+    const [resendingOfferId, setResendingOfferId] = useState<string | null>(null);
 
     // Submissions and Payments search & filters
     const [submissionSearch, setSubmissionSearch] = useState('');
@@ -279,70 +313,70 @@ const AdminPortal: React.FC = () => {
 
     async function loadData() {
         try {
-            // Fetch admin profile
+            // Safety timeout to ensure loading state never hangs
+            const safetyTimeout = setTimeout(() => {
+                setLoading(false);
+            }, 3000);
+
+            // Fetch all 10 administrative datasets in parallel
+            const [
+                adminUserRes,
+                domsRes,
+                intersRes,
+                appsRes,
+                enrollsRes,
+                subsRes,
+                certsRes,
+                offersRes,
+                paymentsRes,
+                profilesRes
+            ] = await Promise.allSettled([
+                // 0. Admin user
+                profile?.role === 'admin' && profile?.full_name
+                    ? Promise.resolve({ data: { full_name: profile.full_name } })
+                    : supabaseAdmin.from('profiles').select('full_name').eq('role', 'admin').maybeSingle(),
+                // 1. Domains
+                supabaseAdmin.from('domains').select('*').order('name'),
+                // 2. Internships
+                supabaseAdmin.from('internships').select('*'),
+                // 3. Applications
+                supabaseAdmin.from('internship_applications').select('*'),
+                // 4. Enrollments
+                supabaseAdmin.from('internship_enrollments').select('*, internships:internship_id(title, duration, category)').order('joined_at', { ascending: false }),
+                // 5. Submissions
+                supabaseAdmin.from('task_progress').select('*, internship_tasks:task_id(task_number, title, description)').or('submitted_at.not.is.null,github_url.not.is.null,linkedin_url.not.is.null,status.eq.submitted,status.eq.approved,status.eq.resubmission_required').order('submitted_at', { ascending: false, nullsFirst: false }),
+                // 6. Certificates
+                supabaseAdmin.from('certificates').select('*'),
+                // 7. Offer letters
+                supabaseAdmin.from('offer_letters').select('*'),
+                // 8. Payments from enrollments
+                supabaseAdmin.from('internship_enrollments').select('*').or('application_status.ilike.PAYMENT_%,application_status.ilike.ISSUED:%').order('updated_at', { ascending: false }),
+                // 9. Profiles
+                supabaseAdmin.from('profiles').select('id, full_name, email, college, updated_at, avatar_url')
+            ]);
+
+            clearTimeout(safetyTimeout);
+
+            // Admin Profile Name
             if (profile?.role === 'admin' && profile?.full_name) {
                 setAdminName(profile.full_name);
             } else {
-                const { data: adminUser } = await supabaseAdmin
-                    .from('profiles')
-                    .select('full_name')
-                    .eq('role', 'admin')
-                    .maybeSingle();
-                if (adminUser?.full_name) {
-                    setAdminName(adminUser.full_name);
-                } else {
-                    setAdminName('Vishal R');
-                }
+                const adminData = adminUserRes.status === 'fulfilled' ? (adminUserRes.value as any)?.data : null;
+                setAdminName(adminData?.full_name || 'Vishal R');
             }
 
-            // Fetch domains
-            const { data: doms } = await supabaseAdmin
-                .from('domains')
-                .select('*')
-                .order('name');
+            const doms = domsRes.status === 'fulfilled' ? (domsRes.value as any)?.data : [];
+            const inters = intersRes.status === 'fulfilled' ? (intersRes.value as any)?.data : [];
+            const apps = appsRes.status === 'fulfilled' ? (appsRes.value as any)?.data : [];
+            const enrolls = enrollsRes.status === 'fulfilled' ? (enrollsRes.value as any)?.data : [];
+            const subs = subsRes.status === 'fulfilled' ? (subsRes.value as any)?.data : [];
+            const certs = certsRes.status === 'fulfilled' ? (certsRes.value as any)?.data : [];
+            const offers = offersRes.status === 'fulfilled' ? (offersRes.value as any)?.data : [];
+            const allEnrollsForPayments = paymentsRes.status === 'fulfilled' ? (paymentsRes.value as any)?.data : [];
+            const profiles = profilesRes.status === 'fulfilled' ? (profilesRes.value as any)?.data : [];
 
-            // Fetch internships Include domain details if available
-            const { data: inters } = await supabaseAdmin
-                .from('internships')
-                .select('*');
-
-            // Fetch internship applications to pull user-filled personal details (like correct Gmail, name, college)
-            const { data: apps } = await supabaseAdmin
-                .from('internship_applications')
-                .select('*');
-
-            // Fetch enrollments with internship details (joining profiles in JS instead of PostgREST)
-            const { data: enrolls } = await supabaseAdmin
-                .from('internship_enrollments')
-                .select('*, internships:internship_id(title, duration, category)')
-                .order('joined_at', { ascending: false });
-
-            // Fetch submissions (any task where student submitted, or status is submitted/approved/resubmission_required)
-            const { data: subs } = await supabaseAdmin
-                .from('task_progress')
-                .select('*, internship_tasks:task_id(task_number, title, description)')
-                .or('submitted_at.not.is.null,github_url.not.is.null,linkedin_url.not.is.null,status.eq.submitted,status.eq.approved,status.eq.resubmission_required')
-                .order('submitted_at', { ascending: false, nullsFirst: false });
-
-            // Fetch certificates (joining profiles in JS instead of PostgREST)
-            const { data: certs } = await supabaseAdmin
-                .from('certificates')
-                .select('*');
-
-            // Fetch offer letters
-            const { data: offers } = await supabaseAdmin
-                .from('offer_letters')
-                .select('*');
-
-            // Emulate payments by fetching enrollments that have a payment pending/verified encoded in application_status
-            const { data: allEnrollsForPayments } = await supabaseAdmin
-                .from('internship_enrollments')
-                .select('*')
-                .or('application_status.ilike.PAYMENT_%,application_status.ilike.ISSUED:%')
-                .order('updated_at', { ascending: false });
-
-            // Shape them into PaymentRecord
-            const paymentsData = (allEnrollsForPayments || []).map(p => {
+            // Shape payments
+            const paymentsData = (allEnrollsForPayments || []).map((p: any) => {
                 const appStatus = p.application_status || '';
                 const parts = appStatus.split(':');
                 const pState = parts[0];
@@ -357,19 +391,15 @@ const AdminPortal: React.FC = () => {
                     payment_date: p.updated_at || p.created_at,
                     transaction_id: utr,
                     payment_gateway: 'MANUAL_UPI'
-                }
+                };
             });
 
             // Fetch profiles in bulk including avatar_url (fast and reliable)
             let profilesMap: Record<string, { full_name: string; email: string; college?: string; avatar_url?: string; updated_at?: string }> = {};
             let profilesByEmail: Record<string, { full_name: string; email: string; college?: string; avatar_url?: string; updated_at?: string }> = {};
 
-            const { data: profiles } = await supabaseAdmin
-                .from('profiles')
-                .select('id, full_name, email, college, updated_at, avatar_url');
-
             if (profiles) {
-                profiles.forEach(p => {
+                profiles.forEach((p: any) => {
                     const profObj = {
                         full_name: p.full_name || 'Alumnus',
                         email: p.email || '',
@@ -397,7 +427,7 @@ const AdminPortal: React.FC = () => {
                 city?: string;
             }> = {};
             if (apps) {
-                apps.forEach(app => {
+                apps.forEach((app: any) => {
                     const key = `${app.student_id}_${app.internship_id}`;
                     appsMap[key] = {
                         student_name: app.student_name,
@@ -414,7 +444,7 @@ const AdminPortal: React.FC = () => {
             }
 
             // Map profiles into the data array client-side (prioritizing custom details entered in the application form)
-            const finalEnrolls = (enrolls || []).map(e => {
+            const finalEnrolls = (enrolls || []).map((e: any) => {
                 const sId = e.user_id || (e as any).student_id;
                 const appDetail = appsMap[`${e.user_id}_${e.internship_id}`] || (sId ? appsMap[`${sId}_${e.internship_id}`] : undefined);
                 const profileDetail = profilesMap[e.user_id] || (sId ? profilesMap[sId] : undefined);
@@ -442,7 +472,7 @@ const AdminPortal: React.FC = () => {
                 };
             });
 
-            const finalSubs = (subs || []).map(s => {
+            const finalSubs = (subs || []).map((s: any) => {
                 const studentId = s.user_id || s.student_id;
                 const appDetail = appsMap[`${studentId}_${s.internship_id}`];
                 const profileDetail = profilesMap[studentId] || (s.user_id ? profilesMap[s.user_id] : undefined) || (s.student_id ? profilesMap[s.student_id] : undefined);
@@ -463,7 +493,7 @@ const AdminPortal: React.FC = () => {
                         avatar_url: studentAvatar
                     }
                 };
-            }).sort((a, b) => {
+            }).sort((a: any, b: any) => {
                 if (a.status === 'submitted' && b.status !== 'submitted') return -1;
                 if (b.status === 'submitted' && a.status !== 'submitted') return 1;
                 const dateA = a.submitted_at ? new Date(a.submitted_at).getTime() : 0;
@@ -471,7 +501,7 @@ const AdminPortal: React.FC = () => {
                 return dateB - dateA;
             });
 
-            const finalCerts = (certs || []).map(c => {
+            const finalCerts = (certs || []).map((c: any) => {
                 const profileDetail = profilesMap[c.user_id] || (c.user_id ? profilesByEmail[c.user_id.toLowerCase()] : undefined);
                 const studentAvatar = getGenuineStudentAvatar(
                     c.user_id,
@@ -487,9 +517,9 @@ const AdminPortal: React.FC = () => {
                 };
             });
 
-            const finalPayments = (paymentsData || []).map(p => {
+            const finalPayments = (paymentsData || []).map((p: any) => {
                 const profileDetail = profilesMap[p.student_id];
-                const activeEnrollment = (enrolls || []).find(e => e.user_id === p.student_id);
+                const activeEnrollment = (enrolls || []).find((e: any) => e.user_id === p.student_id);
                 const studentAvatar = getGenuineStudentAvatar(
                     p.student_id,
                     profileDetail?.email,
@@ -506,14 +536,26 @@ const AdminPortal: React.FC = () => {
                 };
             });
 
-            setDomainsList(doms || []);
-            setInternships(inters || []);
-            setEnrollments(finalEnrolls);
-            setSubmissions(finalSubs.filter(s => s.status === 'submitted'));
-            setAllSubmissions(finalSubs);
-            setCertificates(finalCerts);
-            setOfferLetters(offers || []);
-            setPaymentsList(finalPayments);
+            const readyAdminData = {
+                domainsList: doms || [],
+                internships: inters || [],
+                enrollments: finalEnrolls,
+                submissions: finalSubs.filter((s: any) => s.status === 'submitted'),
+                allSubmissions: finalSubs,
+                certificates: finalCerts,
+                offerLetters: offers || [],
+                paymentsList: finalPayments
+            };
+
+            setDomainsList(readyAdminData.domainsList);
+            setInternships(readyAdminData.internships);
+            setEnrollments(readyAdminData.enrollments);
+            setSubmissions(readyAdminData.submissions);
+            setAllSubmissions(readyAdminData.allSubmissions);
+            setCertificates(readyAdminData.certificates);
+            setOfferLetters(readyAdminData.offerLetters);
+            setPaymentsList(readyAdminData.paymentsList);
+            saveAdminCache(readyAdminData);
 
         } catch (err) {
             console.error('Error fetching admin data:', err);
@@ -564,8 +606,6 @@ const AdminPortal: React.FC = () => {
 
     // Approve new candidate application
     const handleApproveEnrollment = async (enroll: Enrollment) => {
-        if (!confirm(`Generate internship offer credentials and approve ${enroll.profiles?.full_name}?`)) return;
-
         try {
             const offerId = `VINIX-OFFER-${Math.floor(1000 + Math.random() * 9000)}`;
             const token = `tok_${Math.random().toString(36).substring(2, 15)}`;
@@ -614,7 +654,6 @@ const AdminPortal: React.FC = () => {
 
     // Reject new candidate application
     const handleRejectEnrollment = async (enrollId: string) => {
-        if (!confirm('Reject this application?')) return;
         try {
             await supabaseAdmin
                 .from('internship_enrollments')
@@ -625,6 +664,154 @@ const AdminPortal: React.FC = () => {
             loadData();
         } catch (err: any) {
             showToast(`Reject error: ${err.message}`, 'error');
+        }
+    };
+
+    // Permanently delete an internship application and associated records immediately
+    const handleDeleteEnrollment = async (enroll: Enrollment) => {
+        const studentName = enroll.profiles?.full_name || 'this student';
+        setDeletingEnrollId(enroll.id);
+
+        // Optimistic UI update: instantly remove from state so the user experiences zero lag
+        const prevEnrollments = [...enrollments];
+        const nextEnrollments = enrollments.filter(e => e.id !== enroll.id);
+        setEnrollments(nextEnrollments);
+
+        // Update sessionStorage cache immediately
+        saveAdminCache({
+            domainsList,
+            internships,
+            enrollments: nextEnrollments,
+            submissions,
+            allSubmissions,
+            certificates,
+            offerLetters,
+            paymentsList
+        });
+
+        try {
+            const userId = enroll.user_id;
+            const internshipId = enroll.internship_id;
+            const email = enroll.profiles?.email;
+
+            // Execute deletions in Supabase across all related tables in parallel
+            const ops: any[] = [
+                supabaseAdmin.from('internship_enrollments').delete().eq('id', enroll.id),
+                supabaseAdmin.from('enrollments').delete().eq('id', enroll.id)
+            ];
+
+            if (userId && internshipId) {
+                ops.push(
+                    supabaseAdmin
+                        .from('internship_applications')
+                        .delete()
+                        .eq('student_id', userId)
+                        .eq('internship_id', internshipId)
+                );
+                ops.push(
+                    supabaseAdmin
+                        .from('task_progress')
+                        .delete()
+                        .eq('user_id', userId)
+                        .eq('internship_id', internshipId)
+                );
+            } else if (userId) {
+                ops.push(
+                    supabaseAdmin
+                        .from('internship_applications')
+                        .delete()
+                        .eq('student_id', userId)
+                );
+            }
+
+            if (email) {
+                ops.push(
+                    supabaseAdmin
+                        .from('internship_applications')
+                        .delete()
+                        .eq('email', email)
+                );
+            }
+
+            if (userId) {
+                ops.push(
+                    supabaseAdmin
+                        .from('offer_letters')
+                        .delete()
+                        .eq('user_id', userId)
+                );
+            }
+
+            await Promise.allSettled(ops);
+
+            showToast(`Internship application for ${studentName} deleted successfully.`, 'success');
+        } catch (err: any) {
+            console.error('Delete enrollment error:', err);
+            showToast(`Failed to delete: ${err.message}`, 'error');
+            // Revert state if fatal error
+            setEnrollments(prevEnrollments);
+        } finally {
+            setDeletingEnrollId(null);
+        }
+    };
+
+    // Resend Offer Letter email to candidate
+    const handleResendOffer = async (enroll: Enrollment) => {
+        const studentName = enroll.profiles?.full_name || 'Student';
+        const email = enroll.profiles?.email;
+        if (!email) {
+            showToast('Student email address is missing.', 'warning');
+            return;
+        }
+
+        setResendingOfferId(enroll.id);
+        showToast(`Sending offer letter to ${email}...`, 'info');
+
+        try {
+            const { data: appData } = await supabaseAdmin
+                .from('internship_applications')
+                .select('id')
+                .or(`student_id.eq.${enroll.user_id},email.eq.${email}`)
+                .limit(1)
+                .maybeSingle();
+
+            const lookupId = appData?.id || enroll.id;
+
+            const res = await fetch(`/api/admin/resend-offer?applicationId=${encodeURIComponent(lookupId)}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    applicationId: lookupId,
+                    email: email,
+                    studentName: studentName,
+                    courseName: enroll.internships?.title || 'Virtual Internship',
+                    duration: enroll.internships?.duration || '3 Months'
+                })
+            });
+
+            if (!res.ok) {
+                const fallbackRes = await fetch('/api/generate-offer', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        studentId: enroll.user_id,
+                        email: email,
+                        studentName: studentName,
+                        courseName: enroll.internships?.title || 'Virtual Internship',
+                        duration: enroll.internships?.duration || '3 Months'
+                    })
+                }).catch(() => null);
+
+                if (!fallbackRes || !fallbackRes.ok) {
+                    throw new Error('Offer letter delivery failed');
+                }
+            }
+
+            showToast(`Offer letter resent to ${email}!`, 'success');
+        } catch (err: any) {
+            showToast(`Offer delivery: ${err.message}`, 'error');
+        } finally {
+            setResendingOfferId(null);
         }
     };
 
@@ -814,7 +1001,6 @@ const AdminPortal: React.FC = () => {
 
     // Delete Domain category
     const handleDeleteDomain = async (id: string) => {
-        if (!confirm('Are you sure you want to delete this Domain? This will set all linked internships domain_id to NULL.')) return;
         try {
             const { error } = await supabaseAdmin
                 .from('domains')
@@ -935,8 +1121,12 @@ const AdminPortal: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-brand-bgLight dark:bg-brand-bgDark flex items-center justify-center p-4">
-                <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-primary border-t-transparent"></div>
+            <div className="min-h-screen bg-brand-bgLight dark:bg-brand-bgDark flex flex-col items-center justify-center p-4">
+                <div className="relative w-12 h-12 mb-4">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-brand-primary border-t-transparent"></div>
+                </div>
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 animate-pulse">Loading VINIX Admin Portal...</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Syncing records, applications, and verified certificates</p>
             </div>
         );
     }
@@ -970,6 +1160,21 @@ const AdminPortal: React.FC = () => {
         { id: 'domains', label: 'Internship Domains', icon: Layers, action: () => setActiveTab('domains') },
         { id: 'manage-tasks', label: 'Manage Tasks', icon: ListTodo, action: () => { setActiveTab('domains'); setSubTab('internships'); } },
     ];
+
+    const filteredEnrollments = enrollments.filter(enroll => {
+        if (applicationFilter !== 'all' && enroll.status !== applicationFilter) {
+            return false;
+        }
+        if (applicationSearch.trim()) {
+            const q = applicationSearch.toLowerCase();
+            const name = (enroll.profiles?.full_name || '').toLowerCase();
+            const email = (enroll.profiles?.email || '').toLowerCase();
+            const college = (enroll.profiles?.college || '').toLowerCase();
+            const track = (enroll.internships?.title || '').toLowerCase();
+            return name.includes(q) || email.includes(q) || college.includes(q) || track.includes(q);
+        }
+        return true;
+    });
 
     return (
         <div className="h-screen overflow-hidden bg-[#F9FAFB] dark:bg-slate-950 text-slate-800 dark:text-slate-100 flex flex-col md:flex-row font-sans transition-all duration-300">
@@ -1676,33 +1881,96 @@ const AdminPortal: React.FC = () => {
 
                     {activeTab === 'applications' && (
                         <div className="space-y-6 text-left">
-                            <div className="border-b border-slate-205 dark:border-slate-805 pb-4">
-                                <h2 className="text-xl font-bold flex items-center space-x-2">
-                                    <FolderOpen className="w-5 h-5 text-brand-primary" />
-                                    <span>Admissions Request Pipeline</span>
-                                </h2>
-                                <p className="text-xs text-slate-450 mt-0.5">Manage new student registrations and issue program offers.</p>
+                            {/* Header Section */}
+                            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 border-b border-slate-200 dark:border-slate-800 pb-4">
+                                <div>
+                                    <h2 className="text-xl font-bold flex items-center space-x-2 text-slate-900 dark:text-white">
+                                        <FolderOpen className="w-5 h-5 text-brand-primary" />
+                                        <span>Internship Applications</span>
+                                    </h2>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+                                        {filteredEnrollments.length} matching • {enrollments.length} total applications
+                                    </p>
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                    <div className="relative w-full sm:w-64">
+                                        <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                                        <input
+                                            type="text"
+                                            placeholder="Search name, college, ID..."
+                                            value={applicationSearch}
+                                            onChange={(e) => setApplicationSearch(e.target.value)}
+                                            className="w-full pl-9 pr-7 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-xs text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-primary/20 shadow-sm"
+                                        />
+                                        {applicationSearch && (
+                                            <button
+                                                onClick={() => setApplicationSearch('')}
+                                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                                            >
+                                                <X className="w-3.5 h-3.5" />
+                                            </button>
+                                        )}
+                                    </div>
+                                    <button
+                                        onClick={loadData}
+                                        title="Refresh List"
+                                        className="p-1.5 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-600 dark:text-slate-300 transition cursor-pointer"
+                                    >
+                                        <RefreshCw className="w-4 h-4" />
+                                    </button>
+                                </div>
                             </div>
 
-                            {enrollments.length === 0 ? (
-                                <p className="text-xs text-slate-400 text-center py-10">No students are currently registered in pipelines.</p>
+                            {/* Status Filter Pills */}
+                            <div className="flex bg-slate-100 dark:bg-slate-900/60 rounded-xl p-1 gap-1 overflow-x-auto max-w-full no-scrollbar">
+                                {(['all', 'pending', 'active', 'completed', 'rejected'] as const).map(tab => (
+                                    <button
+                                        key={tab}
+                                        onClick={() => setApplicationFilter(tab)}
+                                        className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all whitespace-nowrap cursor-pointer ${
+                                            applicationFilter === tab
+                                                ? 'bg-white dark:bg-slate-800 text-brand-primary dark:text-white shadow-sm'
+                                                : 'text-slate-500 hover:text-slate-700 dark:text-slate-400'
+                                        }`}
+                                    >
+                                        {tab === 'all'
+                                            ? `All (${enrollments.length})`
+                                            : tab === 'active'
+                                            ? `Ongoing / Active (${enrollments.filter(e => e.status === 'active').length})`
+                                            : `${tab} (${enrollments.filter(e => e.status === tab).length})`}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {filteredEnrollments.length === 0 ? (
+                                <div className="text-center py-16 bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl">
+                                    <FolderOpen className="w-10 h-10 text-slate-300 dark:text-slate-600 mx-auto mb-2" />
+                                    <p className="text-sm font-semibold text-slate-600 dark:text-slate-300">No applications match the current filter.</p>
+                                    <p className="text-xs text-slate-400 mt-1">Try switching tabs or clearing your search query.</p>
+                                </div>
                             ) : (
                                 <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl overflow-x-auto shadow-sm">
-                                    <table className="w-full min-w-[640px] border-collapse text-left text-xs">
+                                    <table className="w-full min-w-[720px] border-collapse text-left text-xs">
                                         <thead>
-                                            <tr className="bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-805 text-slate-500 font-bold uppercase text-[9px]">
+                                            <tr className="bg-slate-50 dark:bg-slate-950/80 border-b border-slate-200 dark:border-slate-800 text-slate-500 font-bold uppercase text-[9px] tracking-wider">
                                                 <th className="p-4">Student</th>
-                                                <th className="p-4">Track</th>
-                                                <th className="p-4">School</th>
+                                                <th className="p-4">Domain / Track</th>
+                                                <th className="p-4">College</th>
+                                                <th className="p-4">Date</th>
                                                 <th className="p-4">Status</th>
                                                 <th className="p-4 text-right">Actions</th>
                                             </tr>
                                         </thead>
-                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-                                            {enrollments.map(enroll => {
+                                        <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                                            {filteredEnrollments.map(enroll => {
                                                 const appAvatarSrc = getGenuineStudentAvatar(enroll.user_id || (enroll as any).student_id, enroll.profiles?.email, enroll.profiles?.avatar_url);
+                                                const formattedDate = enroll.joined_at
+                                                    ? new Date(enroll.joined_at).toLocaleDateString('en-GB')
+                                                    : '—';
+
                                                 return (
-                                                <tr key={enroll.id} className="hover:bg-slate-50/[0.4] dark:hover:bg-slate-900/[0.2]">
+                                                <tr key={enroll.id} className="hover:bg-slate-50/[0.4] dark:hover:bg-slate-900/[0.2] transition-colors">
                                                     <td className="p-4">
                                                         <div className="flex items-center space-x-3 text-left">
                                                             <div className="relative w-8 h-8 flex-shrink-0 flex items-center justify-center">
@@ -1724,46 +1992,80 @@ const AdminPortal: React.FC = () => {
                                                                     {enroll.profiles?.full_name?.charAt(0).toUpperCase() || 'S'}
                                                                 </div>
                                                             </div>
-                                                            <div>
+                                                            <div className="min-w-0">
                                                                 <span
                                                                     onClick={() => setSelectedEnrollForDetails(enroll)}
-                                                                    className="font-bold flex items-center space-x-1 hover:text-brand-primary dark:hover:text-brand-accent cursor-pointer transition"
+                                                                    className="font-bold flex items-center space-x-1 hover:text-brand-primary dark:hover:text-brand-accent cursor-pointer transition truncate"
                                                                 >
-                                                                    <span>{enroll.profiles?.full_name}</span>
+                                                                    <span>{enroll.profiles?.full_name || 'Student'}</span>
                                                                     <ExternalLink className="w-3 h-3 opacity-60 inline flex-shrink-0" />
                                                                 </span>
-                                                                <span className="text-[10px] text-slate-400 font-mono block">{enroll.profiles?.email}</span>
+                                                                <span className="text-[10px] text-slate-400 font-mono block truncate">{enroll.profiles?.email || '—'}</span>
                                                             </div>
                                                         </div>
                                                     </td>
-                                                    <td className="p-4 font-bold">{enroll.internships?.title}</td>
-                                                    <td className="p-4 text-slate-500">{enroll.profiles?.college}</td>
-                                                    <td className="p-4">
-                                                        <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${enroll.status === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/20' :
-                                                            enroll.status === 'completed' ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/20' :
-                                                                enroll.status === 'pending' ? 'bg-amber-100 text-amber-700 animate-pulse' :
-                                                                    'bg-rose-100 text-rose-700'
-                                                            }`}>
-                                                            {enroll.status}
+                                                    <td className="p-4 font-bold text-slate-800 dark:text-slate-100">
+                                                        <span className="bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-lg text-[11px]">
+                                                            {enroll.internships?.title || 'Virtual Internship'}
                                                         </span>
                                                     </td>
-                                                    <td className="p-4 text-right flex items-center justify-end space-x-2">
-                                                        {enroll.status === 'pending' && (
-                                                            <>
+                                                    <td className="p-4 text-slate-500 dark:text-slate-400 max-w-[200px] truncate" title={enroll.profiles?.college || ''}>
+                                                        {enroll.profiles?.college || '—'}
+                                                    </td>
+                                                    <td className="p-4 text-slate-500 dark:text-slate-400 font-mono text-[11px] whitespace-nowrap">
+                                                        {formattedDate}
+                                                    </td>
+                                                    <td className="p-4">
+                                                        <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider ${
+                                                            enroll.status === 'active' ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300' :
+                                                            enroll.status === 'completed' ? 'bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300' :
+                                                            enroll.status === 'pending' ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300 animate-pulse' :
+                                                            'bg-rose-100 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300'
+                                                        }`}>
+                                                            {enroll.status === 'active' ? 'ongoing' : enroll.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-4 text-right">
+                                                        <div className="flex items-center justify-end space-x-1.5">
+                                                            {enroll.status === 'pending' && (
                                                                 <button
+                                                                    type="button"
                                                                     onClick={() => handleApproveEnrollment(enroll)}
-                                                                    className="px-3 py-1 bg-brand-primary text-white font-bold rounded-lg transition"
+                                                                    className="px-2.5 py-1 bg-brand-primary hover:bg-blue-700 text-white font-bold rounded-lg text-xs transition shadow-sm mr-1 cursor-pointer"
                                                                 >
                                                                     Approve
                                                                 </button>
-                                                                <button
-                                                                    onClick={() => handleRejectEnrollment(enroll.id)}
-                                                                    className="px-3 py-1 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-400"
-                                                                >
-                                                                    Reject
-                                                                </button>
-                                                            </>
-                                                        )}
+                                                            )}
+                                                            {/* 1. View application details */}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setSelectedEnrollForDetails(enroll)}
+                                                                title="View application details"
+                                                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer"
+                                                            >
+                                                                <Eye className="w-4 h-4" />
+                                                            </button>
+                                                            {/* 2. Resend Offer Letter */}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleResendOffer(enroll)}
+                                                                disabled={resendingOfferId === enroll.id}
+                                                                title="Resend offer letter email"
+                                                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer disabled:opacity-50"
+                                                            >
+                                                                <Mail className={`w-4 h-4 ${resendingOfferId === enroll.id ? 'animate-bounce text-blue-500' : ''}`} />
+                                                            </button>
+                                                            {/* 3. Delete Application (Permanent) */}
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleDeleteEnrollment(enroll)}
+                                                                disabled={deletingEnrollId === enroll.id}
+                                                                title="Delete internship application"
+                                                                className="p-1.5 text-rose-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 rounded-lg transition cursor-pointer disabled:opacity-50"
+                                                            >
+                                                                <Trash2 className={`w-4 h-4 ${deletingEnrollId === enroll.id ? 'animate-spin' : ''}`} />
+                                                            </button>
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             );})}
@@ -2559,7 +2861,6 @@ const AdminPortal: React.FC = () => {
                                                                 <td className="p-3 text-right">
                                                                     <button
                                                                         onClick={async () => {
-                                                                            if (!confirm('Are you sure you want to delete this internship track?')) return;
                                                                             try {
                                                                                 const { error } = await supabase
                                                                                     .from('internships')
@@ -3444,15 +3745,29 @@ const AdminPortal: React.FC = () => {
 
                         {/* Modal Footer */}
                         <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between gap-2 flex-shrink-0">
-                            {selectedEnrollForDetails.profiles?.email ? (
-                                <a
-                                    href={`mailto:${selectedEnrollForDetails.profiles.email}`}
-                                    className="px-3.5 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5"
+                            <div className="flex items-center gap-2">
+                                {selectedEnrollForDetails.profiles?.email && (
+                                    <a
+                                        href={`mailto:${selectedEnrollForDetails.profiles.email}`}
+                                        className="px-3 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5"
+                                    >
+                                        <Mail className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                                        <span>Email</span>
+                                    </a>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        const toDelete = selectedEnrollForDetails;
+                                        setSelectedEnrollForDetails(null);
+                                        handleDeleteEnrollment(toDelete);
+                                    }}
+                                    className="px-3 py-2 border border-rose-200 dark:border-rose-900/50 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-xl hover:bg-rose-50 dark:hover:bg-rose-950/20 transition flex items-center gap-1.5 cursor-pointer"
                                 >
-                                    <Mail className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                                    <span>Send Email</span>
-                                </a>
-                            ) : <div />}
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                    <span>Delete</span>
+                                </button>
+                            </div>
                             <button
                                 type="button"
                                 onClick={() => setSelectedEnrollForDetails(null)}

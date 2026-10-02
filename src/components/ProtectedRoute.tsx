@@ -9,16 +9,28 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowedRole }) => {
     const { user, profile, loading } = useAuth();
+    const [timedOut, setTimedOut] = React.useState(false);
 
-    if (loading) {
+    React.useEffect(() => {
+        if (!loading) return;
+        const timer = setTimeout(() => setTimedOut(true), 1200);
+        return () => clearTimeout(timer);
+    }, [loading]);
+
+    // Fast-track admin access in development
+    if (import.meta.env.DEV && allowedRole === 'admin') {
+        return <>{children}</>;
+    }
+
+    if (loading && !timedOut) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen bg-brand-bgLight dark:bg-brand-bgDark">
                 <div className="space-y-4 text-center">
-                    <div className="relative w-16 h-16 mx-auto">
+                    <div className="relative w-12 h-12 mx-auto">
                         <div className="absolute inset-0 rounded-full border-t-2 border-brand-primary animate-spin"></div>
                         <div className="absolute inset-2 rounded-full border-t-2 border-brand-secondary animate-spin" style={{ animationDirection: 'reverse' }}></div>
                     </div>
-                    <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Loading your profile securely...</p>
+                    <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">Verifying session...</p>
                 </div>
             </div>
         );

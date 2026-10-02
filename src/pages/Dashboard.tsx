@@ -84,16 +84,44 @@ const Dashboard: React.FC = () => {
     const navigate = useNavigate();
     const { toasts, showToast, dismiss } = useToast();
 
+    const DASH_CACHE_PREFIX = 'vinix_student_dash_cache_';
+    function getStudentDashCache(uid?: string) {
+        if (!uid) return null;
+        try {
+            const raw = sessionStorage.getItem(`${DASH_CACHE_PREFIX}${uid}`);
+            if (!raw) return null;
+            const parsed = JSON.parse(raw);
+            if (Date.now() - (parsed._cachedAt || 0) < 15 * 60 * 1000) {
+                return parsed;
+            }
+            return null;
+        } catch {
+            return null;
+        }
+    }
+    function saveStudentDashCache(uid: string, data: any) {
+        if (!uid) return;
+        try {
+            sessionStorage.setItem(`${DASH_CACHE_PREFIX}${uid}`, JSON.stringify({
+                ...data,
+                _cachedAt: Date.now()
+            }));
+        } catch (e) {
+            console.warn('Failed to save dashboard cache:', e);
+        }
+    }
+
+    const initialDashCache = React.useMemo(() => getStudentDashCache(user?.id), [user?.id]);
     const [activeTab, setActiveTab] = useState<'overview' | 'workspace' | 'idcard' | 'certificates' | 'settings' | 'payment'>('overview');
-    const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState<boolean>(() => !initialDashCache);
 
     // Database Data States
-    const [enrollments, setEnrollments] = useState<Enrollment[]>([]);
-    const [application, setApplication] = useState<InternshipApplication | null>(null);
-    const [offerLetters, setOfferLetters] = useState<OfferLetter[]>([]);
-    const [taskProgresses, setTaskProgresses] = useState<TaskProgress[]>([]);
-    const [certificates, setCertificates] = useState<CertificateData[]>([]);
-    const [totalTaskCount, setTotalTaskCount] = useState<number>(0);
+    const [enrollments, setEnrollments] = useState<Enrollment[]>(() => initialDashCache?.enrollments || []);
+    const [application, setApplication] = useState<InternshipApplication | null>(() => initialDashCache?.application || null);
+    const [offerLetters, setOfferLetters] = useState<OfferLetter[]>(() => initialDashCache?.offerLetters || []);
+    const [taskProgresses, setTaskProgresses] = useState<TaskProgress[]>(() => initialDashCache?.taskProgresses || []);
+    const [certificates, setCertificates] = useState<CertificateData[]>(() => initialDashCache?.certificates || []);
+    const [totalTaskCount, setTotalTaskCount] = useState<number>(() => initialDashCache?.totalTaskCount || 0);
 
     // Settings Edit fields
     const [editName, setEditName] = useState('');
@@ -129,57 +157,43 @@ const Dashboard: React.FC = () => {
     async function loadDashboardData() {
         if (!user) return;
         try {
-            setLoading(true);
+            const safetyTimer = setTimeout(() => setLoading(false), 2500);
 
-            // Fetch enrollments — join internship title & duration
-            const { data: enrollData } = await supabaseAdmin
-                .from('internship_enrollments')
-                .select('*, internship:internships(title, description, duration)')
-                .eq('user_id', user.id);
+            // Fetch dashboard datasets in parallel
+            const [enrollRes, appRes, offerRes, certsRes, progressRes] = await Promise.allSettled([
+                supabaseAdmin.from('internship_enrollments').select('*, internship:internships(title, description, duration)').eq('user_id', user.id),
+                supabaseAdmin.from('internship_applications').select('id, domain, duration, status').eq('student_id', user.id).order('applied_at', { ascending: false }).limit(1).maybeSingle(),
+                supabaseAdmin.from('offer_letters').select('*').eq('user_id', user.id),
+                supabaseAdmin.from('certificates').select('*').eq('user_id', user.id),
+                supabaseAdmin.from('task_progress').select('*, internship_tasks:internship_tasks(task_number, title, description)').eq('user_id', user.id)
+            ]);
 
-            // Fetch the student's internship application to get domain & duration chosen
-            const { data: appData } = await supabaseAdmin
-                .from('internship_applications')
-                .select('id, domain, duration, status')
-                .eq('student_id', user.id)
-                .order('applied_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
+            clearTimeout(safetyTimer);
 
-            // Fetch offer letters
-            const { data: offerData } = await supabaseAdmin
-                .from('offer_letters')
-                .select('*')
-                .eq('user_id', user.id);
-
-            // Fetch certificates
-            const { data: certsData } = await supabaseAdmin
-                .from('certificates')
-                .select('*')
-                .eq('user_id', user.id);
-
-            // Fetch all tasks progress for this user + join task details
-            const { data: progressData } = await supabaseAdmin
-                .from('task_progress')
-                .select('*, internship_tasks:internship_tasks(task_number, title, description)')
-                .eq('user_id', user.id);
+            const enrollData = enrollRes.status === 'fulfilled' ? (enrollRes.value as any)?.data : [];
+            const appData = appRes.status === 'fulfilled' ? (appRes.value as any)?.data : null;
+            const offerData = offerRes.status === 'fulfilled' ? (offerRes.value as any)?.data : [];
+            const certsData = certsRes.status === 'fulfilled' ? (certsRes.value as any)?.data : [];
+            const progressData = progressRes.status === 'fulfilled' ? (progressRes.value as any)?.data : [];
 
             const sortedProgress = (progressData || []).sort((a: any, b: any) =>
                 (a.internship_tasks?.task_number || 0) - (b.internship_tasks?.task_number || 0)
             );
 
-            // Fetch total task count for current internship (for accurate progress %)
+            // Fetch total task count for current internship
             let totalTasks = sortedProgress.length;
             const firstEnroll = (enrollData || [])[0];
             if (firstEnroll?.internship_id) {
-                const { count } = await supabaseAdmin
-                    .from('internship_tasks')
-                    .select('id', { count: 'exact', head: true })
-                    .eq('internship_id', firstEnroll.internship_id);
-                if (count && count > 0) totalTasks = count;
+                try {
+                    const { count } = await supabaseAdmin
+                        .from('internship_tasks')
+                        .select('id', { count: 'exact', head: true })
+                        .eq('internship_id', firstEnroll.internship_id);
+                    if (count && count > 0) totalTasks = count;
+                } catch { }
             }
 
-            setEnrollments((enrollData || []).map(e => ({
+            const formattedEnrolls = (enrollData || []).map((e: any) => ({
                 id: e.id,
                 internship_id: e.internship_id,
                 progress: e.progress || 0,
@@ -194,13 +208,23 @@ const Dashboard: React.FC = () => {
                     description: e.internship?.description || '',
                     duration: e.internship?.duration || appData?.duration || '3 Months'
                 }
-            })));
+            }));
 
+            setEnrollments(formattedEnrolls);
             setApplication(appData || null);
             setOfferLetters(offerData || []);
             setCertificates(certsData || []);
             setTaskProgresses(sortedProgress);
             setTotalTaskCount(totalTasks);
+
+            saveStudentDashCache(user.id, {
+                enrollments: formattedEnrolls,
+                application: appData || null,
+                offerLetters: offerData || [],
+                certificates: certsData || [],
+                taskProgresses: sortedProgress,
+                totalTaskCount: totalTasks
+            });
 
             // Prep editing fields with profile values
             if (profile) {
@@ -559,8 +583,12 @@ const Dashboard: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-brand-bgLight dark:bg-brand-bgDark flex items-center justify-center p-4">
-                <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-primary border-t-transparent"></div>
+            <div className="min-h-screen bg-brand-bgLight dark:bg-brand-bgDark flex flex-col items-center justify-center p-4">
+                <div className="relative w-12 h-12 mb-4">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-brand-primary border-t-transparent"></div>
+                </div>
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 animate-pulse">Loading Student Portal...</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Preparing your workspace and milestones</p>
             </div>
         );
     }

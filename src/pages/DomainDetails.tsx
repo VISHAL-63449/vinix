@@ -89,26 +89,24 @@ export default function DomainDetails() {
 
                 if (iErr) throw iErr;
 
-                // 3. Fetch user applications & enrollments if logged in
+                // 3. Fetch user applications & enrollments concurrently if logged in
                 if (user) {
-                    const { data: appsData } = await supabaseAdmin
-                        .from('internship_applications')
-                        .select('internship_id, status')
-                        .eq('student_id', user.id);
+                    const [appsRes, enrollsRes] = await Promise.allSettled([
+                        supabaseAdmin.from('internship_applications').select('internship_id, status').eq('student_id', user.id),
+                        supabaseAdmin.from('internship_enrollments').select('internship_id, status').eq('user_id', user.id)
+                    ]);
 
-                    const { data: enrollsData } = await supabaseAdmin
-                        .from('internship_enrollments')
-                        .select('internship_id, status')
-                        .eq('user_id', user.id);
+                    const appsData = appsRes.status === 'fulfilled' ? (appsRes.value as any)?.data : [];
+                    const enrollsData = enrollsRes.status === 'fulfilled' ? (enrollsRes.value as any)?.data : [];
 
                     const appsMap: Record<string, string> = {};
-                    (appsData || []).forEach(a => {
+                    (appsData || []).forEach((a: any) => {
                         appsMap[a.internship_id] = a.status;
                     });
                     setUserApps(appsMap);
 
                     const enrollsMap: Record<string, string> = {};
-                    (enrollsData || []).forEach(e => {
+                    (enrollsData || []).forEach((e: any) => {
                         enrollsMap[e.internship_id] = e.status;
                     });
                     setUserEnrolls(enrollsMap);

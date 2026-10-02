@@ -102,18 +102,24 @@ const CCBookPortal: React.FC = () => {
     const loadData = async () => {
         try {
             setLoading(true);
+            const safetyTimer = setTimeout(() => setLoading(false), 2000);
 
-            // NOTE: Replace with supabaseAdmin / supabase logic referencing mz_ tables
-            // For now, load dummy data if table is missing or fetch fails, to ensure UI is presentable.
-            const { data: stdData, error: stdErr } = await supabaseAdmin.from('mz_students').select('*').order('name');
-            const { data: cnsData, error: cnsErr } = await supabaseAdmin.from('mz_counsellors').select('*');
-            const { data: recData, error: recErr } = await supabaseAdmin.from('mz_counselling_records').select(`
-                *,
-                mz_students(*),
-                mz_counsellors(*)
-            `).order('counselling_date', { ascending: false });
+            const [stdRes, cnsRes, recRes] = await Promise.allSettled([
+                supabaseAdmin.from('mz_students').select('*').order('name'),
+                supabaseAdmin.from('mz_counsellors').select('*'),
+                supabaseAdmin.from('mz_counselling_records').select(`
+                    *,
+                    mz_students(*),
+                    mz_counsellors(*)
+                `).order('counselling_date', { ascending: false })
+            ]);
 
-            // If tables don't exist yet, it might error out, so catch and fallback to empty arrays to prevent crash
+            clearTimeout(safetyTimer);
+
+            const stdData = stdRes.status === 'fulfilled' ? (stdRes.value as any)?.data : null;
+            const cnsData = cnsRes.status === 'fulfilled' ? (cnsRes.value as any)?.data : null;
+            const recData = recRes.status === 'fulfilled' ? (recRes.value as any)?.data : null;
+
             if (stdData) setStudents(stdData);
             if (cnsData) setCounsellors(cnsData);
             if (recData) setRecords(recData);
@@ -197,8 +203,12 @@ const CCBookPortal: React.FC = () => {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-                <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+            <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center p-4">
+                <div className="relative w-12 h-12 mb-4">
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                </div>
+                <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 animate-pulse">Loading Counselling Portal...</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Fetching student profiles and records</p>
             </div>
         );
     }
