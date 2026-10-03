@@ -465,7 +465,7 @@ const VerifyOffer: React.FC = () => {
                                                     {isOfficial && <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Director Signature" className="sig-image" style={{ maxHeight: '42px', objectFit: 'contain' }} />}
                                                 </div>
                                                 <span className="sig-name" style={{ fontWeight: 700, fontSize: '0.72rem', color: '#0f172a' }}>Vishal R</span>
-                                                <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>DIRECTOR – ACADEMIC OPERATIONS</span>
+                                                <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>FOUNDER &amp; CEO</span>
                                             </div>
                                         </>
                                     );
@@ -486,7 +486,7 @@ const VerifyOffer: React.FC = () => {
                                             </div>
                                             {/* Center Column: Text */}
                                             <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.45, color: '#64748b' }}>
-                                                <strong style={{ color: '#0f2942' }}>VINIX Technologies Private Limited</strong><br />
+                                                <strong style={{ color: '#0f2942' }}>VINIX Technologies</strong><br />
                                                 UDYAM Registry: UDYAM-TN-21-0066185<br />
                                                 academic@vinix.online | www.vinix.online
                                             </div>

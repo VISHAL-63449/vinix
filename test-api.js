@@ -38,7 +38,8 @@ async function run() {
         headers: { host: 'localhost:5173' },
         body: {
             studentId,
-            internshipId
+            internshipId,
+            force: true
         }
     };
     console.log("\n-> Executing generate-offer...");

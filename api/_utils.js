@@ -2,6 +2,27 @@ import { createClient } from '@supabase/supabase-js';
 import fs from 'fs';
 import path from 'path';
 import nodemailer from 'nodemailer';
+import { jsPDF } from 'jspdf';
+
+// Auto-load .env for local runtime or API execution
+try {
+    const envPath = path.resolve(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+        const envContent = fs.readFileSync(envPath, 'utf-8');
+        envContent.split('\n').forEach(line => {
+            const match = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+            if (match) {
+                let val = (match[2] || '').trim();
+                if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                    val = val.slice(1, -1);
+                }
+                if (!process.env[match[1]]) {
+                    process.env[match[1]] = val;
+                }
+            }
+        });
+    }
+} catch (e) { }
 
 const supabaseUrl = 'https://ioppccrnbuqgcynmjpaa.supabase.co';
 const serviceRoleKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlvcHBjY3JuYnVxZ2N5bm1qcGFhIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NzMyNjUyNywiZXhwIjoyMTAyOTAyNTI3fQ.dC2HhQgzBrE5uF4uKqbtU9rPL_4vfyKKhujWIZgxBb0';
@@ -104,17 +125,17 @@ export async function ensureBucketExists() {
 
 // Mailer Helper
 export async function sendEmail({ email, name, subject, body, htmlBody, pdfBuffer, pdfName }) {
-    const host = process.env.SMTP_HOST;
-    const port = parseInt(process.env.SMTP_PORT) || 587;
+    const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+    const port = parseInt(process.env.SMTP_PORT) || 465;
     const user = process.env.SMTP_USER;
     const pass = process.env.SMTP_PASS;
     const from = process.env.SMTP_FROM || 'VINIX Academic Council <academic@vinix.online>';
 
     if (!host || !user || !pass) {
-        console.log(`[MAIL MOCK] Mail configured to mock mode. Logging payload:`);
+        console.log(`[MAIL MOCK] Mail configured to mock mode (SMTP credentials missing). Logging payload:`);
         console.log(` - To: ${name} <${email}>`);
         console.log(` - Subject: ${subject}`);
-        console.log(` - Attachment: ${pdfName} (${pdfBuffer.length} bytes)`);
+        console.log(` - Attachment: ${pdfName} (${pdfBuffer ? pdfBuffer.length : 0} bytes)`);
         console.log(`-----------------------------------------`);
         if (htmlBody) {
             console.log("[HTML PAYLOAD USED]");
@@ -132,23 +153,372 @@ export async function sendEmail({ email, name, subject, body, htmlBody, pdfBuffe
         auth: { user, pass }
     });
 
-    const info = await transporter.sendMail({
+    const mailOptions = {
         from,
         to: email,
         subject,
         text: body,
-        html: htmlBody || (body ? body.replace(/\n/g, '<br>') : ''),
-        attachments: [
+        html: htmlBody || (body ? body.replace(/\n/g, '<br>') : '')
+    };
+
+    if (pdfBuffer && pdfName) {
+        mailOptions.attachments = [
             {
                 filename: pdfName,
                 content: pdfBuffer,
                 contentType: 'application/pdf'
             }
-        ]
-    });
+        ];
+    }
 
+    const info = await transporter.sendMail(mailOptions);
     console.log(`[MAIL SUCCESS] Email sent to ${email}. MessageID: ${info.messageId}`);
     return { success: true, messageId: info.messageId };
+}
+
+// Generates the authentic, official Offer Letter PDF matching the verified design
+export async function createOfferLetterPdfDoc({
+    studentName,
+    tokenOffer,
+    internshipTitle,
+    duration,
+    college,
+    issueDate,
+    req
+}) {
+    const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+        compress: true
+    });
+
+    const sName = studentName || 'Intern';
+    const sTrack = internshipTitle || 'Virtual Internship Program';
+    const sDuration = duration || '1 Month';
+    const sCollege = college || 'Anna University, Chennai';
+    const sIssueDate = issueDate ? new Date(issueDate) : new Date();
+
+    const logoBase64 = (await getImageBase64('vinix-title.png', req)) || (await getImageBase64('vinix-logo.png', req));
+    const msmeBase64 = await getImageBase64('msme.jpeg', req);
+    const skyrovixBase64 = await getImageBase64('skyrovix.jpeg', req);
+    const yrnovatechBase64 = await getImageBase64('yrnovatech.png', req);
+    const stampBase64 = await getImageBase64('certificate-stamp.jpeg', req);
+    const signBase64 = await getImageBase64('founder-sign.png', req);
+
+    // Background Watermark (tilted)
+    doc.setTextColor(241, 245, 249);
+    doc.setFontSize(26);
+    doc.setFont('Helvetica', 'bold');
+    doc.saveGraphicsState();
+    for (let y = 50; y < 280; y += 80) {
+        doc.text("VINIX TECHNOLOGIES", 105, y, { align: "center", angle: 30 });
+    }
+    doc.restoreGraphicsState();
+
+    // Frames / Borders
+    // Outer border (Navy #0f2942)
+    doc.setDrawColor(15, 41, 66);
+    doc.setLineWidth(1.0);
+    doc.rect(8, 8, 194, 281);
+
+    // Inner border (Gold #cca353)
+    doc.setDrawColor(204, 163, 83);
+    doc.setLineWidth(0.4);
+    doc.rect(10, 10, 190, 277);
+
+    // HEADER
+    if (logoBase64) {
+        doc.addImage(logoBase64, 'PNG', 15, 14, 14, 14);
+    }
+    // Vertical divider line next to logo
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.4);
+    doc.line(31, 14, 31, 28);
+
+    doc.setTextColor(15, 41, 66);
+    doc.setFontSize(18);
+    doc.setFont('Helvetica', 'bold');
+    doc.text("VINIX", 34, 20);
+
+    doc.setTextColor(2, 132, 199); // Sky blue #0284c7
+    doc.setFontSize(8);
+    doc.setFont('Helvetica', 'bold');
+    doc.text("Empowering Future Innovators", 34, 25);
+
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(7);
+    doc.setFont('Helvetica', 'normal');
+    doc.text("www.vinix.online | academic@vinix.online", 15, 33);
+
+    // Meta (ID, Issue Date) - Right aligned
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(7);
+    doc.setFont('Helvetica', 'bold');
+    doc.text("INTERNSHIP ID", 195, 17, { align: "right" });
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(9);
+    doc.text(tokenOffer, 195, 21, { align: "right" });
+
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(7);
+    doc.text("ISSUE DATE", 195, 27, { align: "right" });
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(9);
+    const formattedIssueDate = sIssueDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+    doc.text(formattedIssueDate, 195, 31, { align: "right" });
+
+    // Divider Line
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.5);
+    doc.line(15, 36, 195, 36);
+
+    // BODY TITLE
+    doc.setTextColor(15, 41, 66);
+    doc.setFontSize(13);
+    doc.setFont('Helvetica', 'bold');
+    doc.text("INTERNSHIP OFFER LETTER", 15, 44);
+
+    doc.setTextColor(204, 163, 83);
+    doc.setFontSize(8);
+    doc.setFont('Helvetica', 'bold');
+    doc.text(`Date: ${formattedIssueDate}`, 15, 49);
+
+    // Greetings
+    doc.setTextColor(51, 65, 85);
+    doc.setFontSize(8.5);
+    doc.setFont('Helvetica', 'normal');
+    doc.text("Dear ", 15, 57);
+    const dearWidth = doc.getTextWidth("Dear ");
+    doc.setFont('Helvetica', 'bold');
+    const cleanName = (sName || 'Intern').trim();
+    doc.text(`${cleanName},`, 15 + dearWidth, 57);
+
+    // Paragraphs
+    doc.setFont('Helvetica', 'normal');
+    const p1 = `We are delighted to offer you the position of Virtual Intern – ${sTrack} at Vinix Technologies. After reviewing your application, we are confident that your skills and enthusiasm make you a valuable addition to our program.`;
+    const p2 = `Your virtual internship details and key particulars are finalized as follows:`;
+
+    const linesP1 = doc.splitTextToSize(p1, 180);
+    doc.text(linesP1, 15, 63);
+
+    const startYDetails = 63 + (linesP1.length * 4.5) + 2;
+    doc.text(p2, 15, startYDetails);
+
+    // Dates calculation
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const formattedCommence = `${String(sIssueDate.getDate()).padStart(2, '0')}-${months[sIssueDate.getMonth()]}-${sIssueDate.getFullYear()}`;
+
+    const dEnd = new Date(sIssueDate);
+    const num = parseInt(sDuration) || 1;
+    if (sDuration.toLowerCase().includes('week')) {
+        dEnd.setDate(dEnd.getDate() + num * 7);
+    } else {
+        dEnd.setMonth(dEnd.getMonth() + num);
+    }
+    dEnd.setDate(dEnd.getDate() - 3);
+    const formattedEnd = `${String(dEnd.getDate()).padStart(2, '0')}-${months[dEnd.getMonth()]}-${dEnd.getFullYear()}`;
+
+    // Particulars Table drawing
+    const tableY = startYDetails + 4;
+    doc.setDrawColor(226, 232, 240);
+    doc.setFillColor(15, 41, 66);
+    doc.rect(15, tableY, 180, 6.5, 'F');
+
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(7.5);
+    doc.setFont('Helvetica', 'bold');
+    doc.text("INTERNSHIP PROGRAM PARTICULARS", 18, tableY + 4.5);
+
+    const rows = [
+        ["Internship Track", sTrack],
+        ["Intern ID", tokenOffer],
+        ["Duration", sDuration],
+        ["Commencement Date", formattedCommence],
+        ["Estimated Completion", formattedEnd],
+        ["Stipend Details", "Unpaid (Performance-Based Internship)"],
+        ["Location & Model", "Remote / Virtual"],
+        ["College / University", sCollege]
+    ];
+
+    let currentY = tableY + 6.5;
+    doc.setFontSize(7.5);
+    rows.forEach(row => {
+        doc.setDrawColor(226, 232, 240);
+        doc.line(15, currentY, 195, currentY);
+
+        doc.setTextColor(71, 85, 105);
+        doc.setFont('Helvetica', 'bold');
+        doc.text(row[0], 18, currentY + 4.5);
+
+        doc.setTextColor(15, 23, 42);
+        doc.setFont('Helvetica', 'bold');
+        doc.text(String(row[1] || ''), 80, currentY + 4.5);
+
+        currentY += 6.5;
+    });
+
+    // Outline of table
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(15, tableY, 180, currentY - tableY);
+    doc.line(75, tableY + 6.5, 75, currentY);
+
+    // Terms & Conditions block
+    let termsY = currentY + 4;
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(226, 232, 240);
+    doc.rect(15, termsY, 180, 24, 'FD');
+
+    doc.setTextColor(15, 41, 66);
+    doc.setFontSize(7.5);
+    doc.setFont('Helvetica', 'bold');
+    doc.text("GENERAL TERMS & CONDITIONS OF INTERNSHIP:", 18, termsY + 4.5);
+
+    doc.setTextColor(51, 65, 85);
+    doc.setFontSize(7);
+    doc.setFont('Helvetica', 'normal');
+
+    const bullet1 = "1. Task Execution: You will be evaluated based on the functional completeness of the assigned tasks. You must submit weekly progress updates.";
+    const bullet2 = "2. Code of Conduct: Plagiarism or any forms of professional misconduct will lead to immediate cancellation of your internship program.";
+    const bullet3 = "3. Confidentiality: Any documentation, source code, or mock datasets shared during this program are strictly confidential.";
+    const bullet4 = "4. Certification: An official Certificate of Internship Completion will be issued only upon successful submission and mentoring approval of all milestone tasks.";
+
+    doc.text(bullet1, 18, termsY + 8.5);
+    doc.text(bullet2, 18, termsY + 12.5);
+    doc.text(bullet3, 18, termsY + 16.5);
+    doc.text(bullet4, 18, termsY + 20.5);
+
+    // Certificate Section
+    let certY = termsY + 26;
+    doc.setFillColor(255, 255, 255);
+    doc.setDrawColor(203, 213, 225);
+    doc.rect(15, certY, 180, 14, 'FD');
+
+    doc.setTextColor(15, 41, 66);
+    doc.setFont('Helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.text("CERTIFICATE OF COMPLETION", 18, certY + 4.5);
+
+    doc.setTextColor(51, 65, 85);
+    doc.setFont('Helvetica', 'normal');
+    const certDesc = "Upon successful completion of the internship and fulfillment of all assigned tasks, you will receive a Certificate of Internship with QR-code verification for authenticity.";
+    const linesCertDesc = doc.splitTextToSize(certDesc, 172);
+    doc.text(linesCertDesc, 18, certY + 8.5);
+
+    // Outro Paragraph
+    const outro = "Please return the signed copy of this letter as a token of your formal acceptance of this offer. We look forward to a mutually rewarding learning experience.";
+    const linesOutro = doc.splitTextToSize(outro, 180);
+    doc.text(linesOutro, 15, certY + 21);
+
+    // Signatures Section (at y ~236)
+    const sigY = 236;
+    if (stampBase64) {
+        doc.addImage(stampBase64, 'JPEG', 18, sigY, 19, 19);
+    }
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(6.5);
+    doc.setFont('Helvetica', 'bold');
+    doc.text("COMPANY SEAL", 18 + (19 / 2), sigY + 22, { align: "center" });
+
+    if (signBase64) {
+        // Aligned flush-right directly above "Vishal R" and "FOUNDER & CEO"
+        doc.addImage(signBase64, 'PNG', 165, sigY + 2, 30, 12);
+    }
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(8.5);
+    doc.setFont('Helvetica', 'bold');
+    doc.text("Vishal R", 195, sigY + 16, { align: "right" });
+    doc.setTextColor(100, 116, 139);
+    doc.setFontSize(7);
+    doc.setFont('Helvetica', 'bold');
+    doc.text("FOUNDER & CEO", 195, sigY + 20.5, { align: "right" });
+
+    // Footer Section (with full branding)
+    const footY = sigY + 27;
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.4);
+    doc.line(15, footY, 195, footY);
+
+    // Left logos: MSME + Skyrovix
+    if (msmeBase64) {
+        doc.addImage(msmeBase64, 'JPEG', 15, footY + 2.5, 12, 8);
+    }
+    doc.setDrawColor(203, 213, 225);
+    doc.setLineWidth(0.3);
+    doc.line(29, footY + 2.5, 29, footY + 10.5);
+
+    if (skyrovixBase64) {
+        doc.addImage(skyrovixBase64, 'JPEG', 31, footY + 2.5, 13, 8);
+    }
+
+    // Center company text
+    doc.setTextColor(15, 41, 66);
+    doc.setFontSize(7.5);
+    doc.setFont('Helvetica', 'bold');
+    doc.text("VINIX Technologies", 110, footY + 4.5, { align: "center" });
+
+    doc.setTextColor(100, 116, 139);
+    doc.setFont('Helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.text("UDYAM Registry: UDYAM-TN-21-0066185", 110, footY + 8, { align: "center" });
+    doc.text("academic@vinix.online | www.vinix.online", 110, footY + 11.5, { align: "center" });
+
+    // Right logo: Yrnovatech
+    if (yrnovatechBase64) {
+        doc.addImage(yrnovatechBase64, 'PNG', 172, footY + 2, 22, 8.5);
+    }
+
+    return doc;
+}
+
+// Generates high quality HTML email payload for Gmail
+export function createOfferLetterEmailHtml({
+    studentName,
+    tokenOffer,
+    internshipTitle,
+    duration,
+    formattedStart,
+    formattedEnd
+}) {
+    return `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+      <div style="background: #0f2942; padding: 28px 24px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 800; letter-spacing: 0.5px;">VINIX</h1>
+        <p style="color: #38bdf8; margin: 4px 0 0 0; font-size: 13px; font-weight: 600;">Empowering Future Innovators</p>
+      </div>
+      <div style="padding: 32px 24px;">
+        <h2 style="color: #0f2942; font-size: 18px; margin-top: 0;">🎉 Congratulations, ${studentName || 'Student'}!</h2>
+        <p style="color: #334155; font-size: 14px; line-height: 1.6;">
+          Your application for the <strong>Vinix Technologies Virtual Internship Program</strong> has been officially approved. We are thrilled to welcome you to our cohort!
+        </p>
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 18px; margin: 20px 0;">
+          <h3 style="color: #0f2942; font-size: 13px; text-transform: uppercase; margin: 0 0 12px 0; letter-spacing: 0.5px;">Internship Particulars</h3>
+          <table style="width: 100%; font-size: 13px; color: #475569; border-collapse: collapse;">
+            <tr><td style="padding: 4px 0; font-weight: 600;">Intern ID:</td><td style="color: #0f172a; font-weight: 700; text-align: right;">${tokenOffer}</td></tr>
+            <tr><td style="padding: 4px 0; font-weight: 600;">Domain:</td><td style="color: #0f172a; font-weight: 700; text-align: right;">${internshipTitle}</td></tr>
+            <tr><td style="padding: 4px 0; font-weight: 600;">Duration:</td><td style="color: #0f172a; font-weight: 700; text-align: right;">${duration}</td></tr>
+            ${formattedStart ? `<tr><td style="padding: 4px 0; font-weight: 600;">Commencement:</td><td style="color: #0f172a; font-weight: 700; text-align: right;">${formattedStart}</td></tr>` : ''}
+            ${formattedEnd ? `<tr><td style="padding: 4px 0; font-weight: 600;">Est. Completion:</td><td style="color: #0f172a; font-weight: 700; text-align: right;">${formattedEnd}</td></tr>` : ''}
+            <tr><td style="padding: 4px 0; font-weight: 600;">Location:</td><td style="color: #0f172a; font-weight: 700; text-align: right;">Remote / Virtual</td></tr>
+          </table>
+        </div>
+        <p style="color: #334155; font-size: 14px; line-height: 1.6;">
+          📎 <strong>Your official Internship Offer Letter is attached to this email as a PDF.</strong> Please download and review your offer particulars.
+        </p>
+        <p style="color: #334155; font-size: 14px; line-height: 1.6;">
+          You can track your weekly milestones, access task submission portals, and download your digital student ID card on your student dashboard.
+        </p>
+        <div style="text-align: center; margin: 28px 0;">
+          <a href="https://www.vinix.online/student/dashboard" style="background: #0f2942; color: #ffffff; text-decoration: none; padding: 12px 28px; border-radius: 8px; font-weight: 700; font-size: 14px; display: inline-block;">Go to Student Dashboard</a>
+        </div>
+      </div>
+      <div style="background: #f1f5f9; padding: 16px 24px; text-align: center; font-size: 11px; color: #64748b; border-top: 1px solid #e2e8f0;">
+        <strong style="color: #0f2942;">VINIX Technologies</strong><br>
+        UDYAM Registry: UDYAM-TN-21-0066185<br>
+        academic@vinix.online | www.vinix.online
+      </div>
+    </div>
+    `;
 }
 
 // === DOMAIN DEFINITIONS (mirrors Internships.tsx DOMAINS array) ===

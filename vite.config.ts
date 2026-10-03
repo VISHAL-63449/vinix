@@ -96,6 +96,7 @@ export default defineConfig({
                 // Convert absolute Windows path to file:// URL scheme for ESM compatibility
                 const importPath = apiPath.startsWith('file:') ? apiPath : `file://${apiPath.replace(/\\/g, '/')}`;
                 // Dynamic import with cache-busting to bypass node ESM module caching in dev
+                console.log(`[API Emulator] Invoking fresh module /api/${functionName}`);
                 const { default: handler } = await import(`${importPath}?t=${Date.now()}`);
                 await handler(apiReq, apiRes);
                 return;

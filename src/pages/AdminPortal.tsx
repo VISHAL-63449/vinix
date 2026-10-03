@@ -8,7 +8,7 @@ import {
     Award, FileText, Briefcase, CalendarDays, Settings, CreditCard, ArrowRight, FileSpreadsheet, Plus, Trash2, Edit3, X, Megaphone, Mail, Eye,
     Sparkles, PlusCircle, Bell, Moon, ChevronDown, ListTodo, Users, ExternalLink,
     BookOpen, Layers, Check, Activity, GraduationCap, RefreshCw, Clock, History,
-    Menu, Sun, Rocket, LogOut, Tag, IndianRupee, Percent
+    Menu, Sun, Rocket, LogOut, Tag, IndianRupee, Percent, RotateCcw
 } from 'lucide-react';
 import { getGenuineStudentAvatar } from '../utils/studentAvatars';
 
@@ -782,10 +782,13 @@ function saveAdminCache(data: any) {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     applicationId: lookupId,
+                    studentId: enroll.user_id,
+                    internshipId: enroll.internship_id,
                     email: email,
                     studentName: studentName,
                     courseName: enroll.internships?.title || 'Virtual Internship',
-                    duration: enroll.internships?.duration || '3 Months'
+                    duration: enroll.internships?.duration || '1 Month',
+                    force: true
                 })
             });
 
@@ -795,10 +798,12 @@ function saveAdminCache(data: any) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         studentId: enroll.user_id,
+                        internshipId: enroll.internship_id,
                         email: email,
                         studentName: studentName,
                         courseName: enroll.internships?.title || 'Virtual Internship',
-                        duration: enroll.internships?.duration || '3 Months'
+                        duration: enroll.internships?.duration || '1 Month',
+                        force: true
                     })
                 }).catch(() => null);
 
@@ -818,6 +823,13 @@ function saveAdminCache(data: any) {
     // Evaluate task solution submission
     const handleGradeSubmission = async (status: 'approved' | 'resubmission_required') => {
         if (!selectedSubForReview) return;
+
+        const trimmedFeedback = adminFeedback.trim();
+        if (status === 'resubmission_required' && !trimmedFeedback) {
+            showToast('Please enter mentor feedback explaining what the student needs to improve before requesting resubmission.', 'error');
+            return;
+        }
+
         setReviewLoading(true);
 
         try {
@@ -826,7 +838,7 @@ function saveAdminCache(data: any) {
                 .from('task_progress')
                 .update({
                     status,
-                    admin_feedback: adminFeedback,
+                    admin_feedback: trimmedFeedback || null,
                     reviewed_at: new Date().toISOString()
                 })
                 .eq('id', selectedSubForReview.id);
@@ -879,7 +891,12 @@ function saveAdminCache(data: any) {
                     .eq('internship_id', selectedSubForReview.internship_id);
             }
 
-            showToast(`Milestone marked as ${status}.`, 'success');
+            showToast(
+                status === 'approved'
+                    ? 'Milestone approved successfully.'
+                    : 'Resubmission requested with mentor feedback.',
+                'success'
+            );
             setSelectedSubForReview(null);
             setAdminFeedback('');
             loadData();
@@ -3538,68 +3555,108 @@ function saveAdminCache(data: any) {
 
             {/* Grade Submission Dialog Modal */}
             {selectedSubForReview && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm select-none">
-                    <div className="bg-white dark:bg-brand-cardDark border border-slate-200/50 dark:border-slate-800/40 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-left">
-                        <h3 className="text-lg font-bold">Grade Student Submission</h3>
-                        <p className="text-xs text-brand-primary dark:text-brand-accent mt-1 uppercase font-bold tracking-wide">
-                            {selectedSubForReview.profiles?.full_name} • Milestone {selectedSubForReview.internship_tasks?.task_number}
-                        </p>
-
-                        <div className="mt-4 p-4 bg-slate-50 dark:bg-slate-950/40 border border-slate-200 dark:border-slate-850 rounded-xl space-y-2 text-xs">
-                            <div>
-                                <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Solution Link</span>
-                                <a
-                                    href={selectedSubForReview.github_url || selectedSubForReview.linkedin_url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-brand-primary dark:text-brand-accent underline font-mono break-all"
-                                >
-                                    {selectedSubForReview.github_url || selectedSubForReview.linkedin_url}
-                                </a>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-950/60 backdrop-blur-sm select-none overflow-y-auto animate-fade-in">
+                    <div className="bg-white dark:bg-brand-cardDark border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl max-w-lg w-full shadow-2xl relative text-left max-h-[92vh] flex flex-col overflow-hidden">
+                        {/* Modal Header */}
+                        <div className="flex justify-between items-center px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-100 dark:border-slate-800 flex-shrink-0">
+                            <div className="min-w-0 pr-2">
+                                <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white truncate">
+                                    Grade Student Submission
+                                </h3>
+                                <p className="text-xs text-brand-primary dark:text-brand-accent mt-0.5 uppercase font-bold tracking-wide truncate">
+                                    {selectedSubForReview.profiles?.full_name || 'Student'} • Milestone {selectedSubForReview.internship_tasks?.task_number || 1}
+                                </p>
                             </div>
-                            <div className="border-t border-slate-200 dark:border-slate-850 pt-2">
-                                <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Student notes</span>
-                                <p className="text-slate-650 dark:text-slate-350">{selectedSubForReview.student_note || 'No notes.'}</p>
-                            </div>
-                        </div>
-
-                        <div className="mt-4 space-y-4">
-                            <div>
-                                <label className="text-[10px] font-bold text-slate-500 uppercase block mb-1">Mentor Feedback Comments</label>
-                                <textarea
-                                    required
-                                    value={adminFeedback}
-                                    onChange={(e) => setAdminFeedback(e.target.value)}
-                                    placeholder="Explain requirements missed or design suggestions. Good comments are highly interactive..."
-                                    className="w-full px-3 py-2 border border-slate-205 bg-slate-50 dark:bg-slate-950 dark:border-slate-805 rounded-xl text-xs outline-none h-20"
-                                />
-                            </div>
-
-                            <div className="flex space-x-3 pt-4 border-t border-slate-100 dark:border-slate-850">
-                                <button
-                                    type="button"
-                                    onClick={() => handleGradeSubmission('resubmission_required')}
-                                    disabled={reviewLoading}
-                                    className="flex-1 py-2.5 border border-rose-300 hover:bg-rose-50 text-rose-600 dark:hover:bg-rose-950/20 text-xs font-bold rounded-xl transition"
-                                >
-                                    Request Resubmission
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleGradeSubmission('approved')}
-                                    disabled={reviewLoading}
-                                    className="flex-grow py-2.5 bg-brand-primary text-white text-xs font-bold rounded-xl transition shadow"
-                                >
-                                    Approve milestone
-                                </button>
-                            </div>
-
                             <button
                                 type="button"
                                 onClick={() => setSelectedSubForReview(null)}
-                                className="w-full py-1 text-center text-[10px] text-slate-400 font-bold tracking-wider uppercase hover:underline"
+                                className="w-8 h-8 rounded-full border border-slate-200 dark:border-slate-800 flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition cursor-pointer flex-shrink-0"
+                                aria-label="Close dialog"
                             >
-                                Close Dialog
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body (Scrollable) */}
+                        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4">
+                            {/* Solution link & student notes container */}
+                            <div className="p-3.5 bg-slate-50 dark:bg-slate-950/40 border border-slate-200/90 dark:border-slate-800 rounded-xl space-y-3 text-xs">
+                                <div>
+                                    <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block mb-1">Solution Link</span>
+                                    <a
+                                        href={selectedSubForReview.github_url || selectedSubForReview.linkedin_url}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-1.5 text-brand-primary dark:text-brand-accent hover:underline font-mono text-xs break-all"
+                                    >
+                                        <span>{selectedSubForReview.github_url || selectedSubForReview.linkedin_url}</span>
+                                        <ExternalLink className="w-3.5 h-3.5 flex-shrink-0" />
+                                    </a>
+                                </div>
+
+                                {/* Student notes with responsive max-height and custom scroll */}
+                                <div className="border-t border-slate-200/80 dark:border-slate-800 pt-2.5">
+                                    <div className="flex items-center justify-between mb-1.5">
+                                        <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Student notes</span>
+                                        {selectedSubForReview.student_note && selectedSubForReview.student_note.length > 150 && (
+                                            <span className="text-[9px] font-semibold text-brand-primary dark:text-brand-accent bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full">
+                                                Scrollable ({selectedSubForReview.student_note.length} chars)
+                                            </span>
+                                        )}
+                                    </div>
+                                    <div className="max-h-36 sm:max-h-48 overflow-y-auto pr-1 p-3 bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800/80 rounded-xl">
+                                        <p className="text-xs text-slate-700 dark:text-slate-300 whitespace-pre-wrap break-words leading-relaxed select-text font-normal">
+                                            {selectedSubForReview.student_note || <span className="italic text-slate-400">No notes provided.</span>}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Mentor Feedback Comments */}
+                            <div>
+                                <div className="flex items-center justify-between mb-1">
+                                    <label className="text-[10px] font-bold text-slate-500 uppercase block">Mentor Feedback Comments</label>
+                                    <span className={`text-[9px] font-medium transition-colors ${adminFeedback.trim() ? 'text-emerald-600 dark:text-emerald-400 font-semibold' : 'text-slate-400'}`}>
+                                        {adminFeedback.trim() ? '✓ Feedback will be sent to student' : 'Required for resubmission • Optional for approval'}
+                                    </span>
+                                </div>
+                                <textarea
+                                    value={adminFeedback}
+                                    onChange={(e) => setAdminFeedback(e.target.value)}
+                                    placeholder="Explain requirements missed, bugs found, or suggestions for the student's resubmission..."
+                                    rows={3}
+                                    className="w-full px-3 py-2 border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 rounded-xl text-xs outline-none focus:border-brand-primary dark:focus:border-brand-accent transition resize-none select-text"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Modal Footer (Sticky/Pinned at bottom so action buttons are ALWAYS visible on mobile) */}
+                        <div className="p-3 sm:p-4 border-t border-slate-100 dark:border-slate-800 bg-slate-50/80 dark:bg-slate-900/60 flex flex-col sm:flex-row gap-2 sm:gap-3 flex-shrink-0">
+                            <button
+                                type="button"
+                                onClick={() => handleGradeSubmission('resubmission_required')}
+                                disabled={reviewLoading}
+                                className="w-full sm:flex-1 py-2.5 px-3 border border-rose-300 dark:border-rose-900/60 hover:bg-rose-50 dark:hover:bg-rose-950/30 text-rose-600 dark:text-rose-400 text-xs font-bold rounded-xl transition flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            >
+                                {reviewLoading ? (
+                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                    <RotateCcw className="w-3.5 h-3.5" />
+                                )}
+                                <span>Request Resubmission</span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => handleGradeSubmission('approved')}
+                                disabled={reviewLoading}
+                                className="w-full sm:flex-1 py-2.5 px-3 bg-brand-primary hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            >
+                                {reviewLoading ? (
+                                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                                ) : (
+                                    <Check className="w-3.5 h-3.5" />
+                                )}
+                                <span>Approve milestone</span>
                             </button>
                         </div>
                     </div>
