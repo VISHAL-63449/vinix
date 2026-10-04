@@ -280,97 +280,91 @@ export default async function handler(req, res) {
             console.warn('[APPLY_API] offer_letters sync note:', e.message);
         }
 
-        // 6. Generate Personalized Offer Letter PDF
-        let publicUrl = '';
-        let pdfBuffer = null;
-        try {
-            console.log(`[APPLY_API] Starting PDF Generation for ${appId}...`);
-            const doc = await createOfferLetterPdfDoc({
-                studentName,
-                tokenOffer: appId,
-                internshipTitle,
-                duration: finalDuration,
-                college,
-                issueDate: startDate,
-                req
-            });
-
-            pdfBuffer = Buffer.from(doc.output('arraybuffer'));
-            await ensureBucketExists();
-
-            const storagePath = `offer-letters/VINIX_Offer_Letter_${appId}.pdf`;
-            console.log(`[APPLY_API] Uploading PDF to storage slot: ${storagePath}...`);
-
-            await supabaseAdmin.storage
-                .from('documents')
-                .upload(storagePath, pdfBuffer, {
-                    contentType: 'application/pdf',
-                    upsert: true
-                });
-
-            const { data: urlData } = supabaseAdmin.storage
-                .from('documents')
-                .getPublicUrl(storagePath);
-            publicUrl = urlData?.publicUrl || '';
-            console.log(`[APPLY_API] Upload completed. Public PDF URL: ${publicUrl}`);
-        } catch (pdfErr) {
-            console.error('[APPLY_API] PDF Generation / Storage warning:', pdfErr.message);
-        }
-
-        // 7. Send Email Automatically to Student Gmail
-        const emailSubject = `Congratulations! Your Vinix Technology Internship Offer Letter – ${appId}`;
-        const htmlBody = createOfferLetterEmailHtml({
-            studentName,
-            tokenOffer: appId,
-            internshipTitle,
-            duration: finalDuration,
-            formattedStart,
-            formattedEnd
-        });
-
-        const emailBody = `Dear ${studentName},\n\n` +
-            `Congratulations!\n\n` +
-            `Your registration for the Vinix Technology Virtual Internship Program has been successfully completed.\n\n` +
-            `Your official Internship Offer Letter has been automatically generated and is attached to this email.\n\n` +
-            `Application ID: ${appId}\n` +
-            `Internship Domain: ${internshipTitle}\n` +
-            `Duration: ${finalDuration}\n` +
-            `Start Date: ${formattedStart}\n` +
-            `End Date: ${formattedEnd}\n\n` +
-            `Please keep this offer letter safely for your future reference.\n\n` +
-            `Best Regards,\n\n` +
-            `Vinix Technology\n` +
-            `Virtual Internship Team`;
-
-        let mailStatus = 'sent';
-        let mailErrorStr = null;
-
-        try {
-            const mailResult = await sendEmail({
-                email: studentEmail,
-                name: studentName,
-                subject: emailSubject,
-                body: emailBody,
-                htmlBody,
-                pdfBuffer,
-                pdfName: `VINIX_Offer_Letter_${appId}.pdf`
-            });
-            if (mailResult?.mock) {
-                mailStatus = 'mock_sent';
-            }
-        } catch (mailError) {
-            console.error('[APPLY_API] SMTP send error details:', mailError.message);
-            mailStatus = 'failed';
-            mailErrorStr = mailError.message;
-        }
-
+        // 6. Fast response: Return 200 immediately to client for instant UI response!
         res.status(200).json({
             success: true,
             applicationId: appId,
-            offerUrl: publicUrl,
-            emailStatus: mailStatus,
-            emailError: mailErrorStr
+            message: 'Registration successful!'
         });
+
+        // 7. Background asynchronous processing: PDF generation & Email delivery (non-blocking)
+        (async () => {
+            let publicUrl = '';
+            let pdfBuffer = null;
+            try {
+                console.log(`[APPLY_API Background] Starting PDF Generation for ${appId}...`);
+                const doc = await createOfferLetterPdfDoc({
+                    studentName,
+                    tokenOffer: appId,
+                    internshipTitle,
+                    duration: finalDuration,
+                    college,
+                    issueDate: startDate,
+                    req
+                });
+
+                pdfBuffer = Buffer.from(doc.output('arraybuffer'));
+                await ensureBucketExists();
+
+                const storagePath = `offer-letters/VINIX_Offer_Letter_${appId}.pdf`;
+                console.log(`[APPLY_API Background] Uploading PDF to storage slot: ${storagePath}...`);
+
+                await supabaseAdmin.storage
+                    .from('documents')
+                    .upload(storagePath, pdfBuffer, {
+                        contentType: 'application/pdf',
+                        upsert: true
+                    });
+
+                const { data: urlData } = supabaseAdmin.storage
+                    .from('documents')
+                    .getPublicUrl(storagePath);
+                publicUrl = urlData?.publicUrl || '';
+                console.log(`[APPLY_API Background] Upload completed. Public PDF URL: ${publicUrl}`);
+            } catch (pdfErr) {
+                console.error('[APPLY_API Background] PDF Generation / Storage warning:', pdfErr.message);
+            }
+
+            // Send Email Automatically to Student Gmail
+            try {
+                const emailSubject = `Congratulations! Your Vinix Technology Internship Offer Letter – ${appId}`;
+                const htmlBody = createOfferLetterEmailHtml({
+                    studentName,
+                    tokenOffer: appId,
+                    internshipTitle,
+                    duration: finalDuration,
+                    formattedStart,
+                    formattedEnd
+                });
+
+                const emailBody = `Dear ${studentName},\n\n` +
+                    `Congratulations!\n\n` +
+                    `Your registration for the Vinix Technology Virtual Internship Program has been successfully completed.\n\n` +
+                    `Your official Internship Offer Letter has been automatically generated and is attached to this email.\n\n` +
+                    `Application ID: ${appId}\n` +
+                    `Internship Domain: ${internshipTitle}\n` +
+                    `Duration: ${finalDuration}\n` +
+                    `Start Date: ${formattedStart}\n` +
+                    `End Date: ${formattedEnd}\n\n` +
+                    `Please keep this offer letter safely for your future reference.\n\n` +
+                    `Best Regards,\n\n` +
+                    `Vinix Technology\n` +
+                    `Virtual Internship Team`;
+
+                await sendEmail({
+                    email: studentEmail,
+                    name: studentName,
+                    subject: emailSubject,
+                    body: emailBody,
+                    htmlBody,
+                    pdfBuffer,
+                    pdfName: `VINIX_Offer_Letter_${appId}.pdf`
+                });
+                console.log(`[APPLY_API Background] Offer email dispatched for ${studentEmail}`);
+            } catch (mailError) {
+                console.error('[APPLY_API Background] SMTP send error details:', mailError.message);
+            }
+        })();
     } catch (e) {
         console.error('[APPLY_API] Global internal server error:', e);
         res.status(500).json({ error: 'Internal Server Error', message: e.message });

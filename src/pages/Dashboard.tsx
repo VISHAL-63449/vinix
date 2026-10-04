@@ -84,14 +84,14 @@ const Dashboard: React.FC = () => {
     const navigate = useNavigate();
     const { toasts, showToast, dismiss } = useToast();
 
-    const DASH_CACHE_PREFIX = 'vinix_student_dash_cache_';
+    const DASH_CACHE_PREFIX = 'vinix_student_dash_cache_v2_';
     function getStudentDashCache(uid?: string) {
         if (!uid) return null;
         try {
-            const raw = sessionStorage.getItem(`${DASH_CACHE_PREFIX}${uid}`);
+            const raw = localStorage.getItem(`${DASH_CACHE_PREFIX}${uid}`) || sessionStorage.getItem(`${DASH_CACHE_PREFIX}${uid}`);
             if (!raw) return null;
             const parsed = JSON.parse(raw);
-            if (Date.now() - (parsed._cachedAt || 0) < 15 * 60 * 1000) {
+            if (parsed && typeof parsed === 'object') {
                 return parsed;
             }
             return null;
@@ -102,10 +102,12 @@ const Dashboard: React.FC = () => {
     function saveStudentDashCache(uid: string, data: any) {
         if (!uid) return;
         try {
-            sessionStorage.setItem(`${DASH_CACHE_PREFIX}${uid}`, JSON.stringify({
+            const payload = JSON.stringify({
                 ...data,
                 _cachedAt: Date.now()
-            }));
+            });
+            localStorage.setItem(`${DASH_CACHE_PREFIX}${uid}`, payload);
+            sessionStorage.setItem(`${DASH_CACHE_PREFIX}${uid}`, payload);
         } catch (e) {
             console.warn('Failed to save dashboard cache:', e);
         }
@@ -157,7 +159,7 @@ const Dashboard: React.FC = () => {
     async function loadDashboardData() {
         if (!user) return;
         try {
-            const safetyTimer = setTimeout(() => setLoading(false), 2500);
+            const safetyTimer = setTimeout(() => setLoading(false), 8000);
 
             // Fetch dashboard datasets in parallel
             const [enrollRes, appRes, offerRes, certsRes, progressRes] = await Promise.allSettled([

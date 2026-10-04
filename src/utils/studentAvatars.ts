@@ -36,7 +36,16 @@ export const STUDENT_AVATAR_FILES: Record<string, string> = {
   "e5b430b1-483b-4b7f-979a-af955eee4a24": "e5b430b1-483b-4b7f-979a-af955eee4a24.jpeg",
   "e6ab2e31-6cf2-4234-bed1-2f01a1737d9e": "e6ab2e31-6cf2-4234-bed1-2f01a1737d9e.jpeg",
   "e73e75c3-3d4f-4f98-94c0-6d8523e3c30d": "e73e75c3-3d4f-4f98-94c0-6d8523e3c30d.png",
-  "f4bdaf93-23d7-4f97-9ec1-5f1f534c1cbe": "f4bdaf93-23d7-4f97-9ec1-5f1f534c1cbe.jpeg"
+  "f4bdaf93-23d7-4f97-9ec1-5f1f534c1cbe": "f4bdaf93-23d7-4f97-9ec1-5f1f534c1cbe.jpeg",
+  "f61a73f3-f412-4c61-bd68-ac3e28e09658": "f61a73f3-f412-4c61-bd68-ac3e28e09658.png",
+  "f1e57b85-dc06-4123-8097-8223bc8bde64": "f1e57b85-dc06-4123-8097-8223bc8bde64.jpeg",
+  "c04ca205-4227-4d70-a291-abf8607974b4": "c04ca205-4227-4d70-a291-abf8607974b4.png",
+  "9374bc23-bb4c-4332-8690-2de361205e7a": "9374bc23-bb4c-4332-8690-2de361205e7a.png",
+  "0b75fdde-c0b7-49f0-a6ed-f73c34ab22ee": "0b75fdde-c0b7-49f0-a6ed-f73c34ab22ee.png",
+  "51d16092-83ac-4cc3-8116-8a5397653f1e": "51d16092-83ac-4cc3-8116-8a5397653f1e.jpeg",
+  "59b086ff-3542-491b-9527-f4715966f82a": "59b086ff-3542-491b-9527-f4715966f82a.jpeg",
+  "93d92304-813c-4c0e-9150-5844cd121f86": "93d92304-813c-4c0e-9150-5844cd121f86.jpeg",
+  "896543fc-c22a-472c-b661-e0a6e78afc5f": "896543fc-c22a-472c-b661-e0a6e78afc5f.jpeg"
 };
 
 export const STUDENT_AVATAR_EMAILS: Record<string, string> = {
@@ -73,7 +82,16 @@ export const STUDENT_AVATAR_EMAILS: Record<string, string> = {
   "rajsinghrajput2527@gmail.com": "e5b430b1-483b-4b7f-979a-af955eee4a24.jpeg",
   "jayashreeknr278@gmail.com": "e6ab2e31-6cf2-4234-bed1-2f01a1737d9e.jpeg",
   "nancypatel126@gmail.com": "e73e75c3-3d4f-4f98-94c0-6d8523e3c30d.png",
-  "gayatrikoparde76@gmail.com": "f4bdaf93-23d7-4f97-9ec1-5f1f534c1cbe.jpeg"
+  "gayatrikoparde76@gmail.com": "f4bdaf93-23d7-4f97-9ec1-5f1f534c1cbe.jpeg",
+  "kvishakha164@gmail.com": "f61a73f3-f412-4c61-bd68-ac3e28e09658.png",
+  "treasureomehia466@gmail.com": "f1e57b85-dc06-4123-8097-8223bc8bde64.jpeg",
+  "nivikrishnan9906@gmail.com": "c04ca205-4227-4d70-a291-abf8607974b4.png",
+  "foundervinix@gmail.com": "9374bc23-bb4c-4332-8690-2de361205e7a.png",
+  "nivikrishnan2006@gmail.com": "0b75fdde-c0b7-49f0-a6ed-f73c34ab22ee.png",
+  "vinix@gmail.com": "51d16092-83ac-4cc3-8116-8a5397653f1e.jpeg",
+  "sm9131339@gmail.com": "59b086ff-3542-491b-9527-f4715966f82a.jpeg",
+  "v@gmail.com": "93d92304-813c-4c0e-9150-5844cd121f86.jpeg",
+  "hkhamza.in12345@gmail.com": "896543fc-c22a-472c-b661-e0a6e78afc5f.jpeg"
 };
 
 /**

@@ -719,31 +719,39 @@ const Internships: React.FC = () => {
             }
             if (!uid) throw new Error('Authentication failed.');
 
-            // Optional: Upload Profile Photo
+            // Optional: Upload Profile Photo with instantaneous client-side compression
             let avatarUrl = null;
             if (profilePhoto) {
                 try {
-                    const fileExt = profilePhoto.name.split('.').pop();
-                    const fileName = `avatar_${uid}_${Date.now()}.${fileExt}`;
+                    const compressed = await new Promise<string>((resolve) => {
+                        const img = new Image();
+                        const r = new FileReader();
+                        r.onload = (e) => { img.src = (e.target?.result as string) || ''; };
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            let w = img.width;
+                            let h = img.height;
+                            const maxDim = 300;
+                            if (w > h && w > maxDim) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            } else if (h > maxDim) {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                            canvas.width = w;
+                            canvas.height = h;
+                            const ctx = canvas.getContext('2d');
+                            ctx?.drawImage(img, 0, 0, w, h);
+                            resolve(canvas.toDataURL('image/jpeg', 0.8));
+                        };
+                        img.onerror = () => resolve('');
+                        r.onerror = () => resolve('');
+                        r.readAsDataURL(profilePhoto);
+                    });
 
-                    const { error: uploadError } = await supabase.storage
-                        .from('avatars')
-                        .upload(fileName, profilePhoto, {
-                            upsert: true,
-                            contentType: profilePhoto.type
-                        });
-
-                    if (uploadError) {
-                        console.warn('Failed to upload to avatars bucket, falling back to base64:', uploadError);
-                        avatarUrl = await new Promise<string | null>((resolve) => {
-                            const reader = new FileReader();
-                            reader.onloadend = () => resolve(reader.result as string);
-                            reader.onerror = () => resolve(null);
-                            reader.readAsDataURL(profilePhoto);
-                        });
-                    } else {
-                        const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
-                        avatarUrl = data.publicUrl;
+                    if (compressed) {
+                        avatarUrl = compressed;
                     }
                 } catch (e) {
                     console.warn('Profile photo error:', e);
@@ -855,7 +863,10 @@ const Internships: React.FC = () => {
             // 4. Submit application to backend registration & automation API endpoint
             let resData: any = null;
             try {
-                const response = await fetch('/api/internships/apply', {
+                const basePrefix = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+                const targetUrl = (basePrefix + '/api/internships/apply').replace(/\/\//g, '/');
+
+                const response = await fetch(targetUrl, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -935,7 +946,7 @@ const Internships: React.FC = () => {
             }
 
             setSuccess(true);
-            setTimeout(() => navigate('/dashboard'), 2000);
+            setTimeout(() => navigate('/dashboard'), 350);
         } catch (err: any) {
             console.error(err);
             setError(err.message || 'Something went wrong. Please try again.');

@@ -172,111 +172,115 @@ export default function DomainDetails() {
                 throw appErr;
             }
 
-            // Sync student details to user's main profile record for admin queries
-            await supabaseAdmin
-                .from('profiles')
-                .update({
+            // Execute parallel sync operations for maximum performance
+            await Promise.allSettled([
+                // 1. Sync student details to user's main profile record
+                supabaseAdmin.from('profiles').update({
                     full_name: appForm.name,
                     name: appForm.name,
                     college: appForm.college,
                     phone: appForm.phone,
                     github_url: appForm.githubUrl,
                     linkedin_url: appForm.linkedinUrl
-                })
-                .eq('id', user.id);
+                }).eq('id', user.id),
 
-            // Establish an active enrollment in internship_enrollments for Admin admissions overview path
-            const { error: enrollErr } = await supabaseAdmin
-                .from('internship_enrollments')
-                .insert({
+                // 2. Establish active enrollment
+                supabaseAdmin.from('internship_enrollments').insert({
                     user_id: user.id,
                     student_id: user.id,
                     internship_id: selectedInternship.id,
                     status: 'active'
-                });
+                }),
 
-            // Also insert key legacy record in enrollments table
-            await supabaseAdmin
-                .from('enrollments')
-                .insert({
+                // 3. Insert legacy record in enrollments table
+                supabaseAdmin.from('enrollments').insert({
                     user_id: user.id,
                     student_id: user.id,
                     internship_id: selectedInternship.id,
                     status: 'active'
-                });
+                }),
 
-            // Generate offer letter if one doesn't already exist
-            const { data: existingOffer } = await supabaseAdmin
-                .from('offer_letters')
-                .select('id')
-                .eq('user_id', user.id)
-                .maybeSingle();
+                // 4. Ensure offer letter exists
+                (async () => {
+                    const { data: existingOffer } = await supabaseAdmin
+                        .from('offer_letters')
+                        .select('id')
+                        .eq('user_id', user.id)
+                        .maybeSingle();
 
-            if (!existingOffer) {
-                const offerLetterId = `VINIX-OFFER-${Math.floor(1000 + Math.random() * 9000)}`;
-                const verificationToken = `tok_offer_${Math.floor(100000 + Math.random() * 900000)}`;
-                await supabaseAdmin.from('offer_letters').insert({
-                    user_id: user.id,
-                    student_id: user.id,
-                    offer_letter_id: offerLetterId,
-                    student_name: appForm.name,
-                    student_email: appForm.email,
-                    internship_title: selectedInternship.title,
-                    internship_id: selectedInternship.id,
-                    duration: selectedInternship.duration || '1 Month',
-                    status: 'ACCEPTED',
-                    verification_token: verificationToken,
-                    issue_date: new Date().toISOString()
-                });
-            }
+                    if (!existingOffer) {
+                        const offerLetterId = `VINIX-OFFER-${Math.floor(1000 + Math.random() * 9000)}`;
+                        const verificationToken = `tok_offer_${Math.floor(100000 + Math.random() * 900000)}`;
+                        await supabaseAdmin.from('offer_letters').insert({
+                            user_id: user.id,
+                            student_id: user.id,
+                            offer_letter_id: offerLetterId,
+                            student_name: appForm.name,
+                            student_email: appForm.email,
+                            internship_title: selectedInternship.title,
+                            internship_id: selectedInternship.id,
+                            duration: selectedInternship.duration || '1 Month',
+                            status: 'ACCEPTED',
+                            verification_token: verificationToken,
+                            issue_date: new Date().toISOString()
+                        });
+                    }
+                })(),
 
-            // Trigger server-side PDF generation & email delivery
-            fetch('/api/generate-offer', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    studentId: user.id,
-                    internshipId: selectedInternship.id,
-                    studentName: appForm.name,
-                    email: appForm.email,
-                    college: appForm.college,
-                    courseName: selectedInternship.title,
-                    duration: selectedInternship.duration || '1 Month',
-                    force: true
-                })
-            }).catch(err => console.error('Failed to trigger server-side offer letter generation:', err));
+                // 5. Seed task_progress rows
+                (async () => {
+                    const { data: dbTasks } = await supabaseAdmin
+                        .from('internship_tasks')
+                        .select('id, task_number')
+                        .eq('internship_id', selectedInternship.id)
+                        .order('task_number');
 
-            // Seed task_progress rows so the dashboard shows correct tasks
-            const { data: dbTasks } = await supabaseAdmin
-                .from('internship_tasks')
-                .select('id, task_number')
-                .eq('internship_id', selectedInternship.id)
-                .order('task_number');
+                    if (dbTasks && dbTasks.length > 0) {
+                        const { data: existingProgress } = await supabaseAdmin
+                            .from('task_progress')
+                            .select('task_id')
+                            .eq('user_id', user.id)
+                            .eq('internship_id', selectedInternship.id);
 
-            if (dbTasks && dbTasks.length > 0) {
-                const { data: existingProgress } = await supabaseAdmin
-                    .from('task_progress')
-                    .select('task_id')
-                    .eq('user_id', user.id)
-                    .eq('internship_id', selectedInternship.id);
+                        const existingTaskIds = new Set((existingProgress || []).map(p => p.task_id));
+                        const progressInserts = dbTasks
+                            .filter(t => !existingTaskIds.has(t.id))
+                            .map(t => ({
+                                user_id: user.id,
+                                student_id: user.id,
+                                internship_id: selectedInternship.id,
+                                task_id: t.id,
+                                status: t.task_number === 1 ? 'not_submitted' : 'locked',
+                                github_url: null, linkedin_url: null,
+                                student_note: null, admin_feedback: null,
+                                submitted_at: null, reviewed_at: null
+                            }));
+                        if (progressInserts.length > 0) {
+                            await supabaseAdmin.from('task_progress').insert(progressInserts);
+                        }
+                    }
+                })(),
 
-                const existingTaskIds = new Set((existingProgress || []).map(p => p.task_id));
-                const progressInserts = dbTasks
-                    .filter(t => !existingTaskIds.has(t.id))
-                    .map(t => ({
-                        user_id: user.id,
-                        student_id: user.id,
-                        internship_id: selectedInternship.id,
-                        task_id: t.id,
-                        status: t.task_number === 1 ? 'not_submitted' : 'locked',
-                        github_url: null, linkedin_url: null,
-                        student_note: null, admin_feedback: null,
-                        submitted_at: null, reviewed_at: null
-                    }));
-                if (progressInserts.length > 0) {
-                    await supabaseAdmin.from('task_progress').insert(progressInserts);
-                }
-            }
+                // 6. Trigger server-side PDF generation & email delivery in background
+                (async () => {
+                    const basePrefix = (import.meta.env.BASE_URL || '/').replace(/\/$/, '');
+                    const offerUrl = (basePrefix + '/api/generate-offer').replace(/\/\//g, '/');
+                    fetch(offerUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            studentId: user.id,
+                            internshipId: selectedInternship.id,
+                            studentName: appForm.name,
+                            email: appForm.email,
+                            college: appForm.college,
+                            courseName: selectedInternship.title,
+                            duration: selectedInternship.duration || '1 Month',
+                            force: true
+                        })
+                    }).catch(err => console.error('Failed to trigger background offer letter generation:', err));
+                })()
+            ]);
 
             setAppSuccess(true);
             setUserApps(prev => ({
@@ -287,7 +291,7 @@ export default function DomainDetails() {
             setTimeout(() => {
                 setSelectedInternship(null);
                 setAppSuccess(false);
-            }, 1800);
+            }, 400);
 
         } catch (err: any) {
             setAppError(err.message || 'Failed to submit application.');

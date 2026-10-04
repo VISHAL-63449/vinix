@@ -42,14 +42,13 @@ const Register: React.FC = () => {
             if (data.user) {
                 setSuccess('Registration successful! Redirecting...');
 
-                // Wait briefly for triggers/profiles to complete
                 setTimeout(() => {
                     if (role === 'admin') {
                         navigate('/admin');
                     } else {
                         navigate('/dashboard');
                     }
-                }, 1500);
+                }, 150);
             }
         } catch (err: any) {
             console.error('Registration failed:', err);

@@ -31,35 +31,26 @@ const Login: React.FC = () => {
             }
 
             if (data.user) {
-                // Fetch profile to route user properly
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', data.user.id)
-                    .maybeSingle();
+                const metaRole = data.user.user_metadata?.role;
+                let role = metaRole || 'student';
 
-                const role = profile?.role || 'student';
+                if (!metaRole) {
+                    const { data: profile } = await supabase
+                        .from('profiles')
+                        .select('role')
+                        .eq('id', data.user.id)
+                        .maybeSingle();
+                    if (profile?.role) role = profile.role;
+                }
 
-                // Display custom toast notification
                 showToast('Welcome back!', 'success');
 
-                // Allow 1 second for the toast animation to render
-                setTimeout(() => {
-                    // Handle redirect queries if present
-                    const redirectPath = searchParams.get('redirect');
-                    if (redirectPath) {
-                        navigate(redirectPath);
-                        return;
-                    }
+                const redirectPath = searchParams.get('redirect');
+                const target = redirectPath || (role === 'admin' ? '/admin' : (role === 'mentor' ? '/mentor' : '/dashboard'));
 
-                    if (role === 'admin') {
-                        navigate('/admin');
-                    } else if (role === 'mentor') {
-                        navigate('/mentor');
-                    } else {
-                        navigate('/dashboard');
-                    }
-                }, 1000);
+                setTimeout(() => {
+                    navigate(target);
+                }, 100);
             }
         } catch (err: any) {
             console.error('Login failed:', err);

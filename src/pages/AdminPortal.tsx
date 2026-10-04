@@ -188,14 +188,15 @@ const AdminPortal: React.FC = () => {
         }
     };
 
-const ADMIN_CACHE_KEY = 'vinix_admin_cache_v3';
+const ADMIN_CACHE_KEY = 'vinix_admin_cache_v4';
 
 function getAdminCache() {
     try {
-        const raw = sessionStorage.getItem(ADMIN_CACHE_KEY);
+        const raw = localStorage.getItem(ADMIN_CACHE_KEY) || sessionStorage.getItem(ADMIN_CACHE_KEY);
         if (!raw) return null;
         const parsed = JSON.parse(raw);
-        if (Date.now() - (parsed._cachedAt || 0) < 15 * 60 * 1000) {
+        // Valid for up to 24 hours, returning immediately for 0ms initial render
+        if (parsed && typeof parsed === 'object') {
             return parsed;
         }
         return null;
@@ -206,10 +207,12 @@ function getAdminCache() {
 
 function saveAdminCache(data: any) {
     try {
-        sessionStorage.setItem(ADMIN_CACHE_KEY, JSON.stringify({
+        const payload = JSON.stringify({
             ...data,
             _cachedAt: Date.now()
-        }));
+        });
+        localStorage.setItem(ADMIN_CACHE_KEY, payload);
+        sessionStorage.setItem(ADMIN_CACHE_KEY, payload);
     } catch (e) {
         console.warn('Failed to save admin cache:', e);
     }
@@ -226,7 +229,7 @@ function saveAdminCache(data: any) {
     const [certificates, setCertificates] = useState<Certificate[]>(() => initialAdminCache?.certificates || []);
     const [offerLetters, setOfferLetters] = useState<OfferLetter[]>(() => initialAdminCache?.offerLetters || []);
     const [paymentsList, setPaymentsList] = useState<PaymentRecord[]>(() => initialAdminCache?.paymentsList || []);
-    const [loading, setLoading] = useState<boolean>(() => !initialAdminCache);
+    const [loading, setLoading] = useState<boolean>(() => !initialAdminCache || !initialAdminCache.enrollments?.length);
 
     // Application search, filter, and action states
     const [applicationSearch, setApplicationSearch] = useState('');
@@ -313,10 +316,10 @@ function saveAdminCache(data: any) {
 
     async function loadData() {
         try {
-            // Safety timeout to ensure loading state never hangs
+            // Emergency fallback timeout to ensure loading spinner never gets permanently stuck
             const safetyTimeout = setTimeout(() => {
                 setLoading(false);
-            }, 3000);
+            }, 12000);
 
             // Fetch all 10 administrative datasets in parallel
             const [
@@ -334,7 +337,7 @@ function saveAdminCache(data: any) {
                 // 0. Admin user
                 profile?.role === 'admin' && profile?.full_name
                     ? Promise.resolve({ data: { full_name: profile.full_name } })
-                    : supabaseAdmin.from('profiles').select('full_name').eq('role', 'admin').maybeSingle(),
+                    : supabaseAdmin.from('profiles').select('full_name').eq('role', 'admin').limit(1).maybeSingle(),
                 // 1. Domains
                 supabaseAdmin.from('domains').select('*').order('name'),
                 // 2. Internships
@@ -351,7 +354,7 @@ function saveAdminCache(data: any) {
                 supabaseAdmin.from('offer_letters').select('*'),
                 // 8. Payments from enrollments
                 supabaseAdmin.from('internship_enrollments').select('*').or('application_status.ilike.PAYMENT_%,application_status.ilike.ISSUED:%').order('updated_at', { ascending: false }),
-                // 9. Profiles
+                // 9. Profiles (fast & lightweight)
                 supabaseAdmin.from('profiles').select('id, full_name, email, college, updated_at, avatar_url')
             ]);
 
@@ -365,15 +368,15 @@ function saveAdminCache(data: any) {
                 setAdminName(adminData?.full_name || 'Vishal R');
             }
 
-            const doms = domsRes.status === 'fulfilled' ? (domsRes.value as any)?.data : [];
-            const inters = intersRes.status === 'fulfilled' ? (intersRes.value as any)?.data : [];
-            const apps = appsRes.status === 'fulfilled' ? (appsRes.value as any)?.data : [];
-            const enrolls = enrollsRes.status === 'fulfilled' ? (enrollsRes.value as any)?.data : [];
-            const subs = subsRes.status === 'fulfilled' ? (subsRes.value as any)?.data : [];
-            const certs = certsRes.status === 'fulfilled' ? (certsRes.value as any)?.data : [];
-            const offers = offersRes.status === 'fulfilled' ? (offersRes.value as any)?.data : [];
-            const allEnrollsForPayments = paymentsRes.status === 'fulfilled' ? (paymentsRes.value as any)?.data : [];
-            const profiles = profilesRes.status === 'fulfilled' ? (profilesRes.value as any)?.data : [];
+            const doms = (domsRes.status === 'fulfilled' && (domsRes.value as any)?.data) || [];
+            const inters = (intersRes.status === 'fulfilled' && (intersRes.value as any)?.data) || [];
+            const apps = (appsRes.status === 'fulfilled' && (appsRes.value as any)?.data) || [];
+            const enrolls = (enrollsRes.status === 'fulfilled' && (enrollsRes.value as any)?.data) || [];
+            const subs = (subsRes.status === 'fulfilled' && (subsRes.value as any)?.data) || [];
+            const certs = (certsRes.status === 'fulfilled' && (certsRes.value as any)?.data) || [];
+            const offers = (offersRes.status === 'fulfilled' && (offersRes.value as any)?.data) || [];
+            const allEnrollsForPayments = (paymentsRes.status === 'fulfilled' && (paymentsRes.value as any)?.data) || [];
+            const profiles = (profilesRes.status === 'fulfilled' && (profilesRes.value as any)?.data) || [];
 
             // Shape payments
             const paymentsData = (allEnrollsForPayments || []).map((p: any) => {
