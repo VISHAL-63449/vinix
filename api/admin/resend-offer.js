@@ -5,7 +5,7 @@ import {
     getOrCreateInternship,
     createOfferLetterPdfDoc,
     createOfferLetterEmailHtml
-} from '../_utils.js?v=20261002_v3';
+} from '../_utils.js';
 
 export default async function handler(req, res) {
     // CORS headers
