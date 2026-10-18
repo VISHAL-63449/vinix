@@ -3,10 +3,13 @@
 
 <head>
   <meta charset="UTF-8" />
-  <link rel="icon" type="image/png" href="/favicon.png" />
-  <link rel="shortcut icon" type="image/png" href="/favicon.png" />
-  <link rel="apple-touch-icon" href="/favicon.png" />
-  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" type="image/png" href="%BASE_URL%favicon.png" />
+  <link rel="shortcut icon" type="image/png" href="%BASE_URL%favicon.png" />
+  <link rel="apple-touch-icon" href="%BASE_URL%apple-touch-icon.png" />
+  <link rel="manifest" href="%BASE_URL%manifest.json" />
+  <meta name="theme-color" content="#0b1329" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
   <!-- Google AdSense -->
@@ -107,48 +110,45 @@
   <div id="root">
     <!-- Styled Premium Loading Fallback for both SEO bots and user experience -->
     <div
-      style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background-color: #0b1329; color: #f8fafc; font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 20px; text-align: center; box-sizing: border-box;">
+      style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; background: radial-gradient(circle at center, #101a38 0%, #0b1329 100%); color: #f8fafc; font-family: 'Inter', system-ui, -apple-system, sans-serif; padding: 20px; text-align: center; box-sizing: border-box;">
 
-      <!-- Brand Logo Spinner -->
-      <div
-        style="position: relative; margin-bottom: 24px; display: flex; align-items: center; justify-content: center;">
-        <div
-          style="width: 64px; height: 64px; border: 3.5px solid #1e293b; border-top-color: #3b82f6; border-radius: 50%; animation: spin 1s linear infinite;">
-        </div>
-        <div
-          style="position: absolute; font-weight: 900; font-size: 15px; letter-spacing: 1px; color: #3b82f6; font-family: 'Inter', sans-serif;">
-          VX</div>
+      <!-- Glowing Brand Logo Icon -->
+      <div style="position: relative; margin-bottom: 20px; display: flex; align-items: center; justify-content: center;">
+        <div style="position: absolute; width: 110px; height: 110px; border-radius: 50%; background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, transparent 70%); filter: blur(12px); animation: pulseGlow 2.5s ease-in-out infinite;"></div>
+        <img
+          src="%BASE_URL%icon-192.png"
+          alt="VINIX"
+          style="width: 88px; height: 88px; border-radius: 22px; position: relative; z-index: 2; box-shadow: 0 12px 36px rgba(14, 165, 233, 0.35); animation: floatLogo 3s ease-in-out infinite;"
+        />
       </div>
 
       <style>
-        @keyframes spin {
-          0% {
-            transform: rotate(0deg);
-          }
-
-          100% {
-            transform: rotate(360deg);
-          }
+        @keyframes floatLogo {
+          0%, 100% { transform: translateY(0px) scale(1); }
+          50% { transform: translateY(-5px) scale(1.02); }
         }
-
-        @keyframes pulse {
-
-          0%,
-          100% {
-            opacity: 1;
-          }
-
-          50% {
-            opacity: 0.5;
-          }
+        @keyframes pulseGlow {
+          0%, 100% { opacity: 0.6; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.15); }
+        }
+        @keyframes loadShimmer {
+          0% { transform: translateX(-100%); }
+          100% { transform: translateX(200%); }
         }
       </style>
 
-      <h2
-        style="font-size: 20px; font-weight: 800; letter-spacing: -0.025em; margin: 0 0 10px 0; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; color: #ffffff;">
-        Loading VINIX Portal...</h2>
-      <p style="font-size: 13px; color: #94a3b8; max-width: 320px; margin: 0; line-height: 1.5;">Preparing virtual
-        workspace and assignments</p>
+      <h1
+        style="font-size: 24px; font-weight: 900; letter-spacing: 0.04em; margin: 0 0 6px 0; background: linear-gradient(135deg, #ffffff 40%, #93c5fd 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+        VINIX
+      </h1>
+      <p style="font-size: 11px; font-weight: 700; color: #38bdf8; letter-spacing: 0.14em; text-transform: uppercase; margin: 0 0 24px 0;">
+        Virtual Internship Platform
+      </p>
+
+      <!-- High-Tech Progress Bar -->
+      <div style="width: 130px; height: 3.5px; background: rgba(255, 255, 255, 0.08); border-radius: 99px; overflow: hidden; position: relative;">
+        <div style="position: absolute; top: 0; left: 0; width: 60%; height: 100%; background: linear-gradient(90deg, #2563eb, #38bdf8); border-radius: 99px; animation: loadShimmer 1.4s cubic-bezier(0.4, 0, 0.2, 1) infinite;"></div>
+      </div>
 
       <!-- Invisible but fully crawlable metadata elements to protect SEO indexing without visual layout flash -->
       <div

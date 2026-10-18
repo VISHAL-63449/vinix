@@ -9,7 +9,6 @@ const Register: React.FC = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [role, setRole] = useState<'student' | 'admin'>('student');
     const [college, setCollege] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -22,15 +21,15 @@ const Register: React.FC = () => {
         setLoading(true);
 
         try {
-            // Sign up using Supabase Auth
+            // Sign up using Supabase Auth - public registration is strictly for students
             const { data, error: signUpError } = await supabase.auth.signUp({
                 email,
                 password,
                 options: {
                     data: {
                         name,
-                        role,
-                        college: role === 'student' ? college : undefined,
+                        role: 'student',
+                        college,
                     },
                 },
             });
@@ -40,14 +39,10 @@ const Register: React.FC = () => {
             }
 
             if (data.user) {
-                setSuccess('Registration successful! Redirecting...');
+                setSuccess('Registration successful! Redirecting to dashboard...');
 
                 setTimeout(() => {
-                    if (role === 'admin') {
-                        navigate('/admin');
-                    } else {
-                        navigate('/dashboard');
-                    }
+                    navigate('/dashboard');
                 }, 150);
             }
         } catch (err: any) {
@@ -199,24 +194,22 @@ const Register: React.FC = () => {
                                 </div>
                             </div>
 
-                            {role === 'student' && (
-                                <div>
-                                    <label className="text-xs font-bold text-slate-505 dark:text-slate-400 uppercase block mb-1.5">
-                                        College / Institution
-                                    </label>
-                                    <div className="relative">
-                                        <GraduationCap className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
-                                        <input
-                                            type="text"
-                                            required
-                                            value={college}
-                                            onChange={(e) => setCollege(e.target.value)}
-                                            placeholder="e.g. Stanford University"
-                                            className="w-full pl-10 pr-4 py-2.5 border border-slate-200 bg-white dark:bg-slate-950 dark:border-slate-805 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary text-slate-800 dark:text-white"
-                                        />
-                                    </div>
+                            <div>
+                                <label className="text-xs font-bold text-slate-505 dark:text-slate-400 uppercase block mb-1.5">
+                                    College / Institution
+                                </label>
+                                <div className="relative">
+                                    <GraduationCap className="absolute left-3.5 top-3 w-4 h-4 text-slate-400" />
+                                    <input
+                                        type="text"
+                                        required
+                                        value={college}
+                                        onChange={(e) => setCollege(e.target.value)}
+                                        placeholder="e.g. Stanford University"
+                                        className="w-full pl-10 pr-4 py-2.5 border border-slate-200 bg-white dark:bg-slate-950 dark:border-slate-805 rounded-xl text-xs font-semibold focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary text-slate-800 dark:text-white"
+                                    />
                                 </div>
-                            )}
+                            </div>
 
                             <div>
                                 <label className="text-xs font-bold text-slate-505 dark:text-slate-400 uppercase block mb-1.5">
@@ -245,18 +238,6 @@ const Register: React.FC = () => {
                                 <ArrowRight className="w-4 h-4" />
                             </button>
                         </form>
-
-                        <div className="pt-4 border-t border-slate-100 dark:border-slate-800 text-[10.5px] text-slate-400 font-semibold flex items-center justify-between">
-                            <span>Account Type:</span>
-                            <select
-                                value={role}
-                                onChange={(e) => setRole(e.target.value as 'student' | 'admin')}
-                                className="bg-transparent border border-slate-200 dark:border-slate-800 p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-850 cursor-pointer font-bold outline-none text-slate-600 dark:text-slate-300"
-                            >
-                                <option value="student">Student Portal</option>
-                                <option value="admin">Admin Console</option>
-                            </select>
-                        </div>
                     </div>
                 </div>
 

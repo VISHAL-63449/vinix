@@ -46,6 +46,22 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
         };
     }, []);
 
+    // Lock body scroll when mobile menu is open to prevent page scroll underneath
+    useEffect(() => {
+        if (mobileMenuOpen) {
+            const originalOverflow = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+            return () => {
+                document.body.style.overflow = originalOverflow;
+            };
+        }
+    }, [mobileMenuOpen]);
+
+    // Close mobile drawer when route changes
+    useEffect(() => {
+        setMobileMenuOpen(false);
+    }, [location.pathname]);
+
     const isActive = (path: string) => {
         return location.pathname === path;
     };
@@ -76,12 +92,13 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
     }
 
     return (
-        <nav className={`sticky top-0 z-50 w-full border-b transition-all duration-300 no-print ${isScrolled
-            ? 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-900 shadow-md'
-            : 'bg-white/80 backdrop-blur-md border-slate-200/80 dark:bg-slate-950/80 dark:border-slate-800/80'
-            }`}>
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                <div className="flex h-16 items-center justify-between">
+        <header className="h-16 w-full shrink-0 relative">
+            <nav className={`fixed top-0 left-0 right-0 z-50 w-full h-16 border-b transition-all duration-300 no-print ${isScrolled
+                ? 'bg-white dark:bg-slate-950 border-slate-200 dark:border-slate-900 shadow-md'
+                : 'bg-white/95 backdrop-blur-md border-slate-200/80 dark:bg-slate-950/95 dark:border-slate-800/80'
+                }`}>
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 h-full">
+                    <div className="flex h-16 items-center justify-between">
                     {/* Logo & Brand */}
                     <div className="flex items-center shrink-0">
                         <Link to="/" className="flex items-center hover:opacity-90 transition shrink-0">
@@ -243,10 +260,11 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                     </div>
                 </div>
             </div>
+        </nav>
 
             {/* Mobile Drawer */}
             {mobileMenuOpen && (
-                <div className="absolute top-[64px] left-0 w-full h-[100vh] z-40 bg-slate-50 dark:bg-slate-950 overflow-y-auto px-4 py-6 border-t border-slate-100 dark:border-slate-800 shadow-xl lg:hidden">
+                <div className="fixed top-16 left-0 right-0 bottom-0 z-40 bg-slate-50 dark:bg-slate-950 overflow-y-auto overscroll-contain px-4 py-6 border-t border-slate-100 dark:border-slate-800 shadow-2xl lg:hidden">
                     <div className="max-w-md mx-auto space-y-6 pb-24">
 
                         {/* User Profile / Header Box */}
@@ -374,12 +392,12 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
 
                         {/* Footer */}
                         <div className="pt-10 pb-6 text-center">
-                            <p className="text-xs font-semibold text-slate-400/80">© 2026 Skyrovix IT Solutions.</p>
+                            <p className="text-xs font-semibold text-slate-400/80">© 2026 Vinix IT Solutions.</p>
                         </div>
                     </div>
                 </div>
             )}
-        </nav>
+        </header>
     );
 };
 
