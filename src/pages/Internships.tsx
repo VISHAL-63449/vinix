@@ -12,6 +12,7 @@ const supabaseAdmin = createClient('https://ioppccrnbuqgcynmjpaa.supabase.co', s
 });
 import { useAuth } from '../contexts/AuthContext';
 import GoogleAd from '../components/GoogleAd';
+import SEO from '../components/SEO';
 import {
     ChevronDown, MapPin, Mail, Lock, ArrowRight,
     Star, CheckCircle2, Clock
@@ -957,6 +958,18 @@ const Internships: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-[#eef2ff] dark:bg-brand-bgDark">
+            <SEO
+                title="Virtual Internships & Practical Training Programs | VINIX"
+                description="Apply for industry-grade virtual internships at VINIX across Full Stack Development, AI, Machine Learning, Cybersecurity, Cloud Computing, and more. 1 to 3 months with offer letters and certificates."
+                canonicalPath="/internships"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "CollectionPage",
+                    "name": "VINIX Virtual Internship Programs",
+                    "description": "Apply for industry-recognized remote internships in cutting-edge tech domains with real-world projects and verified certification.",
+                    "url": "https://www.vinix.online/internships"
+                }}
+            />
 
             {/* MSME badge */}
             <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">

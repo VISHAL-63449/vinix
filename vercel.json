@@ -1,10 +1,67 @@
 {
+    "cleanUrls": true,
+    "trailingSlash": false,
     "functions": {
         "api/**/*.js": {
             "maxDuration": 60,
             "memory": 1024
         }
     },
+    "redirects": [
+        {
+            "source": "/:path*",
+            "has": [
+                {
+                    "type": "host",
+                    "value": "vinix.online"
+                }
+            ],
+            "destination": "https://www.vinix.online/:path*",
+            "permanent": true
+        },
+        {
+            "source": "/internship",
+            "destination": "/internships",
+            "permanent": true
+        }
+    ],
+    "headers": [
+        {
+            "source": "/sitemap.xml",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "application/xml; charset=utf-8"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, s-maxage=3600, stale-while-revalidate=86400"
+                }
+            ]
+        },
+        {
+            "source": "/robots.txt",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "text/plain; charset=utf-8"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, s-maxage=3600"
+                }
+            ]
+        },
+        {
+            "source": "/(admin|dashboard|cc-book|counselling|codelab)/:path*",
+            "headers": [
+                {
+                    "key": "X-Robots-Tag",
+                    "value": "noindex, nofollow, noarchive"
+                }
+            ]
+        }
+    ],
     "rewrites": [
         {
             "source": "/api/internships/apply",

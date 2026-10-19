@@ -22,6 +22,10 @@ import Domains from './pages/Domains';
 import DomainDetails from './pages/DomainDetails';
 import CCBookPortal from './pages/CCBookPortal';
 import Founder from './pages/Founder';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import TermsOfService from './pages/TermsOfService';
+import RefundPolicy from './pages/RefundPolicy';
+import NotFound from './pages/NotFound';
 
 function App() {
   const [darkMode, setDarkMode] = useState(() => {
@@ -51,14 +55,18 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/register" element={<Register />} />
               <Route path="/internships" element={<Internships />} />
-              <Route path="/internship" element={<Internships />} />
+              <Route path="/internship" element={<Navigate to="/internships" replace />} />
               <Route path="/about" element={<About />} />
               <Route path="/founder" element={<Founder />} />
               <Route path="/reviews" element={<Reviews />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/help" element={<Navigate to="/contact" replace />} />
               <Route path="/codelab" element={<CodeLab />} />
               <Route path="/domains" element={<Domains />} />
               <Route path="/domains/:slug" element={<DomainDetails />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/refund" element={<RefundPolicy />} />
 
               {/* Student Dashboard role check (standard uppercase / lowercase matches resolved) */}
               <Route
@@ -100,8 +108,8 @@ function App() {
               <Route path="/verify/offer" element={<VerifyOffer />} />
               <Route path="/verify/offer/:token" element={<VerifyOffer />} />
 
-              {/* Redirect any other unknown elements to Home */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+              {/* Proper 404 Page (prevents soft 404 and redirect errors in Google Search Console) */}
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </main>
 

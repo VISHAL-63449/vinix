@@ -3,6 +3,7 @@ import { Star, MessageSquare, CheckCircle, Send, Sparkles, Award, GraduationCap,
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../utils/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import SEO from '../components/SEO';
 
 interface Testimonial {
     id: number | string;
@@ -265,6 +266,18 @@ export const Reviews: React.FC = () => {
 
     return (
         <div className="relative min-h-screen py-24 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 overflow-hidden flex flex-col justify-center animate-fade-in-up">
+            <SEO
+                title="Student Reviews & Testimonials | VINIX Internships"
+                description="Read verified reviews, experiences, and feedback from students who completed virtual internships at VINIX across Full Stack, Data Science, AI, and Cybersecurity."
+                canonicalPath="/reviews"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "VINIX Student Reviews and Testimonials",
+                    "description": "Verified student reviews and ratings for VINIX virtual internships and tech training programs.",
+                    "url": "https://www.vinix.online/reviews"
+                }}
+            />
             {/* Background Grid & Ambient Highlights */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#33415508_1px,transparent_1px),linear-gradient(to_bottom,#33415508_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#38bdf805_1px,transparent_1px),linear-gradient(to_bottom,#38bdf805_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_10%,#000_80%,transparent_100%)] pointer-events-none z-0"></div>
 

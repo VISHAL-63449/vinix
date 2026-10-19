@@ -4,6 +4,7 @@ import { supabase, supabaseAdmin } from '../utils/supabase';
 import { Search, ShieldCheck, Calendar, User, Award, ShieldAlert, FileDown, Printer, GraduationCap, Briefcase, FileCode, CalendarDays } from 'lucide-react';
 import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
+import SEO from '../components/SEO';
 
 interface VerificationResult {
     verified: boolean;
@@ -195,6 +196,18 @@ const VerifyCertificate: React.FC = () => {
 
     return (
         <div className="min-h-screen py-16 px-4 bg-brand-bgLight dark:bg-brand-bgDark transition-colors duration-300 relative overflow-hidden select-none">
+            <SEO
+                title="Verify Internship Certificate & Credentials | VINIX"
+                description="Verify the authenticity of VINIX internship completion certificates, offer letters, and credentials using our public certificate verification system."
+                canonicalPath={certNo ? `/verify/${certNo}` : '/verify'}
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "WebPage",
+                    "name": "VINIX Certificate Verification System",
+                    "description": "Verify official VINIX internship certificates and credentials.",
+                    "url": "https://www.vinix.online/verify"
+                }}
+            />
 
             {/* Background decoration */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#e2e8f0_1px,transparent_1px),linear-gradient(to_bottom,#e2e8f0_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-30 dark:opacity-10 pointer-events-none no-print"></div>

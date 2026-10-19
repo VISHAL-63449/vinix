@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, MapPin, Clock, Send, Sparkles, CheckCircle, MessageSquare, Shield } from 'lucide-react';
+import SEO from '../components/SEO';
 
 export const Contact: React.FC = () => {
     const [contactName, setContactName] = useState('');
@@ -25,6 +26,18 @@ export const Contact: React.FC = () => {
 
     return (
         <div className="relative min-h-screen py-24 bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 overflow-hidden flex flex-col justify-center animate-fade-in-up">
+            <SEO
+                title="Contact Us & Support | VINIX Support Desk"
+                description="Get in touch with VINIX team for internship questions, certificate verification inquiries, technical support, or partnership requests."
+                canonicalPath="/contact"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "ContactPage",
+                    "name": "Contact VINIX",
+                    "description": "Contact VINIX support team for queries on internships, offer letters, or verified certificates.",
+                    "url": "https://www.vinix.online/contact"
+                }}
+            />
             {/* Background Grid & Spotlights */}
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#33415508_1px,transparent_1px),linear-gradient(to_bottom,#33415508_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#38bdf805_1px,transparent_1px),linear-gradient(to_bottom,#38bdf805_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_10%,#000_80%,transparent_100%)] pointer-events-none z-0"></div>
 

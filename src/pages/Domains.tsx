@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase, DomainModel } from '../utils/supabase';
 import * as Icons from 'lucide-react';
+import SEO from '../components/SEO';
 
 const { Search, ArrowRight, Sparkles, BookOpen, Layers } = Icons;
 
@@ -79,6 +80,19 @@ export default function Domains() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-12 px-4 sm:px-6 lg:px-8">
+            <SEO
+                title="Virtual Internship Domains | Web, AI, Python, Cloud & Data"
+                description="Browse 20+ task-based virtual internship domains on VINIX including Full Stack Web Development, Python, AI & ML, Cyber Security, Cloud, and UI/UX."
+                canonicalPath="/domains"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vinix.online/" },
+                        { "@type": "ListItem", "position": 2, "name": "Domains", "item": "https://www.vinix.online/domains" }
+                    ]
+                }}
+            />
             <div className="max-w-7xl mx-auto">
                 {/* Header */}
                 <div className="text-center max-w-3xl mx-auto mb-16">

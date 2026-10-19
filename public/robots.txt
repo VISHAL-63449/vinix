@@ -5,5 +5,6 @@ Disallow: /dashboard
 Disallow: /cc-book
 Disallow: /counselling
 Disallow: /codelab
+Disallow: /api/
 
-Sitemap: https://vinix.online/sitemap.xml
+Sitemap: https://www.vinix.online/sitemap.xml

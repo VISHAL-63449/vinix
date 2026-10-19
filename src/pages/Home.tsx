@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GoogleAd from '../components/GoogleAd';
 import type { LucideIcon } from 'lucide-react';
+import SEO from '../components/SEO';
 import {
     ArrowRight, Code2, Users, Award, Globe, Play,
     Star, Sparkles, Send, CheckCircle, MessageSquare,
@@ -278,6 +279,41 @@ export const Home: React.FC = () => {
 
     return (
         <div className="min-h-screen bg-white dark:bg-slate-950 transition-colors duration-300 relative overflow-hidden">
+            <SEO
+                title="VINIX | Free Task-Based Virtual Internships & Certificates"
+                description="Join India's most practical task-based virtual internship programs. Build live project portfolios, earn verified certificates & LORs in Web Development, Python, AI, and Cloud."
+                canonicalPath="/"
+                schema={[
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "WebSite",
+                        "name": "VINIX",
+                        "url": "https://www.vinix.online/",
+                        "potentialAction": {
+                            "@type": "SearchAction",
+                            "target": "https://www.vinix.online/domains?q={search_term_string}",
+                            "query-input": "required name=search_term_string"
+                        }
+                    },
+                    {
+                        "@context": "https://schema.org",
+                        "@type": "Organization",
+                        "name": "VINIX",
+                        "url": "https://www.vinix.online/",
+                        "logo": "https://www.vinix.online/vinix-logo.png",
+                        "description": "Virtual Internship and Career Readiness Platform",
+                        "founder": {
+                            "@type": "Person",
+                            "name": "Vishal R",
+                            "url": "https://www.vinix.online/founder"
+                        },
+                        "sameAs": [
+                            "https://www.linkedin.com/company/vinix-technologies",
+                            "https://www.instagram.com/vinix_technology"
+                        ]
+                    }
+                ]}
+            />
 
             {/* ═══════ HERO SECTION ═══════ */}
             <section className="relative z-10 overflow-hidden">

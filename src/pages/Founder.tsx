@@ -1,23 +1,31 @@
 import React from 'react';
 import FounderProfile from '../components/FounderProfile';
+import SEO from '../components/SEO';
 
 export const Founder: React.FC = () => {
-    // Inject canonical URL manually since user requested
-    React.useEffect(() => {
-        let canonical = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
-        const originalHref = canonical ? canonical.href : '';
-        if (canonical) {
-            canonical.href = "https://vinix.online/founder";
-        }
-        return () => {
-            if (canonical) {
-                canonical.href = originalHref;
-            }
-        };
-    }, []);
-
     return (
         <div className="overflow-x-hidden min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+            <SEO
+                title="Vishal R — Founder & CEO of VINIX"
+                description="Meet Vishal R, Founder & CEO of VINIX. Dedicated to democratizing tech careers and real project experience through virtual internship education."
+                canonicalPath="/founder"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "Person",
+                    "name": "Vishal R",
+                    "jobTitle": "Founder & CEO",
+                    "worksFor": {
+                        "@type": "Organization",
+                        "name": "VINIX",
+                        "url": "https://www.vinix.online/"
+                    },
+                    "url": "https://www.vinix.online/founder",
+                    "sameAs": [
+                        "https://www.linkedin.com/company/vinix-technologies"
+                    ]
+                }}
+            />
+
             {/* SEO Content for Search Engines */}
             <h1 className="sr-only">Vishal R - Founder & CEO of Vinix</h1>
 

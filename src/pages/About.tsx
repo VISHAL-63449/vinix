@@ -20,22 +20,10 @@ const Github = ({ size = 18 }: { size?: number }) => (
     </svg>
 );
 
+import SEO from '../components/SEO';
+
 export const About: React.FC = () => {
     const navigate = useNavigate();
-
-    // Inject canonical URL manually
-    React.useEffect(() => {
-        let canonical = document.querySelector("link[rel='canonical']") as HTMLLinkElement;
-        const originalHref = canonical ? canonical.href : '';
-        if (canonical) {
-            canonical.href = "https://vinix.online/about";
-        }
-        return () => {
-            if (canonical) {
-                canonical.href = originalHref;
-            }
-        };
-    }, []);
 
     const milestones = [
         { number: '25+', label: 'Domains' },
@@ -77,6 +65,19 @@ export const About: React.FC = () => {
 
     return (
         <div className="overflow-x-hidden min-h-screen bg-white text-slate-900 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300">
+            <SEO
+                title="About Us | Virtual Internships with Verified Certificates"
+                description="Discover VINIX: An innovative virtual internship platform empowering students and developers with task-based internships, real portfolio projects, and QR-verifiable certificates."
+                canonicalPath="/about"
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "BreadcrumbList",
+                    "itemListElement": [
+                        { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.vinix.online/" },
+                        { "@type": "ListItem", "position": 2, "name": "About Us", "item": "https://www.vinix.online/about" }
+                    ]
+                }}
+            />
 
             {/* HERO BANNER SECTION */}
             <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 bg-gradient-to-b from-blue-50/40 via-white to-transparent dark:from-slate-900/20 dark:via-slate-955 dark:to-transparent">

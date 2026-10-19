@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { supabase, supabaseAdmin, DomainModel, InternshipModel } from '../utils/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import * as Icons from 'lucide-react';
+import SEO from '../components/SEO';
 
 const {
     ArrowLeft, Search, Filter, Clock, MapPin, Award, CheckCircle2,
@@ -355,6 +356,22 @@ export default function DomainDetails() {
 
     return (
         <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-10 px-4 sm:px-6 lg:px-8">
+            <SEO
+                title={`${domain.name} Virtual Internship & Tasks`}
+                description={`Apply for ${domain.name} virtual internship on VINIX. Complete practical engineering milestones, build real portfolio applications, and earn verified credentials.`}
+                canonicalPath={`/domains/${slug}`}
+                schema={{
+                    "@context": "https://schema.org",
+                    "@type": "Course",
+                    "name": `${domain.name} Virtual Internship`,
+                    "description": domain.description,
+                    "provider": {
+                        "@type": "Organization",
+                        "name": "VINIX",
+                        "sameAs": "https://www.vinix.online/"
+                    }
+                }}
+            />
             <div className="max-w-7xl mx-auto">
                 {/* Back Link */}
                 <Link

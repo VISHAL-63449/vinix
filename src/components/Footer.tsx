@@ -155,7 +155,7 @@ const Footer: React.FC = () => {
                             { label: 'Privacy Policy', to: '/privacy' },
                             { label: 'Terms of Service', to: '/terms' },
                             { label: 'Refund Policy', to: '/refund' },
-                            { label: 'Help Center', to: '/help' }
+                            { label: 'Help Center', to: '/contact' }
                         ].map(({ label, to }) => (
                             <li key={label}>
                                 <Link to={to} className="text-[12px] font-semibold text-slate-500 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition">
