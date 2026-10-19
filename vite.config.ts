@@ -124,7 +124,7 @@ export default defineConfig({
       }
     }
   ],
-  base: (globalThis as any).process?.env?.VERCEL ? '/' : '/vinix/',
+  base: '/',
 })
 
 
