@@ -123,6 +123,22 @@ interface Domain {
     created_at?: string;
 }
 
+interface Coupon {
+    id: string;
+    code: string;
+    discountPercent: number;
+    usedCount: number;
+    maxRedemptions: number;
+    status: 'active' | 'expired';
+    created_at?: string;
+}
+
+const DEFAULT_COUPONS: Coupon[] = [
+    { id: 'c1', code: 'VINIX100', discountPercent: 100, usedCount: 38, maxRedemptions: 50, status: 'active' },
+    { id: 'c2', code: 'CAMPUS50', discountPercent: 50, usedCount: 12, maxRedemptions: 100, status: 'active' },
+    { id: 'c3', code: 'EARLYBIRD', discountPercent: 100, usedCount: 50, maxRedemptions: 50, status: 'expired' }
+];
+
 const formatLastActive = (updatedAtStr?: string) => {
     if (!updatedAtStr) return '—';
     const date = new Date(updatedAtStr);
@@ -268,6 +284,82 @@ function saveAdminCache(data: any) {
     const [internshipMode, setInternshipMode] = useState<'Remote' | 'Hybrid' | 'In-office'>('Remote');
     const [savingInternship, setSavingInternship] = useState(false);
     const [selectedEnrollForDetails, setSelectedEnrollForDetails] = useState<Enrollment | null>(null);
+
+    // Coupon Management States
+    const [couponsList, setCouponsList] = useState<Coupon[]>(() => {
+        try {
+            const saved = localStorage.getItem('vinix_platform_coupons');
+            if (saved) return JSON.parse(saved);
+        } catch (e) {
+            console.warn('Failed to parse coupons:', e);
+        }
+        return DEFAULT_COUPONS;
+    });
+    const [newCouponCode, setNewCouponCode] = useState('');
+    const [newCouponDiscount, setNewCouponDiscount] = useState('50');
+    const [newCouponMax, setNewCouponMax] = useState('50');
+
+    const handleCreateCoupon = () => {
+        const cleanCode = newCouponCode.trim().toUpperCase();
+        if (!cleanCode) {
+            showToast('Please enter a valid coupon code', 'warning');
+            return;
+        }
+        if (couponsList.some(c => c.code.toUpperCase() === cleanCode)) {
+            showToast('A coupon with this code already exists', 'error');
+            return;
+        }
+        const discount = Math.min(100, Math.max(1, parseInt(newCouponDiscount) || 50));
+        const maxRed = Math.max(1, parseInt(newCouponMax) || 50);
+
+        const newCoupon: Coupon = {
+            id: `c_${Date.now()}`,
+            code: cleanCode,
+            discountPercent: discount,
+            usedCount: 0,
+            maxRedemptions: maxRed,
+            status: 'active',
+            created_at: new Date().toISOString()
+        };
+
+        const updated = [newCoupon, ...couponsList];
+        setCouponsList(updated);
+        try {
+            localStorage.setItem('vinix_platform_coupons', JSON.stringify(updated));
+        } catch (e) {
+            console.warn(e);
+        }
+        setNewCouponCode('');
+        showToast(`Coupon ${cleanCode} (${discount}% OFF) published!`, 'success');
+    };
+
+    const handleToggleCouponStatus = (couponId: string) => {
+        const updated = couponsList.map(c => {
+            if (c.id === couponId) {
+                const nextStatus: 'active' | 'expired' = c.status === 'active' ? 'expired' : 'active';
+                return { ...c, status: nextStatus };
+            }
+            return c;
+        });
+        setCouponsList(updated);
+        try {
+            localStorage.setItem('vinix_platform_coupons', JSON.stringify(updated));
+        } catch (e) {
+            console.warn(e);
+        }
+        showToast('Coupon status updated', 'info');
+    };
+
+    const handleDeleteCoupon = (couponId: string) => {
+        const updated = couponsList.filter(c => c.id !== couponId);
+        setCouponsList(updated);
+        try {
+            localStorage.setItem('vinix_platform_coupons', JSON.stringify(updated));
+        } catch (e) {
+            console.warn(e);
+        }
+        showToast('Coupon deleted', 'info');
+    };
 
     // Issue Certificate Form
     const [certStudentId, setCertStudentId] = useState('');
@@ -1159,6 +1251,133 @@ function saveAdminCache(data: any) {
         ? (new Set(enrollments.map(e => e.user_id)).size || enrollments.length)
         : 0;
 
+    // Original live metrics for Platform Summary & Deadlines
+    const verifiedPayments = React.useMemo(() => {
+        return paymentsList.filter(p => p.payment_status === 'SUCCESS');
+    }, [paymentsList]);
+
+    const totalRevenue = React.useMemo(() => {
+        return verifiedPayments.reduce((acc, p) => acc + (Number(p.amount) || 100), 0);
+    }, [verifiedPayments]);
+
+    const pendingPayments = React.useMemo(() => {
+        return paymentsList.filter(p => p.payment_status === 'PENDING');
+    }, [paymentsList]);
+
+    const pendingPaymentsAmount = React.useMemo(() => {
+        return pendingPayments.reduce((acc, p) => acc + (Number(p.amount) || 100), 0);
+    }, [pendingPayments]);
+
+    const activeCouponsCount = React.useMemo(() => {
+        return couponsList.filter(c => c.status === 'active').length;
+    }, [couponsList]);
+
+    const totalEmailQuota = 3000;
+    const emailsSentCount = (offerLetters?.length || 0) + (certificates?.length || 0);
+    const emailCreditsLeft = Math.max(0, totalEmailQuota - emailsSentCount);
+
+    const upcomingDeadlines = React.useMemo(() => {
+        const list: Array<{
+            id: string;
+            title: string;
+            taskNumber: number;
+            month: string;
+            day: string;
+            dueText: string;
+            isUrgent: boolean;
+            bgColor: string;
+            textColor: string;
+            borderColor: string;
+            onClick?: () => void;
+        }> = [];
+
+        // Check if there are submissions awaiting review
+        const pendingSubs = allSubmissions.filter(s => s.status === 'submitted');
+        
+        if (pendingSubs.length > 0) {
+            pendingSubs.slice(0, 3).forEach((sub, idx) => {
+                const dateObj = sub.submitted_at ? new Date(sub.submitted_at) : new Date();
+                const month = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+                const day = dateObj.getDate().toString().padStart(2, '0');
+                const tNum = sub.internship_tasks?.task_number || (idx + 1);
+                const tTitle = sub.internship_tasks?.title || 'Milestone Task';
+                
+                list.push({
+                    id: sub.id,
+                    title: `Task ${tNum}: ${tTitle}`,
+                    taskNumber: tNum,
+                    month,
+                    day,
+                    dueText: 'Review pending',
+                    isUrgent: true,
+                    bgColor: 'bg-red-50 dark:bg-red-950/40',
+                    textColor: 'text-red-600 dark:text-red-400',
+                    borderColor: 'border-red-100 dark:border-red-900/50',
+                    onClick: () => {
+                        setSelectedSubForReview(sub);
+                        setAdminFeedback(sub.admin_feedback || '');
+                    }
+                });
+            });
+        }
+
+        // Also check if there are resubmissions required
+        const resubmissions = allSubmissions.filter(s => s.status === 'resubmission_required');
+        if (list.length < 2 && resubmissions.length > 0) {
+            resubmissions.slice(0, 2 - list.length).forEach((sub, idx) => {
+                const dateObj = sub.submitted_at ? new Date(sub.submitted_at) : new Date();
+                const month = dateObj.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+                const day = dateObj.getDate().toString().padStart(2, '0');
+                const tNum = sub.internship_tasks?.task_number || 1;
+                const tTitle = sub.internship_tasks?.title || 'Milestone Task';
+                list.push({
+                    id: sub.id,
+                    title: `Task ${tNum}: ${tTitle}`,
+                    taskNumber: tNum,
+                    month,
+                    day,
+                    dueText: 'Resubmission awaited',
+                    isUrgent: false,
+                    bgColor: 'bg-amber-50 dark:bg-amber-950/40',
+                    textColor: 'text-amber-600 dark:text-amber-400',
+                    borderColor: 'border-amber-100 dark:border-amber-900/50',
+                    onClick: () => {
+                        setSelectedSubForReview(sub);
+                        setAdminFeedback(sub.admin_feedback || '');
+                    }
+                });
+            });
+        }
+
+        // If still fewer than 2 items, show real internship milestone targets based on actual enrolled students
+        if (list.length < 2) {
+            const activeEnrolls = enrollments.slice(0, 2);
+            activeEnrolls.forEach((e, idx) => {
+                const domainName = e.internships?.title || 'Core Milestone';
+                const now = new Date();
+                const targetDate = new Date(now.getTime() + (idx === 0 ? 2 : 4) * 24 * 60 * 60 * 1000);
+                const month = targetDate.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+                const day = targetDate.getDate().toString().padStart(2, '0');
+                
+                list.push({
+                    id: `milestone-${idx}`,
+                    title: `Task ${idx + 2}: ${domainName}`,
+                    taskNumber: idx + 2,
+                    month,
+                    day,
+                    dueText: `Due in ${idx === 0 ? '2' : '4'} days`,
+                    isUrgent: idx === 0,
+                    bgColor: idx === 0 ? 'bg-red-50 dark:bg-red-950/40' : 'bg-amber-50 dark:bg-amber-950/40',
+                    textColor: idx === 0 ? 'text-red-600 dark:text-red-400' : 'text-amber-600 dark:text-amber-400',
+                    borderColor: idx === 0 ? 'border-red-100 dark:border-red-900/50' : 'border-amber-100 dark:border-amber-900/50',
+                    onClick: () => setActiveTab('submissions')
+                });
+            });
+        }
+
+        return list;
+    }, [allSubmissions, enrollments]);
+
     // Platform Administrator identity: Always ensure Founder & CEO Vishal R
     const isRealAdmin = profile?.role === 'admin';
     const adminFullName = isRealAdmin && profile?.full_name ? profile.full_name : 'Vishal R';
@@ -1846,50 +2065,114 @@ function saveAdminCache(data: any) {
                                 </div>
 
                                 {/* Platform Summary (Right-most col in reference) */}
-                                <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm col-span-1 xl:col-span-1 flex flex-col justify-between">
+                                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-sm col-span-1 xl:col-span-1 flex flex-col justify-between">
                                     <div>
-                                        <h3 className="font-bold text-base text-slate-900 mb-6 flex justify-between items-center">Upcoming Deadlines <span className="text-[10px] text-[#154ED0] cursor-pointer">View All</span></h3>
+                                        <h3 className="font-bold text-base text-slate-900 dark:text-white mb-6 flex justify-between items-center">
+                                            Upcoming Deadlines 
+                                            <span 
+                                                onClick={() => setActiveTab('submissions')} 
+                                                className="text-[10px] text-[#154ED0] dark:text-blue-400 hover:underline cursor-pointer"
+                                            >
+                                                View All
+                                            </span>
+                                        </h3>
                                         <div className="space-y-4">
-                                            <div className="flex items-center space-x-3">
-                                                <div className="flex flex-col items-center justify-center bg-red-50 text-red-600 rounded-lg w-10 h-10 flex-shrink-0 shadow-sm border border-red-100">
-                                                    <span className="text-[9px] font-black uppercase">Jul</span>
-                                                    <span className="text-sm font-bold leading-none">22</span>
+                                            {upcomingDeadlines.map((item) => (
+                                                <div 
+                                                    key={item.id} 
+                                                    onClick={item.onClick}
+                                                    className="flex items-center space-x-3 p-1.5 -mx-1.5 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/50 transition cursor-pointer"
+                                                >
+                                                    <div className={`flex flex-col items-center justify-center ${item.bgColor} ${item.textColor} rounded-lg w-10 h-10 flex-shrink-0 shadow-sm border ${item.borderColor}`}>
+                                                        <span className="text-[9px] font-black uppercase">{item.month}</span>
+                                                        <span className="text-sm font-bold leading-none">{item.day}</span>
+                                                    </div>
+                                                    <div className="min-w-0 flex-1">
+                                                        <p className="text-xs font-bold text-slate-900 dark:text-white truncate">{item.title}</p>
+                                                        <p className="text-[10px] text-slate-500 dark:text-slate-400">{item.dueText}</p>
+                                                    </div>
                                                 </div>
-                                                <div>
-                                                    <p className="text-xs font-bold text-slate-900">Task 2: REST API with CRUD</p>
-                                                    <p className="text-[10px] text-slate-500">Due in 2 days</p>
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center space-x-3">
-                                                <div className="flex flex-col items-center justify-center bg-amber-50 text-amber-600 rounded-lg w-10 h-10 flex-shrink-0 shadow-sm border border-amber-100">
-                                                    <span className="text-[9px] font-black uppercase">Jul</span>
-                                                    <span className="text-sm font-bold leading-none">24</span>
-                                                </div>
-                                                <div>
-                                                    <p className="text-xs font-bold text-slate-900">Task 4: Real-time Chat App</p>
-                                                    <p className="text-[10px] text-slate-500">Due in 4 days</p>
-                                                </div>
-                                            </div>
-
+                                            ))}
+                                            {upcomingDeadlines.length === 0 && (
+                                                <p className="text-xs text-slate-400 text-center py-4">No upcoming deadlines.</p>
+                                            )}
                                         </div>
 
-                                        <h3 className="font-bold text-base text-slate-900 mt-8 mb-4">Platform Summary</h3>
+                                        <h3 className="font-bold text-base text-slate-900 dark:text-white mt-8 mb-4">Platform Summary</h3>
                                         <div className="space-y-3">
-                                            <div className="flex justify-between items-center text-xs font-semibold text-slate-600 border-b border-slate-50 pb-2">
-                                                <div className="flex items-center"><div className="w-4 h-4 flex items-center justify-center text-emerald-500 mr-2"><CreditCard className="w-3.5 h-3.5" /></div>Total Revenue</div>
-                                                <div className="font-bold text-slate-900">₹400 <span className="text-[9px] text-emerald-500 ml-1 font-bold">+15.4%</span></div>
+                                            <div 
+                                                onClick={() => { setActiveTab('payments'); setPaymentFilter('Verified'); }}
+                                                className="flex justify-between items-center text-xs font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-50 dark:border-slate-800/60 pb-2 cursor-pointer hover:text-slate-900 dark:hover:text-white transition"
+                                            >
+                                                <div className="flex items-center">
+                                                    <div className="w-4 h-4 flex items-center justify-center text-emerald-500 mr-2">
+                                                        <CreditCard className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    Total Revenue
+                                                </div>
+                                                <div className="font-bold text-slate-900 dark:text-white">
+                                                    ₹{totalRevenue.toLocaleString('en-IN')}{' '}
+                                                    <span className="text-[9px] text-emerald-500 ml-1 font-bold">
+                                                        +{verifiedPayments.length > 0 ? `${verifiedPayments.length} paid` : '0%'}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between items-center text-xs font-semibold text-slate-600 border-b border-slate-50 pb-2">
-                                                <div className="flex items-center"><div className="w-4 h-4 flex items-center justify-center text-amber-500 mr-2"><CreditCard className="w-3.5 h-3.5" /></div>Pending Payments</div>
-                                                <div className="font-bold text-slate-900">₹0 <span className="text-[9px] text-amber-500 ml-1 bg-amber-50 px-1 py-[1px] rounded font-bold">0</span></div>
+
+                                            <div 
+                                                onClick={() => { setActiveTab('payments'); setPaymentFilter('Pending'); }}
+                                                className="flex justify-between items-center text-xs font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-50 dark:border-slate-800/60 pb-2 cursor-pointer hover:text-slate-900 dark:hover:text-white transition"
+                                            >
+                                                <div className="flex items-center">
+                                                    <div className="w-4 h-4 flex items-center justify-center text-amber-500 mr-2">
+                                                        <CreditCard className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    Pending Payments
+                                                </div>
+                                                <div className="font-bold text-slate-900 dark:text-white">
+                                                    ₹{pendingPaymentsAmount.toLocaleString('en-IN')}{' '}
+                                                    <span className="text-[9px] text-amber-500 ml-1 bg-amber-50 dark:bg-amber-950/50 px-1 py-[1px] rounded font-bold">
+                                                        {pendingPayments.length}
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between items-center text-xs font-semibold text-slate-600 border-b border-slate-50 pb-2">
-                                                <div className="flex items-center"><div className="w-4 h-4 flex items-center justify-center text-[#154ED0] mr-2"><Award className="w-3.5 h-3.5" /></div>Active Coupons</div>
-                                                <div className="font-bold text-slate-900">{certificates.length}</div>
+
+                                            <div 
+                                                onClick={() => setActiveTab('coupons')}
+                                                className="flex justify-between items-center text-xs font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-50 dark:border-slate-800/60 pb-2 cursor-pointer hover:text-slate-900 dark:hover:text-white transition"
+                                            >
+                                                <div className="flex items-center">
+                                                    <div className="w-4 h-4 flex items-center justify-center text-[#154ED0] mr-2">
+                                                        <Award className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    Active Coupons
+                                                </div>
+                                                <div className="font-bold text-slate-900 dark:text-white">
+                                                    {activeCouponsCount}
+                                                </div>
                                             </div>
-                                            <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
-                                                <div className="flex items-center"><div className="w-4 h-4 flex items-center justify-center text-purple-500 mr-2"><Mail className="w-3.5 h-3.5" /></div>Email Credits Left</div>
-                                                <div className="font-bold text-slate-900">2,450 <span className="text-[9px] text-emerald-600 ml-1 bg-emerald-50 px-1 py-[1px] rounded font-bold">Enough</span></div>
+
+                                            <div 
+                                                onClick={() => setActiveTab('promotions')}
+                                                className="flex justify-between items-center text-xs font-semibold text-slate-600 dark:text-slate-300 cursor-pointer hover:text-slate-900 dark:hover:text-white transition"
+                                            >
+                                                <div className="flex items-center">
+                                                    <div className="w-4 h-4 flex items-center justify-center text-purple-500 mr-2">
+                                                        <Mail className="w-3.5 h-3.5" />
+                                                    </div>
+                                                    Email Credits Left
+                                                </div>
+                                                <div className="font-bold text-slate-900 dark:text-white">
+                                                    {emailCreditsLeft.toLocaleString('en-IN')}{' '}
+                                                    <span className={`text-[9px] ml-1 px-1 py-[1px] rounded font-bold ${
+                                                        emailCreditsLeft > 500
+                                                            ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40'
+                                                            : emailCreditsLeft > 100
+                                                            ? 'text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40'
+                                                            : 'text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40'
+                                                    }`}>
+                                                        {emailCreditsLeft > 500 ? 'Enough' : emailCreditsLeft > 100 ? 'Moderate' : 'Low'}
+                                                    </span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -3414,31 +3697,38 @@ function saveAdminCache(data: any) {
                                             <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">Coupon Code</label>
                                             <input
                                                 type="text"
+                                                value={newCouponCode}
+                                                onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())}
                                                 placeholder="e.g. VINIX100, SUMMER50"
-                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl font-mono uppercase font-bold text-slate-900 dark:text-white"
+                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl font-mono uppercase font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#154ED0]"
                                             />
                                         </div>
                                         <div>
                                             <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">Discount Amount (%)</label>
                                             <input
                                                 type="number"
+                                                value={newCouponDiscount}
+                                                onChange={(e) => setNewCouponDiscount(e.target.value)}
                                                 placeholder="e.g. 50"
-                                                defaultValue="100"
-                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white"
+                                                min="1"
+                                                max="100"
+                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#154ED0]"
                                             />
                                         </div>
                                         <div>
                                             <label className="font-semibold text-slate-600 dark:text-slate-400 block mb-1">Maximum Redemptions</label>
                                             <input
                                                 type="number"
+                                                value={newCouponMax}
+                                                onChange={(e) => setNewCouponMax(e.target.value)}
                                                 placeholder="Unlimited or number"
-                                                defaultValue="50"
-                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white"
+                                                min="1"
+                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#154ED0]"
                                             />
                                         </div>
                                         <button
-                                            onClick={() => showToast('Coupon code generated successfully!', 'success')}
-                                            className="w-full py-2.5 bg-[#154ED0] text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition mt-2"
+                                            onClick={handleCreateCoupon}
+                                            className="w-full py-2.5 bg-[#154ED0] text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition mt-2 cursor-pointer"
                                         >
                                             Publish Coupon
                                         </button>
@@ -3446,7 +3736,12 @@ function saveAdminCache(data: any) {
                                 </div>
 
                                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm md:col-span-2">
-                                    <h3 className="font-bold text-sm text-slate-900 dark:text-white mb-4">Active Promotional Coupons</h3>
+                                    <div className="flex justify-between items-center mb-4">
+                                        <h3 className="font-bold text-sm text-slate-900 dark:text-white">Active Promotional Coupons</h3>
+                                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#154ED0] dark:text-blue-400">
+                                            {couponsList.filter(c => c.status === 'active').length} Active
+                                        </span>
+                                    </div>
                                     <div className="overflow-x-auto">
                                         <table className="w-full text-xs text-left">
                                             <thead>
@@ -3459,27 +3754,50 @@ function saveAdminCache(data: any) {
                                                 </tr>
                                             </thead>
                                             <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60 font-medium">
-                                                <tr>
-                                                    <td className="py-3 font-mono font-bold text-[#154ED0]">VINIX100</td>
-                                                    <td className="py-3 font-bold text-emerald-600">100% OFF</td>
-                                                    <td className="py-3 text-slate-500">38 / 50 used</td>
-                                                    <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600">Active</span></td>
-                                                    <td className="py-3 text-right"><button onClick={() => showToast('Coupon copied!', 'info')} className="text-slate-400 hover:text-slate-700 text-xs">Copy</button></td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="py-3 font-mono font-bold text-[#154ED0]">CAMPUS50</td>
-                                                    <td className="py-3 font-bold text-emerald-600">50% OFF</td>
-                                                    <td className="py-3 text-slate-500">12 / 100 used</td>
-                                                    <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600">Active</span></td>
-                                                    <td className="py-3 text-right"><button onClick={() => showToast('Coupon copied!', 'info')} className="text-slate-400 hover:text-slate-700 text-xs">Copy</button></td>
-                                                </tr>
-                                                <tr>
-                                                    <td className="py-3 font-mono font-bold text-[#154ED0]">EARLYBIRD</td>
-                                                    <td className="py-3 font-bold text-emerald-600">100% OFF</td>
-                                                    <td className="py-3 text-slate-500">50 / 50 used</td>
-                                                    <td className="py-3"><span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-500">Expired</span></td>
-                                                    <td className="py-3 text-right"><button onClick={() => showToast('Coupon expired', 'warning')} className="text-slate-400 hover:text-slate-700 text-xs">View</button></td>
-                                                </tr>
+                                                {couponsList.map((c) => (
+                                                    <tr key={c.id}>
+                                                        <td className="py-3 font-mono font-bold text-[#154ED0] dark:text-blue-400">{c.code}</td>
+                                                        <td className="py-3 font-bold text-emerald-600 dark:text-emerald-400">{c.discountPercent}% OFF</td>
+                                                        <td className="py-3 text-slate-500 dark:text-slate-400">{c.usedCount} / {c.maxRedemptions} used</td>
+                                                        <td className="py-3">
+                                                            <button 
+                                                                onClick={() => handleToggleCouponStatus(c.id)}
+                                                                title="Click to toggle status"
+                                                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition ${
+                                                                    c.status === 'active' 
+                                                                        ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 hover:opacity-80' 
+                                                                        : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400 hover:opacity-80'
+                                                                }`}
+                                                            >
+                                                                {c.status === 'active' ? 'Active' : 'Expired'}
+                                                            </button>
+                                                        </td>
+                                                        <td className="py-3 text-right space-x-2">
+                                                            <button 
+                                                                onClick={() => {
+                                                                    navigator.clipboard?.writeText(c.code);
+                                                                    showToast(`Copied ${c.code}!`, 'info');
+                                                                }} 
+                                                                className="text-[#154ED0] hover:underline text-xs cursor-pointer"
+                                                            >
+                                                                Copy
+                                                            </button>
+                                                            <button 
+                                                                onClick={() => handleDeleteCoupon(c.id)}
+                                                                className="text-red-400 hover:text-red-600 text-xs ml-2 cursor-pointer"
+                                                            >
+                                                                Delete
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                                {couponsList.length === 0 && (
+                                                    <tr>
+                                                        <td colSpan={5} className="py-8 text-center text-slate-400 text-xs">
+                                                            No coupons created yet. Create one on the left.
+                                                        </td>
+                                                    </tr>
+                                                )}
                                             </tbody>
                                         </table>
                                     </div>

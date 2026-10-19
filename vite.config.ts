@@ -44,6 +44,16 @@ export default defineConfig({
                 const appId = parts[4];
                 req.url = `/api/admin/resend-offer?applicationId=${encodeURIComponent(appId)}`;
               }
+              const cleanPath = reqUrl.split('?')[0];
+              if (cleanPath === '/favicon.ico' || cleanPath === '/favicon.png') {
+                const targetFile = cleanPath.endsWith('.ico') ? 'favicon.ico' : 'favicon.png';
+                const iconPath = path.resolve(dirname, 'public', targetFile);
+                if (fs.existsSync(iconPath)) {
+                  res.setHeader('Content-Type', targetFile.endsWith('.ico') ? 'image/x-icon' : 'image/png');
+                  fs.createReadStream(iconPath).pipe(res);
+                  return;
+                }
+              }
             }
           } catch (e) { }
 
