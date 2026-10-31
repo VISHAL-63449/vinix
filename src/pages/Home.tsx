@@ -6,7 +6,7 @@ import SEO from '../components/SEO';
 import {
     ArrowRight, Code2, Users, Award, Globe, Play,
     Star, Sparkles, Send, CheckCircle, MessageSquare,
-    BookOpen, Calendar, FolderOpen, ShieldCheck, ChevronDown
+    BookOpen, Calendar, FolderOpen, ShieldCheck, ChevronDown, Check
 } from 'lucide-react';
 
 /* ─── Floating Tech Icons (Desktop only to prevent cluttering mobile text) ─── */
@@ -95,7 +95,7 @@ const FeatureItem = ({
 
 /* ─── Testimonial Schema ─── */
 interface Testimonial {
-    id: number;
+    id: number | string;
     name: string;
     domain: string;
     college: string;
@@ -137,6 +137,198 @@ const FAQ_ITEMS: FAQItem[] = [
     {
         question: "Who reviews my task submissions?",
         answer: "Our system review boards and dedicated mentors evaluate your GitHub link submissions and provide structured, domain-specific feedback logs."
+    }
+];
+
+/* ─── Avatar Color and Initials Helper ─── */
+const getAvatarConfig = (name: string, domain: string) => {
+    const parts = name.trim().split(/\s+/);
+    let initials = '';
+    if (parts.length === 1) {
+        initials = parts[0].slice(0, 1).toUpperCase();
+    } else {
+        initials = (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase();
+    }
+
+    const colorStyles = [
+        'bg-amber-100 text-amber-800 dark:bg-amber-950/80 dark:text-amber-300',
+        'bg-rose-100 text-rose-800 dark:bg-rose-950/80 dark:text-rose-300',
+        'bg-red-100 text-red-800 dark:bg-red-950/80 dark:text-red-300',
+        'bg-orange-100 text-orange-800 dark:bg-orange-950/80 dark:text-orange-300',
+        'bg-pink-100 text-pink-800 dark:bg-pink-950/80 dark:text-pink-300',
+        'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/80 dark:text-emerald-300',
+        'bg-sky-100 text-sky-800 dark:bg-sky-950/80 dark:text-sky-300',
+        'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/80 dark:text-indigo-300',
+        'bg-purple-100 text-purple-800 dark:bg-purple-950/80 dark:text-purple-300',
+        'bg-teal-100 text-teal-800 dark:bg-teal-950/80 dark:text-teal-300'
+    ];
+
+    let hash = 0;
+    const str = name + domain;
+    for (let i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    const index = Math.abs(hash) % colorStyles.length;
+    return { initials, colorClass: colorStyles[index] };
+};
+
+/* ─── Verified Review Card (Pic 2 Design) ─── */
+const ReviewCard: React.FC<{ item: Testimonial }> = ({ item }) => {
+    const { initials, colorClass } = getAvatarConfig(item.name, item.domain);
+    return (
+        <div className="w-[330px] sm:w-[390px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 shadow-sm hover:shadow-xl transition-all duration-300 p-5 sm:p-6 flex flex-col justify-between relative group select-none">
+            {/* Top curved gradient glow line */}
+            <div className="absolute top-0 left-6 right-6 h-[3px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full opacity-80 group-hover:opacity-100 transition-opacity" />
+
+            {/* Top row: Star rating + Verified Badge */}
+            <div className="flex items-center justify-between pt-1">
+                <div className="flex gap-1">
+                    {[...Array(item.rating || 5)].map((_, idx) => (
+                        <Star key={idx} size={15} className="text-amber-400 fill-amber-400" />
+                    ))}
+                </div>
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-600 dark:bg-emerald-950/50 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-800/60 shadow-xs">
+                    <Check size={11} className="stroke-[3]" />
+                    Verified
+                </span>
+            </div>
+
+            {/* Review quote body */}
+            <p className="my-4 text-[13px] text-slate-650 dark:text-slate-300 leading-relaxed font-normal min-h-[64px]">
+                "{item.text}"
+            </p>
+
+            {/* Student author footer */}
+            <div className="flex items-center gap-3 pt-3 border-t border-slate-100 dark:border-slate-800/80">
+                <div className={`w-9 h-9 rounded-full ${colorClass} font-bold text-xs flex items-center justify-center shrink-0 shadow-xs`}>
+                    {initials}
+                </div>
+                <div className="min-w-0">
+                    <h4 className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white leading-tight truncate">
+                        {item.name}
+                    </h4>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-medium truncate">
+                        {item.domain}
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+/* ─── Mock Testimonials from Interns (Pic 2 Format) ─── */
+const INITIAL_TESTIMONIALS: Testimonial[] = [
+    {
+        id: 'r-1',
+        name: 'Rohit',
+        domain: 'Cyber Security',
+        college: 'SRM Institute of Science and Technology',
+        text: 'The internship provided hands-on assignments that helped me understand real cybersecurity concepts. I highly recommend Vinix to students looking for practical learning.',
+        rating: 5
+    },
+    {
+        id: 'r-2',
+        name: 'Sivaraman',
+        domain: 'Python Development',
+        college: 'Anna University',
+        text: 'I enjoyed completing the project-based tasks. The dashboard, offer letter, and certificate verification system were smooth and professional.',
+        rating: 5
+    },
+    {
+        id: 'r-3',
+        name: 'Manikandan',
+        domain: 'Full Stack Development',
+        college: 'PSG College of Technology',
+        text: 'The internship helped me strengthen both frontend and backend skills. The learning was organized and the admin verification process ensured quality throughout.',
+        rating: 5
+    },
+    {
+        id: 'r-4',
+        name: 'Sharik',
+        domain: 'AI & Machine Learning',
+        college: 'Vellore Institute of Technology',
+        text: 'Vinix provides an excellent platform for students to gain industry-oriented experience. The practical projects and mentor feedback were extremely helpful.',
+        rating: 5
+    },
+    {
+        id: 'r-5',
+        name: 'Harish',
+        domain: 'Full Stack Development',
+        college: 'SRM University',
+        text: 'Vinix completely changed how I learn programming. The task-based module is excellent. Getting my offer letter instantly and having practical items to show in my GitHub portfolio got me selected at my tier-1 developer job.',
+        rating: 5
+    },
+    {
+        id: 'r-6',
+        name: 'Tamilarasan',
+        domain: 'Cyber Security',
+        college: 'PSG College of Technology',
+        text: 'The cybersecurity track assignments were highly realistic. Analyzing network logs, identifying vulnerabilities, and testing standard protocols gave me solid industry-ready credentials.',
+        rating: 5
+    },
+    {
+        id: 'r-7',
+        name: 'Ananya',
+        domain: 'UI/UX Design',
+        college: 'National Institute of Design',
+        text: 'Completed the UI/UX track in just 3 weeks. The real-world assignments were challenging and realistic. My portfolio looks 10x better now thanks to Vinix!',
+        rating: 5
+    },
+    {
+        id: 'r-8',
+        name: 'Arjun M',
+        domain: 'Data Science',
+        college: 'BITS Pilani',
+        text: 'Got my certificate the same day I finished. The QR verification impressed my placement officer. Vinix is legit and highly recommended!',
+        rating: 5
+    },
+    {
+        id: 'r-9',
+        name: 'Karan P',
+        domain: 'Backend Development',
+        college: 'IIT Kharagpur',
+        text: 'Very well structured internship. The tasks pushed me to learn Docker, CI/CD and REST APIs. I came out a much better developer than I was before.',
+        rating: 5
+    },
+    {
+        id: 'r-10',
+        name: 'Divya K',
+        domain: 'Cloud Computing',
+        college: 'Amity University',
+        text: 'The cloud computing track was fantastic. AWS basics to advanced — all covered. Perfect for anyone wanting a cloud career.',
+        rating: 5
+    },
+    {
+        id: 'r-11',
+        name: 'Sneha R',
+        domain: 'Python Development',
+        college: 'Delhi University',
+        text: 'Self-paced format was a lifesaver during semester exams. Flexible deadlines and I still got a great certificate and LOR!',
+        rating: 5
+    },
+    {
+        id: 'r-12',
+        name: 'Kavin',
+        domain: 'Data Science & AI',
+        college: 'VIT Chennai',
+        text: 'I worked on 8 major assignments including AI model evaluation and python tasks. The custom QR verification on the completion certificate is flawless! Highly recommend this remote self-paced internship for developers.',
+        rating: 5
+    },
+    {
+        id: 'r-13',
+        name: 'Dinesh',
+        domain: 'Java Development',
+        college: 'Delhi Technological University',
+        text: 'I really appreciated the flexibility. 100% remote layout meant I could finish assignments during semesters. The official MSME registered stamp on LOR document makes it very reliable for professional use.',
+        rating: 5
+    },
+    {
+        id: 'r-14',
+        name: 'Mugilan',
+        domain: 'Python Development',
+        college: 'Jadavpur University',
+        text: 'Best practical learning experience ever. Implementing code tasks and getting them reviewed. The instant ID card gave me verified intern community access. A complete package!',
+        rating: 5
     }
 ];
 
@@ -193,69 +385,13 @@ export const Home: React.FC = () => {
     }, []);
 
     /* Testimonials state */
-    const [testimonials, setTestimonials] = useState<Testimonial[]>([
-        {
-            id: 1,
-            name: 'Harish',
-            domain: 'Full Stack Development',
-            college: 'SRM University',
-            text: 'Vinix completely changed how I learn programming. The task-based module is excellent. Getting my offer letter instantly and having practical items to show in my GitHub portfolio got me selected at my tier-1 developer job.',
-            rating: 5
-        },
-        {
-            id: 2,
-            name: 'Kavin',
-            domain: 'Data Science & AI',
-            college: 'VIT Chennai',
-            text: 'I worked on 8 major assignments including AI model evaluation and python tasks. The custom QR verification on the completion certificate is flawless! Highly recommend this remote self-paced internship for developers.',
-            rating: 5
-        },
-        {
-            id: 3,
-            name: 'Dinesh',
-            domain: 'Java Development',
-            college: 'Delhi Technological University',
-            text: 'I really appreciated the flexibility. 100% remote layout meant I could finish assignments during semesters. The official MSME registered stamp on LOR document makes it very reliable for professional use.',
-            rating: 5
-        },
-        {
-            id: 4,
-            name: 'Mugilan',
-            domain: 'Python Development',
-            college: 'Jadavpur University',
-            text: 'Best practical learning experience ever. Implementing code tasks and getting them reviewed. The instant ID card gave me verified intern community access. A complete package!',
-            rating: 5
-        }
-    ]);
+    const [testimonials, setTestimonials] = useState<Testimonial[]>(INITIAL_TESTIMONIALS);
 
-    // Testimonial Form State
-    const [newName, setNewName] = useState('');
-    const [newCollege, setNewCollege] = useState('');
-    const [newDomain, setNewDomain] = useState('Full Stack Development');
-    const [newText, setNewText] = useState('');
-    const [newRating, setNewRating] = useState(5);
-    const [submitSuccess, setSubmitSuccess] = useState(false);
+    // Derived 2 rows for the infinite news scroll marquee
+    const row1Testimonials = testimonials.filter((_, i) => i % 2 === 0);
+    const row2Testimonials = testimonials.filter((_, i) => i % 2 !== 0);
 
-    const handleAddReview = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newName.trim() || !newText.trim() || !newCollege.trim()) return;
 
-        const newReview: Testimonial = {
-            id: Date.now(),
-            name: newName,
-            domain: newDomain,
-            college: newCollege,
-            text: newText,
-            rating: newRating
-        };
-
-        setTestimonials([newReview, ...testimonials]);
-        setNewName('');
-        setNewCollege('');
-        setNewText('');
-        setSubmitSuccess(true);
-        setTimeout(() => setSubmitSuccess(false), 5000);
-    };
 
     // Contact Form State
     const [contactName, setContactName] = useState('');
@@ -729,150 +865,55 @@ export const Home: React.FC = () => {
             </section>
 
             {/* ═══════ REVIEWS SECTION ═══════ */}
-            <section id="reviews" className="py-20 border-t border-slate-100 dark:border-slate-900 bg-slate-50/30 dark:bg-slate-900/10 relative z-10">
+            <section id="reviews" className="py-20 border-t border-slate-100 dark:border-slate-900 bg-slate-50/40 dark:bg-slate-900/10 relative z-10 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-6 lg:px-12">
 
-                    <div className="text-center space-y-3 mb-14">
+                    <div className="text-center space-y-3 mb-12">
                         <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-purple-50/60 dark:bg-purple-955/20 border border-purple-100/50 dark:border-purple-900/30 rounded-full text-[10px] font-extrabold text-purple-650 dark:text-purple-300 uppercase tracking-widest">
                             <MessageSquare size={11} className="text-purple-500" />
                             <span>Graduate Voice</span>
                         </div>
-                        <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Loved by Interns Across India</h2>
-                        <p className="text-slate-500 dark:text-slate-405 text-sm max-w-lg mx-auto font-medium">
-                            Read how Vinix helps students build skills, secure credentials, and scale developer achievements.
+                        <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">Loved by Interns Across India</h2>
+                        <p className="text-slate-600 dark:text-slate-400 text-sm sm:text-base max-w-xl mx-auto font-medium">
+                            Real reviews from interns who completed the program.
                         </p>
                     </div>
 
-                    {/* Testimonials Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
-                        {testimonials.map((t) => (
-                            <div key={t.id} className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-sm space-y-4 hover:shadow-md transition duration-300">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex gap-0.5">
-                                        {[...Array(t.rating)].map((_, idx) => (
-                                            <Star key={idx} size={13} className="text-amber-400 fill-amber-400" />
-                                        ))}
-                                    </div>
-                                    <span className="text-[9px] font-extrabold px-2.5 py-1 bg-blue-50 text-blue-750 dark:bg-blue-955/40 dark:text-blue-300 rounded-full">
-                                        {t.domain}
-                                    </span>
-                                </div>
-                                <p className="text-xs text-slate-600 dark:text-slate-350 leading-relaxed font-semibold italic">"{t.text}"</p>
-                                <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-indigo-900 text-white font-bold text-xs flex items-center justify-center">
-                                        {t.name.split(' ').map(n => n[0]).join('')}
-                                    </div>
-                                    <div>
-                                        <h4 className="text-xs font-black text-slate-850 dark:text-white leading-none">{t.name}</h4>
-                                        <span className="text-[10px] text-slate-405 font-semibold">{t.college}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                </div>
 
-                    {/* Interactive Submit Review Area */}
-                    <div className="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200/60 dark:border-slate-800/80 shadow-xl p-8 max-w-2xl mx-auto relative overflow-hidden">
-                        <div className="absolute top-0 right-0 -mr-16 -mt-16 w-48 h-48 bg-indigo-500/5 rounded-full blur-2xl"></div>
+                {/* News Scroll Format Marquee (Pic 2 Format) */}
+                <div className="relative w-full overflow-hidden space-y-6 mb-16 select-none" title="Hover to pause">
+                    {/* Left and Right Gradient Fade Masks */}
+                    <div className="absolute left-0 top-0 bottom-0 w-12 sm:w-32 bg-gradient-to-r from-slate-50/90 dark:from-[#0a0f1d] to-transparent pointer-events-none z-20" />
+                    <div className="absolute right-0 top-0 bottom-0 w-12 sm:w-32 bg-gradient-to-l from-slate-50/90 dark:from-[#0a0f1d] to-transparent pointer-events-none z-20" />
 
-                        <div className="space-y-2 mb-6">
-                            <h3 className="text-xl font-extrabold text-slate-900 dark:text-white">Interned with us? Share your feedback!</h3>
-                            <p className="text-xs text-slate-400 font-semibold">Your review details help prospective candidates evaluate learning benefits.</p>
+                    {/* Row 1 Marquee (Scroll Left) */}
+                    <div className="flex overflow-hidden">
+                        <div className="animate-reviews-marquee-left flex items-center gap-6 py-2 px-3 hover:[animation-play-state:paused]">
+                            {[...row1Testimonials, ...row1Testimonials].map((t, idx) => (
+                                <ReviewCard key={`r1-${t.id}-${idx}`} item={t} />
+                            ))}
                         </div>
-
-                        {submitSuccess && (
-                            <div className="mb-5 p-4 bg-green-500/10 border border-green-500/20 text-green-750 dark:text-green-300 rounded-xl flex items-center gap-2.5 text-xs font-bold animate-bounce">
-                                <CheckCircle size={16} />
-                                <span>Thank you! Your testimonial has been captured and submitted for moderation.</span>
-                            </div>
-                        )}
-
-                        <form onSubmit={handleAddReview} className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Your Full Name</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="e.g. Harish"
-                                        value={newName}
-                                        onChange={(e) => setNewName(e.target.value)}
-                                        className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-3 focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white"
-                                    />
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">College / Institution</label>
-                                    <input
-                                        type="text"
-                                        required
-                                        placeholder="e.g. SRM University"
-                                        value={newCollege}
-                                        onChange={(e) => setNewCollege(e.target.value)}
-                                        className="w-full text-xs font-medium bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-3 focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Playground Track</label>
-                                    <select
-                                        value={newDomain}
-                                        onChange={(e) => setNewDomain(e.target.value)}
-                                        className="w-full text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-3 focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white cursor-pointer"
-                                    >
-                                        <option value="Full Stack Development">Full Stack Development</option>
-                                        <option value="Java Development">Java Development</option>
-                                        <option value="Python Development">Python Development</option>
-                                        <option value="Data Science & AI">Data Science & AI</option>
-                                        <option value="Cyber Security">Cyber Security</option>
-                                    </select>
-                                </div>
-                                <div className="space-y-1">
-                                    <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Rating Score</label>
-                                    <div className="flex gap-1.5 pt-2">
-                                        {[1, 2, 3, 4, 5].map((star) => (
-                                            <button
-                                                key={star}
-                                                type="button"
-                                                onClick={() => setNewRating(star)}
-                                                className="focus:outline-none"
-                                            >
-                                                <Star
-                                                    size={18}
-                                                    className={`transition ${star <= newRating
-                                                        ? 'text-amber-400 fill-amber-400 scale-110'
-                                                        : 'text-slate-300 dark:text-slate-700'
-                                                        }`}
-                                                />
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="space-y-1">
-                                <label className="text-[10px] font-black uppercase text-slate-400 tracking-wider font-mono">Your Feedback Message</label>
-                                <textarea
-                                    required
-                                    rows={4}
-                                    placeholder="Write details of projects, mentors, LOR benefits..."
-                                    value={newText}
-                                    onChange={(e) => setNewText(e.target.value)}
-                                    className="w-full text-xs font-semibold bg-slate-50 dark:bg-slate-955 border border-slate-200 dark:border-slate-800 rounded-xl px-3.5 py-3 focus:outline-none focus:border-blue-500 text-slate-800 dark:text-white resize-none"
-                                />
-                            </div>
-
-                            <button
-                                type="submit"
-                                className="w-full py-4 bg-indigo-900 hover:bg-indigo-850 text-white font-extrabold text-xs  rounded-xl transition shadow active:scale-[0.98] flex items-center justify-center gap-1.5"
-                            >
-                                <Send size={13} />
-                                <span>Publish Internship Review</span>
-                            </button>
-                        </form>
                     </div>
 
+                    {/* Row 2 Marquee (Scroll Right) */}
+                    <div className="flex overflow-hidden">
+                        <div className="animate-reviews-marquee-right flex items-center gap-6 py-2 px-3 hover:[animation-play-state:paused]">
+                            {[...row2Testimonials, ...row2Testimonials].map((t, idx) => (
+                                <ReviewCard key={`r2-${t.id}-${idx}`} item={t} />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center">
+                    <button
+                        onClick={() => navigate('/reviews')}
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-300"
+                    >
+                        <span>View All Student Reviews</span>
+                        <ArrowRight size={14} />
+                    </button>
                 </div>
             </section>
 

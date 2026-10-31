@@ -8,9 +8,15 @@ import {
     Award, FileText, Briefcase, CalendarDays, Settings, CreditCard, ArrowRight, FileSpreadsheet, Plus, Trash2, Edit3, X, Megaphone, Mail, Eye,
     Sparkles, PlusCircle, Bell, Moon, ChevronDown, ListTodo, Users, ExternalLink,
     BookOpen, Layers, Check, Activity, GraduationCap, RefreshCw, Clock, History,
-    Menu, Sun, Rocket, LogOut, Tag, IndianRupee, Percent, RotateCcw
+    Menu, Sun, Rocket, LogOut, Tag, IndianRupee, Percent, RotateCcw, Database, FolderArchive,
+    Radio
 } from 'lucide-react';
 import { getGenuineStudentAvatar } from '../utils/studentAvatars';
+import { BackupRestoreTab } from './admin/Tabs/BackupRestoreTab';
+import { PromoPopupTab } from './admin/Tabs/PromoPopupTab';
+import { NewsTickerTab } from './admin/Tabs/NewsTickerTab';
+import { PromoPopup } from '../utils/promoPopup';
+import PromoPopupModal from '../components/PromoPopupModal';
 
 interface Internship {
     id: string;
@@ -157,11 +163,12 @@ const AdminPortal: React.FC = () => {
     const navigate = useNavigate();
     const { user, profile, signOut } = useAuth();
     const { toasts, showToast, dismiss } = useToast();
-    const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'submissions' | 'certificates' | 'domains' | 'students' | 'student-detail' | 'payments' | 'coupons' | 'promotions'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'applications' | 'submissions' | 'certificates' | 'domains' | 'students' | 'student-detail' | 'payments' | 'coupons' | 'promotions' | 'backup' | 'promo-popup' | 'news-ticker'>('overview');
     const [subTab, setSubTab] = useState<'domains' | 'internships'>('domains');
     const [selectedStudentForDetail, setSelectedStudentForDetail] = useState<Enrollment | null>(null);
     const [studentsSearch, setStudentsSearch] = useState('');
     const [adminName, setAdminName] = useState<string>('Vishal R');
+    const [previewPromoPopup, setPreviewPromoPopup] = useState<PromoPopup | null>(null);
     const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
     const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
     const [darkMode, setDarkMode] = useState(() => {
@@ -1480,6 +1487,7 @@ function saveAdminCache(data: any) {
                             );
                         })}
 
+                        {/* MARKETING Section */}
                         <p className="px-3 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 mt-6">MARKETING</p>
                         <button
                             onClick={() => {
@@ -1494,6 +1502,104 @@ function saveAdminCache(data: any) {
                         >
                             <Percent className="w-4 h-4 flex-shrink-0" />
                             <span>Promotions</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('promo-popup');
+                                setMobileDrawerOpen(false);
+                            }}
+                            className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition ${
+                                activeTab === 'promo-popup'
+                                    ? 'bg-[#154ED0] text-white shadow-md shadow-blue-500/25'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                            }`}
+                        >
+                            <Megaphone className="w-4 h-4 flex-shrink-0" />
+                            <span>Promo Popup</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('news-ticker');
+                                setMobileDrawerOpen(false);
+                            }}
+                            className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition ${
+                                activeTab === 'news-ticker'
+                                    ? 'bg-[#154ED0] text-white shadow-md shadow-blue-500/25'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                            }`}
+                        >
+                            <Radio className="w-4 h-4 flex-shrink-0" />
+                            <span>News Ticker</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                showToast('Viewing system email logs', 'info');
+                                setMobileDrawerOpen(false);
+                            }}
+                            className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 transition"
+                        >
+                            <Mail className="w-4 h-4 flex-shrink-0" />
+                            <span>Email Logs</span>
+                        </button>
+
+                        {/* ANALYTICS Section */}
+                        <p className="px-3 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 mt-6">ANALYTICS</p>
+                        <button
+                            onClick={() => {
+                                setActiveTab('overview');
+                                setMobileDrawerOpen(false);
+                            }}
+                            className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 transition"
+                        >
+                            <Activity className="w-4 h-4 flex-shrink-0" />
+                            <span>Analytics</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                showToast('Displaying candidate login analytics', 'info');
+                                setMobileDrawerOpen(false);
+                            }}
+                            className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 transition"
+                        >
+                            <History className="w-4 h-4 flex-shrink-0" />
+                            <span>Login Analytics</span>
+                        </button>
+
+                        {/* SYSTEM Section */}
+                        <p className="px-3 text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 mt-6">SYSTEM</p>
+                        <button
+                            onClick={() => {
+                                showToast('Platform Settings opened', 'info');
+                                setMobileDrawerOpen(false);
+                            }}
+                            className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 transition"
+                        >
+                            <Settings className="w-4 h-4 flex-shrink-0" />
+                            <span>Settings</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                setActiveTab('backup');
+                                setMobileDrawerOpen(false);
+                            }}
+                            className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition ${
+                                activeTab === 'backup'
+                                    ? 'bg-[#154ED0] text-white shadow-md shadow-blue-500/25'
+                                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
+                            }`}
+                        >
+                            <Database className="w-4 h-4 flex-shrink-0" />
+                            <span>Backup & Restore</span>
+                        </button>
+                        <button
+                            onClick={() => {
+                                showToast('Viewing system audit logs', 'info');
+                                setMobileDrawerOpen(false);
+                            }}
+                            className="w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60 transition"
+                        >
+                            <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+                            <span>Audit Logs</span>
                         </button>
                     </div>
                 </div>
@@ -1545,6 +1651,7 @@ function saveAdminCache(data: any) {
                             );
                         })}
 
+                        {/* MARKETING Section */}
                         <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 mt-6">MARKETING</p>
                         <button
                             onClick={() => setActiveTab('promotions')}
@@ -1556,6 +1663,80 @@ function saveAdminCache(data: any) {
                         >
                             <Percent className="w-4 h-4 flex-shrink-0" />
                             <span>Promotions</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('promo-popup')}
+                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
+                                activeTab === 'promo-popup'
+                                    ? 'bg-[#154ED0] text-white shadow-md'
+                                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            <Megaphone className="w-4 h-4 flex-shrink-0" />
+                            <span>Promo Popup</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('news-ticker')}
+                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
+                                activeTab === 'news-ticker'
+                                    ? 'bg-[#154ED0] text-white shadow-md'
+                                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            <Radio className="w-4 h-4 flex-shrink-0" />
+                            <span>News Ticker</span>
+                        </button>
+                        <button
+                            onClick={() => showToast('Viewing system email logs', 'info')}
+                            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                        >
+                            <Mail className="w-4 h-4 flex-shrink-0" />
+                            <span>Email Logs</span>
+                        </button>
+
+                        {/* ANALYTICS Section */}
+                        <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 mt-6">ANALYTICS</p>
+                        <button
+                            onClick={() => setActiveTab('overview')}
+                            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                        >
+                            <Activity className="w-4 h-4 flex-shrink-0" />
+                            <span>Analytics</span>
+                        </button>
+                        <button
+                            onClick={() => showToast('Displaying candidate login analytics', 'info')}
+                            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                        >
+                            <History className="w-4 h-4 flex-shrink-0" />
+                            <span>Login Analytics</span>
+                        </button>
+
+                        {/* SYSTEM Section */}
+                        <p className="px-3 text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-2 mt-6">SYSTEM</p>
+                        <button
+                            onClick={() => showToast('Platform Settings opened', 'info')}
+                            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                        >
+                            <Settings className="w-4 h-4 flex-shrink-0" />
+                            <span>Settings</span>
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('backup')}
+                            className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
+                                activeTab === 'backup'
+                                    ? 'bg-[#154ED0] text-white shadow-md'
+                                    : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
+                            }`}
+                        >
+                            <Database className="w-4 h-4 flex-shrink-0" />
+                            <span>Backup & Restore</span>
+                        </button>
+                        <button
+                            onClick={() => showToast('Viewing system audit logs', 'info')}
+                            className="w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                        >
+                            <ShieldCheck className="w-4 h-4 flex-shrink-0" />
+                            <span>Audit Logs</span>
                         </button>
                     </div>
                 </div>
@@ -3871,7 +4052,35 @@ function saveAdminCache(data: any) {
                         </div>
                     )}
 
+                    {/* System Backup & Restore Tab */}
+                    {activeTab === 'backup' && (
+                        <div className="text-left animate-fade-in-up">
+                            <BackupRestoreTab adminName={adminFullName} showToast={showToast} />
+                        </div>
+                    )}
+
+                    {/* Marketing Promo Popup Tab */}
+                    {activeTab === 'promo-popup' && (
+                        <PromoPopupTab
+                            showToast={showToast}
+                            onPreviewPopup={(popup) => setPreviewPromoPopup(popup)}
+                        />
+                    )}
+
+                    {/* Website Latest Updates / News Ticker Tab */}
+                    {activeTab === 'news-ticker' && (
+                        <NewsTickerTab showToast={showToast} />
+                    )}
+
                 </main>
+
+                {/* Promo Popup Live Preview Modal */}
+                {previewPromoPopup && (
+                    <PromoPopupModal
+                        forcePopup={previewPromoPopup}
+                        onCloseForce={() => setPreviewPromoPopup(null)}
+                    />
+                )}
             </div>
 
             {/* Grade Submission Dialog Modal */}

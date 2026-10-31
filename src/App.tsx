@@ -3,7 +3,9 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Navbar from './components/Navbar';
+import NewsTicker from './components/NewsTicker';
 import Footer from './components/Footer';
+import PromoPopupModal from './components/PromoPopupModal';
 
 // Pages
 import Home from './pages/Home';
@@ -46,8 +48,10 @@ function App() {
   return (
     <Router basename={import.meta.env.BASE_URL}>
       <AuthProvider>
+        <PromoPopupModal />
         <div className="flex flex-col min-h-screen bg-brand-bgLight dark:bg-brand-bgDark text-slate-800 dark:text-slate-100 transition-colors duration-300">
           <Navbar darkMode={darkMode} setDarkMode={setDarkMode} />
+          <NewsTicker />
 
           <main className="flex-grow">
             <Routes>

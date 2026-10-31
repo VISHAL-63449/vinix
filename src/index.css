@@ -879,3 +879,73 @@ input:-webkit-autofill:active {
     text-decoration: none;
     font-weight: 600;
 }
+
+/* News Scrolling Bar / Ticker */
+@keyframes tickerScroll {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+.animate-ticker-marquee {
+    display: inline-flex;
+    white-space: nowrap;
+    will-change: transform;
+    animation: tickerScroll 42s linear infinite;
+}
+
+.animate-ticker-marquee:hover,
+.ticker-paused {
+    animation-play-state: paused !important;
+}
+
+/* Reviews / Testimonials News Scroll Marquee */
+@keyframes reviewMarqueeLeft {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+@keyframes reviewMarqueeRight {
+    0% {
+        transform: translate3d(-50%, 0, 0);
+    }
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.animate-reviews-marquee-left {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+    animation: reviewMarqueeLeft 42s linear infinite;
+}
+
+.animate-reviews-marquee-right {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+    animation: reviewMarqueeRight 46s linear infinite;
+}
+
+.animate-reviews-marquee-left:hover,
+.animate-reviews-marquee-right:hover,
+.reviews-marquee-paused {
+    animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .animate-ticker-marquee,
+    .animate-reviews-marquee-left,
+    .animate-reviews-marquee-right {
+        animation: none;
+        overflow-x: auto;
+    }
+}
