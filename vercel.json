@@ -52,6 +52,23 @@
             ]
         },
         {
+            "source": "/ads.txt",
+            "headers": [
+                {
+                    "key": "Content-Type",
+                    "value": "text/plain; charset=utf-8"
+                },
+                {
+                    "key": "Cache-Control",
+                    "value": "public, max-age=3600, s-maxage=3600"
+                },
+                {
+                    "key": "Access-Control-Allow-Origin",
+                    "value": "*"
+                }
+            ]
+        },
+        {
             "source": "/(admin|dashboard|cc-book|counselling|codelab)/:path*",
             "headers": [
                 {
@@ -77,6 +94,10 @@
         {
             "source": "/robots.txt",
             "destination": "/robots.txt"
+        },
+        {
+            "source": "/ads.txt",
+            "destination": "/api/ads-txt"
         },
         {
             "source": "/((?!api/).*)",

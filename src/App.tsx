@@ -6,6 +6,7 @@ import Navbar from './components/Navbar';
 import NewsTicker from './components/NewsTicker';
 import Footer from './components/Footer';
 import PromoPopupModal from './components/PromoPopupModal';
+import CookieConsent from './components/CookieConsent';
 
 // Pages
 import Home from './pages/Home';
@@ -118,6 +119,7 @@ function App() {
           </main>
 
           <Footer />
+          <CookieConsent />
         </div>
       </AuthProvider>
     </Router>

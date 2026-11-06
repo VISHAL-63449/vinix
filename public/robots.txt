@@ -7,4 +7,11 @@ Disallow: /counselling
 Disallow: /codelab
 Disallow: /api/
 
+# Explicitly permit Google AdSense crawlers to index and verify all content
+User-agent: Mediapartners-Google
+Allow: /
+
+User-agent: Google-Display-Ads-Bot
+Allow: /
+
 Sitemap: https://www.vinix.online/sitemap.xml
