@@ -705,7 +705,7 @@ export const Home: React.FC = () => {
                                     <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-xs">
                                         <Users size={16} />
                                     </div>
-                                    <h4 className="text-sm sm:text-base font-black text-slate-800 dark:text-white mt-1">5,000+</h4>
+                                    <h4 className="text-sm sm:text-base font-black text-slate-800 dark:text-white mt-1">1,000+</h4>
                                     <p className="text-[9px] sm:text-[10px] text-slate-400 dark:text-slate-500 font-bold uppercase tracking-wider leading-tight">Students Enrolled</p>
                                 </div>
 
