@@ -355,8 +355,10 @@ const VerifyOffer: React.FC = () => {
 
                             {/* Body Content */}
                             <div className="doc-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', zIndex: 2, paddingTop: '2px' }}>
-                                <div className="offer-ribbon-tag" style={{ display: 'inline-block', textAlign: 'center', background: 'linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%)', backgroundColor: '#800000', color: '#ffffff', fontFamily: 'Montserrat, Inter, sans-serif', fontSize: '0.62rem', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', height: '24px', lineHeight: '22px', padding: '0 20px', borderRadius: '9999px', border: '1.5px solid #d4af37', boxShadow: '0 2px 8px rgba(183, 28, 28, 0.3)', marginBottom: '8px', boxSizing: 'border-box', verticalAlign: 'middle', whiteSpace: 'nowrap', width: 'fit-content' }}>
-                                    <span style={{ color: '#ffffff', display: 'inline', lineHeight: 'inherit', fontWeight: 800 }}>★ OFFICIAL VERIFIED CREDENTIAL ★</span>
+                                <div className="offer-ribbon-tag" style={{ display: 'inline-block', background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }}>
+                                    <span className="star-gold" style={{ color: '#d4af37', marginRight: '6px' }}>★</span>
+                                    <span className="text-red" style={{ color: '#b71c1c', fontWeight: 800 }}>OFFICIAL VERIFIED CREDENTIAL</span>
+                                    <span className="star-gold" style={{ color: '#d4af37', marginLeft: '6px' }}>★</span>
                                 </div>
 
                                 <h1 className="document-title" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 900, fontSize: '1.25rem', color: '#111111', marginBottom: '3px', letterSpacing: '1px', textTransform: 'uppercase' }}>INTERNSHIP OFFER LETTER</h1>

@@ -413,32 +413,27 @@
 
         .offer-ribbon-tag {
             display: inline-block;
-            text-align: center;
-            background: linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%);
-            color: #ffffff;
             font-family: 'Montserrat', sans-serif;
-            font-size: 0.62rem;
+            font-size: 0.66rem;
             font-weight: 800;
-            letter-spacing: 2px;
+            letter-spacing: 2.5px;
             text-transform: uppercase;
-            height: 24px;
-            line-height: 22px;
-            padding: 0 20px;
-            border-radius: 9999px;
-            border: 1.5px solid var(--cert-gold);
             margin-bottom: 8px;
-            box-shadow: 0 2px 8px rgba(183, 28, 28, 0.3);
             width: fit-content;
             vertical-align: middle;
             white-space: nowrap;
-            box-sizing: border-box;
         }
 
-        .offer-ribbon-tag span {
-            color: #ffffff;
+        .offer-ribbon-tag .star-gold {
+            color: #d4af37;
+            margin: 0 5px;
             display: inline;
-            line-height: inherit;
+        }
+
+        .offer-ribbon-tag .text-red {
+            color: #b71c1c;
             font-weight: 800;
+            display: inline;
         }
 
         .document-title {
@@ -835,7 +830,7 @@
                     <!-- Body Content -->
                     <div class="doc-body" style="padding-top: 4px;">
                         <div class="offer-ribbon-tag">
-                            <span>★ OFFICIAL VERIFIED CREDENTIAL ★</span>
+                            <span class="star-gold">★</span><span class="text-red">OFFICIAL VERIFIED CREDENTIAL</span><span class="star-gold">★</span>
                         </div>
                         <h1 class="document-title">INTERNSHIP OFFER LETTER</h1>
                         <div class="document-date">Date: <span id="display-body-date">26 August 2026</span></div>

@@ -1356,7 +1356,7 @@ const Dashboard: React.FC = () => {
                         {activeTab === 'overview' && (
                             <div className="space-y-6">
                                 {/* ══════ 1. WELCOME HERO BANNER (Clean, Perfectly Aligned) ══════ */}
-                        <div className="relative overflow-hidden rounded-[24px] sm:rounded-[28px] bg-gradient-to-r from-zinc-950 via-[#111116] to-black border border-red-900/30 text-white shadow-2xl p-5 sm:p-7 select-none no-print">
+                        <div className="relative overflow-hidden rounded-[24px] sm:rounded-[28px] bg-gradient-to-r from-zinc-950 via-[#111116] to-black border border-red-900/30 text-white shadow-2xl p-4 sm:p-5 lg:p-6 select-none no-print">
                             {/* Sweeping red flare background glow on top-left and right */}
                             <div className="absolute -top-12 -left-12 w-48 h-48 bg-red-600/30 rounded-full blur-3xl pointer-events-none" />
                             <div className="absolute -bottom-12 -right-12 w-72 h-72 bg-gradient-to-tl from-red-600/50 via-rose-600/20 to-transparent rounded-full blur-3xl pointer-events-none" />
@@ -1365,93 +1365,93 @@ const Dashboard: React.FC = () => {
                             {/* Faint Graduation Cap watermark in background */}
                             <GraduationCap className="absolute right-40 top-1/2 -translate-y-1/2 w-44 h-44 text-white/[0.04] pointer-events-none transform -rotate-12" />
 
-                            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-5 sm:gap-6">
+                            <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-4 lg:gap-5 w-full">
                                 {/* Left: Student Avatar, Welcome & Name */}
-                                <div className="flex items-center gap-3.5 sm:gap-4 w-full md:w-auto">
+                                <div className="flex items-center gap-3 sm:gap-3.5 min-w-0 w-full lg:w-auto">
                                     {/* Student Photo */}
-                                    <div className="relative shrink-0 w-16 h-16 sm:w-20 sm:h-20">
+                                    <div className="relative shrink-0 w-14 h-14 sm:w-16 sm:h-16">
                                         {authenticAvatar ? (
                                             <img
                                                 src={authenticAvatar}
                                                 alt="Student"
-                                                className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover ring-2 ring-red-500 shadow-lg shadow-red-600/30"
+                                                className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl object-cover ring-2 ring-red-500 shadow-lg shadow-red-600/30"
                                             />
                                         ) : (
-                                            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 text-white font-black text-xl sm:text-2xl flex items-center justify-center ring-2 ring-red-500 shadow-lg shadow-red-600/30">
+                                            <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-600 text-white font-black text-xl sm:text-2xl flex items-center justify-center ring-2 ring-red-500 shadow-lg shadow-red-600/30">
                                                 {studentInitials}
                                             </div>
                                         )}
-                                        <span className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 ring-2 ring-zinc-950 flex items-center justify-center">
+                                        <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-zinc-950 flex items-center justify-center">
                                             <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                                         </span>
                                     </div>
 
                                     {/* Name & Track block */}
-                                    <div className="space-y-1 text-left min-w-0 flex-1">
+                                    <div className="space-y-0.5 sm:space-y-1 text-left min-w-0 flex-1">
                                         <div className="flex flex-wrap items-center gap-1.5">
-                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[10px] font-black tracking-wider uppercase shadow-sm">
+                                            <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-red-600 text-white text-[9.5px] sm:text-[10px] font-black tracking-wider uppercase shadow-sm">
                                                 <Sparkles className="w-3 h-3 fill-white" />
                                                 <span>WELCOME STUDENT</span>
                                             </span>
-                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-slate-300 text-[10px] font-bold">
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/10 text-slate-300 text-[9.5px] sm:text-[10px] font-bold">
                                                 <Crown className="w-3 h-3 text-amber-400 shrink-0" />
-                                                <span className="truncate max-w-[130px] sm:max-w-none">{studentTrackTitle}</span>
+                                                <span className="truncate max-w-[130px] sm:max-w-[180px]">{studentTrackTitle}</span>
                                             </span>
                                         </div>
-                                        <h1 className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight text-white leading-tight truncate">
+                                        <h1 className="text-lg sm:text-xl md:text-2xl font-black tracking-tight text-white leading-tight truncate">
                                             Hi, <span className="text-red-500 capitalize">{studentFirstName}!</span>
                                         </h1>
-                                        <p className="text-[11px] sm:text-xs text-slate-300 font-medium truncate">
+                                        <p className="text-[10.5px] sm:text-xs text-slate-300 font-medium truncate">
                                             Keep learning, keep growing with VINIX 🚀
                                         </p>
                                     </div>
                                 </div>
 
-                                {/* Center: Enrolled Date, Duration, and Student ID */}
-                                <div className="flex items-center justify-center gap-4 sm:gap-6 bg-white/[0.04] border border-white/10 rounded-2xl px-5 py-3 w-full sm:w-auto">
+                                {/* Center: Enrolled Date, Duration, and Student ID (No Horizontal Scroll) */}
+                                <div className="grid grid-cols-2 sm:flex sm:items-center sm:justify-center gap-2.5 sm:gap-3.5 lg:gap-4 bg-white/[0.04] border border-white/10 rounded-2xl p-2.5 sm:px-4 sm:py-2.5 w-full sm:w-auto shrink-0">
                                     {/* Enrolled On */}
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-red-950/60 border border-red-800/40 flex items-center justify-center shrink-0">
-                                            <CalendarDays className="w-5 h-5 text-red-500" />
+                                    <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-red-950/60 border border-red-800/40 flex items-center justify-center shrink-0">
+                                            <CalendarDays className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
                                         </div>
-                                        <div className="text-left">
-                                            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">Enrolled On</p>
-                                            <p className="text-xs sm:text-sm font-bold text-white whitespace-nowrap">{enrolledDate}</p>
+                                        <div className="text-left min-w-0">
+                                            <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium leading-none mb-1">Enrolled On</p>
+                                            <p className="text-[11px] sm:text-xs lg:text-[13px] font-bold text-white whitespace-nowrap leading-none truncate">{enrolledDate}</p>
                                         </div>
                                     </div>
 
-                                    {/* Divider */}
-                                    <div className="w-px h-10 bg-white/15" />
+                                    {/* Divider (Tablet / Desktop) */}
+                                    <div className="hidden sm:block w-px h-7 bg-white/15 shrink-0" />
 
                                     {/* Duration */}
-                                    <div className="flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-red-950/60 border border-red-800/40 flex items-center justify-center shrink-0">
-                                            <Clock className="w-5 h-5 text-red-500" />
+                                    <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+                                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-red-950/60 border border-red-800/40 flex items-center justify-center shrink-0">
+                                            <Clock className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
                                         </div>
-                                        <div className="text-left">
-                                            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">Duration</p>
-                                            <p className="text-xs sm:text-sm font-bold text-white whitespace-nowrap">{durationText}</p>
+                                        <div className="text-left min-w-0">
+                                            <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium leading-none mb-1">Duration</p>
+                                            <p className="text-[11px] sm:text-xs lg:text-[13px] font-bold text-white whitespace-nowrap leading-none truncate">{durationText}</p>
                                         </div>
                                     </div>
 
-                                    {/* Divider */}
-                                    <div className="hidden md:block w-px h-10 bg-white/15" />
+                                    {/* Divider (Tablet / Desktop) */}
+                                    <div className="hidden sm:block w-px h-7 bg-white/15 shrink-0" />
 
-                                    {/* Student ID */}
-                                    <div className="hidden md:flex items-center gap-3">
-                                        <div className="w-10 h-10 rounded-xl bg-red-950/60 border border-red-800/40 flex items-center justify-center shrink-0">
-                                            <Award className="w-5 h-5 text-red-500" />
+                                    {/* Student ID (Full Width row on Mobile, Inline on Desktop) */}
+                                    <div className="col-span-2 sm:col-span-1 pt-2 sm:pt-0 border-t border-white/10 sm:border-t-0 flex items-center justify-center sm:justify-start gap-2 sm:gap-2.5 min-w-0">
+                                        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-red-950/60 border border-red-800/40 flex items-center justify-center shrink-0">
+                                            <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-red-500" />
                                         </div>
-                                        <div className="text-left">
-                                            <p className="text-[10px] sm:text-xs text-slate-400 font-medium">Student ID</p>
-                                            <p className="text-xs sm:text-sm font-mono font-bold text-red-400 whitespace-nowrap">{studentIdDisplay}</p>
+                                        <div className="text-left min-w-0">
+                                            <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium leading-none mb-1">Student ID</p>
+                                            <p className="text-[11px] sm:text-xs lg:text-[13px] font-mono font-bold text-red-400 whitespace-nowrap leading-none">{studentIdDisplay}</p>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Right: Circular Course Progress Ring */}
-                                <div className="flex flex-col items-center justify-center shrink-0 self-center md:self-auto">
-                                    <div className="relative w-20 h-20 sm:w-24 sm:h-24 flex items-center justify-center">
+                                <div className="flex flex-col items-center justify-center shrink-0 pr-1 sm:pr-2">
+                                    <div className="relative w-16 h-16 sm:w-18 sm:h-18 lg:w-20 lg:h-20 flex items-center justify-center">
                                         <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                                             <circle cx="50" cy="50" r="40" className="stroke-zinc-800" strokeWidth="8" fill="transparent" />
                                             <circle
@@ -1466,9 +1466,9 @@ const Dashboard: React.FC = () => {
                                                 fill="transparent"
                                             />
                                         </svg>
-                                        <span className="absolute text-base sm:text-lg font-black text-white">{dynamicProgress || 100}%</span>
+                                        <span className="absolute text-sm sm:text-base font-black text-white">{dynamicProgress || 100}%</span>
                                     </div>
-                                    <span className="text-[10px] sm:text-xs font-bold text-slate-300 mt-1 whitespace-nowrap">Course Progress</span>
+                                    <span className="text-[10px] sm:text-[11px] font-bold text-slate-300 mt-1 whitespace-nowrap">Course Progress</span>
                                 </div>
                             </div>
                         </div>
@@ -3257,8 +3257,10 @@ const Dashboard: React.FC = () => {
 
                             {/* Body Content */}
                             <div className="doc-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', zIndex: 2, paddingTop: '2px' }}>
-                                <div className="offer-ribbon-tag" style={{ display: 'inline-block', textAlign: 'center', background: 'linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%)', backgroundColor: '#800000', color: '#ffffff', fontFamily: 'Montserrat, Inter, sans-serif', fontSize: '0.62rem', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', height: '24px', lineHeight: '22px', padding: '0 20px', borderRadius: '9999px', border: '1.5px solid #d4af37', boxShadow: '0 2px 8px rgba(183, 28, 28, 0.3)', marginBottom: '8px', boxSizing: 'border-box', verticalAlign: 'middle', whiteSpace: 'nowrap', width: 'fit-content' }}>
-                                    <span style={{ color: '#ffffff', display: 'inline', lineHeight: 'inherit', fontWeight: 800 }}>★ OFFICIAL VERIFIED CREDENTIAL ★</span>
+                                <div className="offer-ribbon-tag" style={{ display: 'inline-block', background: 'transparent', border: 'none', boxShadow: 'none', padding: 0 }}>
+                                    <span className="star-gold" style={{ color: '#d4af37', marginRight: '6px' }}>★</span>
+                                    <span className="text-red" style={{ color: '#b71c1c', fontWeight: 800 }}>OFFICIAL VERIFIED CREDENTIAL</span>
+                                    <span className="star-gold" style={{ color: '#d4af37', marginLeft: '6px' }}>★</span>
                                 </div>
 
                                 <h1 className="document-title" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 900, fontSize: '1.25rem', color: '#111111', marginBottom: '3px', letterSpacing: '1px', textTransform: 'uppercase' }}>INTERNSHIP OFFER LETTER</h1>

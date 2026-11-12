@@ -773,21 +773,21 @@ input:-webkit-autofill:active {
 
 .offer-ribbon-tag {
     display: inline-block !important;
-    text-align: center !important;
-    background: #800000 !important;
-    background: linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%) !important;
-    color: #ffffff !important;
+    text-align: left !important;
+    background: transparent !important;
+    background-image: none !important;
+    color: #b71c1c !important;
     font-family: 'Montserrat', 'Inter', sans-serif !important;
-    font-size: 0.62rem !important;
+    font-size: 0.66rem !important;
     font-weight: 800 !important;
-    letter-spacing: 2px !important;
+    letter-spacing: 2.5px !important;
     text-transform: uppercase !important;
-    height: 24px !important;
-    line-height: 22px !important;
-    padding: 0 20px !important;
-    border-radius: 9999px !important;
-    border: 1.5px solid #d4af37 !important;
-    box-shadow: 0 2px 8px rgba(183, 28, 28, 0.3) !important;
+    height: auto !important;
+    line-height: normal !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
     margin-bottom: 8px !important;
     box-sizing: border-box !important;
     vertical-align: middle !important;
@@ -795,10 +795,16 @@ input:-webkit-autofill:active {
     width: fit-content !important;
 }
 
-.offer-ribbon-tag span {
-    color: #ffffff !important;
+.offer-ribbon-tag .star-gold {
+    color: #d4af37 !important;
     display: inline !important;
-    line-height: inherit !important;
+    font-weight: 800 !important;
+    margin: 0 5px !important;
+}
+
+.offer-ribbon-tag .text-red {
+    color: #b71c1c !important;
+    display: inline !important;
     font-weight: 800 !important;
 }
 
