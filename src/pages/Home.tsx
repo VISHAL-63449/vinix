@@ -884,6 +884,51 @@ export const Home: React.FC = () => {
                 </div>
             </section>
 
+            {/* ═══════ ABOUT VINIX / MSME & PROGRAM METRICS BANNER ═══════ */}
+            <section className="pb-16 pt-2 max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
+                <div className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-3xl p-6 sm:p-10 lg:p-12 shadow-xl shadow-slate-100/80 dark:shadow-none flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12 select-none">
+                    {/* Left: About Intro */}
+                    <div className="flex-1 text-left">
+                        <div className="inline-flex items-center px-3 py-1 bg-red-50 dark:bg-red-950/40 border border-red-200/60 dark:border-red-900/40 rounded-full text-[10.5px] sm:text-xs font-bold uppercase tracking-wider text-red-600 dark:text-red-400 mb-3 sm:mb-4">
+                            ABOUT VINIX
+                        </div>
+                        <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight mb-3 sm:mb-4">
+                            MSME-registered. <span className="text-red-600 dark:text-red-500">Student-built.</span>
+                        </h2>
+                        <p className="text-slate-650 dark:text-slate-350 text-xs sm:text-sm lg:text-base leading-relaxed font-medium max-w-xl">
+                            Vinix runs a task-based virtual internship program across 10+ domains. Apply free, get an instant offer letter and ID card, complete 50+ real projects, earn a QR-verified certificate.
+                        </p>
+                    </div>
+
+                    {/* Right: 4 Rounded Stat Cards (2x2) */}
+                    <div className="w-full lg:w-auto grid grid-cols-2 gap-3.5 sm:gap-4 flex-shrink-0">
+                        {/* 10+ DOMAINS */}
+                        <div className="bg-white dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 min-w-[130px] sm:min-w-[160px] flex flex-col items-center justify-center text-center shadow-xs hover:border-purple-300 dark:hover:border-purple-800/60 transition-colors">
+                            <span className="text-2xl sm:text-3xl font-black text-purple-600 dark:text-purple-400 leading-none">10+</span>
+                            <span className="text-[10px] sm:text-[11px] font-black text-slate-400 dark:text-slate-500 tracking-wider uppercase mt-2">DOMAINS</span>
+                        </div>
+
+                        {/* 50+ PROJECTS */}
+                        <div className="bg-white dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 min-w-[130px] sm:min-w-[160px] flex flex-col items-center justify-center text-center shadow-xs hover:border-emerald-300 dark:hover:border-emerald-800/60 transition-colors">
+                            <span className="text-2xl sm:text-3xl font-black text-emerald-600 dark:text-emerald-400 leading-none">50+</span>
+                            <span className="text-[10px] sm:text-[11px] font-black text-slate-400 dark:text-slate-500 tracking-wider uppercase mt-2">PROJECTS</span>
+                        </div>
+
+                        {/* 100% ONLINE */}
+                        <div className="bg-white dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 min-w-[130px] sm:min-w-[160px] flex flex-col items-center justify-center text-center shadow-xs hover:border-blue-300 dark:hover:border-blue-800/60 transition-colors">
+                            <span className="text-2xl sm:text-3xl font-black text-blue-600 dark:text-blue-400 leading-none">100%</span>
+                            <span className="text-[10px] sm:text-[11px] font-black text-slate-400 dark:text-slate-500 tracking-wider uppercase mt-2">ONLINE</span>
+                        </div>
+
+                        {/* ₹100 CERT FEE */}
+                        <div className="bg-white dark:bg-slate-950/60 border border-slate-200/80 dark:border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-6 min-w-[130px] sm:min-w-[160px] flex flex-col items-center justify-center text-center shadow-xs hover:border-amber-300 dark:hover:border-amber-800/60 transition-colors">
+                            <span className="text-2xl sm:text-3xl font-black text-amber-500 dark:text-amber-400 leading-none">₹100</span>
+                            <span className="text-[10px] sm:text-[11px] font-black text-slate-400 dark:text-slate-500 tracking-wider uppercase mt-2">CERT FEE</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* ═══════ REVIEWS SECTION ═══════ */}
             <section id="reviews" className="py-20 border-t border-slate-100 dark:border-slate-900 bg-slate-50/40 dark:bg-slate-900/10 relative z-10 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-6 lg:px-12">
