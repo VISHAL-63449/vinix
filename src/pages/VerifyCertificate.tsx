@@ -123,6 +123,11 @@ const VerifyCertificate: React.FC = () => {
         try {
             const element = document.getElementById('certificate-print-area');
             if (element) {
+                // Ensure all custom fonts are completely loaded before rasterization
+                if (document.fonts) {
+                    await document.fonts.ready;
+                }
+
                 // Save current scroll position
                 const scrollY = window.scrollY;
                 const scrollX = window.scrollX;
@@ -130,17 +135,20 @@ const VerifyCertificate: React.FC = () => {
                 // Scroll to top-left to avoid html2canvas viewport offset/cropping bugs
                 window.scrollTo(0, 0);
 
-                element.classList.add('cert-pdf-download-mode');
                 // Give a microtask delay for DOM and style updates
-                await new Promise(resolve => setTimeout(resolve, 250));
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 const canvas = await html2canvas(element, {
                     scale: 2,
                     useCORS: true,
                     backgroundColor: '#ffffff',
                     logging: false,
-                    scrollY: 0,
-                    scrollX: 0
+                    width: 1123,
+                    height: 794,
+                    windowWidth: 1123,
+                    windowHeight: 794,
+                    scrollX: 0,
+                    scrollY: 0
                 });
 
                 // Restore scroll positions immediately
@@ -172,7 +180,6 @@ const VerifyCertificate: React.FC = () => {
                 );
 
                 pdf.save(`${result.certificateNumber || 'Certificate'}.pdf`);
-                element.classList.remove('cert-pdf-download-mode');
             }
         } catch (err: any) {
             alert(`Direct download failed: ${err.message}. Using fallback print option.`);
@@ -304,9 +311,64 @@ const VerifyCertificate: React.FC = () => {
                                     id="certificate-print-area"
                                     className="certificate-container"
                                 >
-                                    {/* Double border lines */}
-                                    <div className="cert-frame-outer"></div>
-                                    <div className="cert-frame-inner"></div>
+                                    {/* Security Pinstripe Pattern */}
+                                    <div className="cert-security-pattern"></div>
+
+                                    {/* Intricate Banknote Guilloche Security Rosette */}
+                                    <svg className="cert-watermark-guilloche" viewBox="0 0 400 400">
+                                        <circle cx="200" cy="200" r="185" fill="none" stroke="#c59b27" strokeWidth="0.8" opacity="0.45" />
+                                        <circle cx="200" cy="200" r="172" fill="none" stroke="#b71c1c" strokeWidth="0.8" strokeDasharray="4,3" opacity="0.35" />
+                                        <circle cx="200" cy="200" r="158" fill="none" stroke="#c59b27" strokeWidth="0.6" strokeDasharray="1,2" opacity="0.4" />
+                                        <circle cx="200" cy="200" r="140" fill="none" stroke="#b71c1c" strokeWidth="0.5" opacity="0.25" />
+                                        <polygon points="200 20, 240 148, 380 148, 270 228, 310 356, 200 276, 90 356, 130 228, 20 148, 160 148" fill="none" stroke="#c59b27" strokeWidth="0.75" opacity="0.32" />
+                                        <polygon points="200 35, 235 152, 365 152, 262 225, 298 342, 200 270, 102 342, 138 225, 35 152, 165 152" fill="none" stroke="#b71c1c" strokeWidth="0.75" opacity="0.25" />
+                                        <path d="M 200 50 Q 230 110 290 110 T 350 200 T 290 290 T 200 350 T 110 290 T 50 200 T 110 110 Z" fill="none" stroke="#c59b27" strokeWidth="0.6" opacity="0.2" />
+                                        <path d="M 200 65 Q 225 115 275 115 T 335 200 T 275 285 T 200 335 T 125 285 T 65 200 T 125 115 Z" fill="none" stroke="#b71c1c" strokeWidth="0.6" opacity="0.2" />
+                                    </svg>
+
+                                    {/* 4-Tier Luxury Royal Red & Gold Borders */}
+                                    <div className="cert-border-outer"></div>
+                                    <div className="cert-border-gold-mid"></div>
+                                    <div className="cert-border-inner"></div>
+                                    <div className="cert-border-gold-hairline"></div>
+
+                                    {/* 4 Ornate Royal Corner Filigree Ornaments */}
+                                    <svg className="cert-corner-filigree corner-tl" viewBox="0 0 50 50">
+                                        <path d="M 4 46 L 4 4 L 46 4" fill="none" stroke="#c59b27" strokeWidth="3" />
+                                        <path d="M 10 40 L 10 10 L 40 10" fill="none" stroke="#7f0000" strokeWidth="1.8" />
+                                        <path d="M 15 35 L 15 15 L 35 15" fill="none" stroke="#e5b93b" strokeWidth="0.8" />
+                                        <circle cx="10" cy="10" r="3" fill="#7f0000" stroke="#e5b93b" strokeWidth="0.75" />
+                                        <circle cx="4" cy="4" r="2.5" fill="#c59b27" />
+                                        <polygon points="18 4, 22 8, 18 12, 14 8" fill="#c59b27" />
+                                        <polygon points="4 18, 8 22, 4 26, 0 22" fill="#c59b27" />
+                                    </svg>
+                                    <svg className="cert-corner-filigree corner-tr" viewBox="0 0 50 50">
+                                        <path d="M 4 46 L 4 4 L 46 4" fill="none" stroke="#c59b27" strokeWidth="3" />
+                                        <path d="M 10 40 L 10 10 L 40 10" fill="none" stroke="#7f0000" strokeWidth="1.8" />
+                                        <path d="M 15 35 L 15 15 L 35 15" fill="none" stroke="#e5b93b" strokeWidth="0.8" />
+                                        <circle cx="10" cy="10" r="3" fill="#7f0000" stroke="#e5b93b" strokeWidth="0.75" />
+                                        <circle cx="4" cy="4" r="2.5" fill="#c59b27" />
+                                        <polygon points="18 4, 22 8, 18 12, 14 8" fill="#c59b27" />
+                                        <polygon points="4 18, 8 22, 4 26, 0 22" fill="#c59b27" />
+                                    </svg>
+                                    <svg className="cert-corner-filigree corner-bl" viewBox="0 0 50 50">
+                                        <path d="M 4 46 L 4 4 L 46 4" fill="none" stroke="#c59b27" strokeWidth="3" />
+                                        <path d="M 10 40 L 10 10 L 40 10" fill="none" stroke="#7f0000" strokeWidth="1.8" />
+                                        <path d="M 15 35 L 15 15 L 35 15" fill="none" stroke="#e5b93b" strokeWidth="0.8" />
+                                        <circle cx="10" cy="10" r="3" fill="#7f0000" stroke="#e5b93b" strokeWidth="0.75" />
+                                        <circle cx="4" cy="4" r="2.5" fill="#c59b27" />
+                                        <polygon points="18 4, 22 8, 18 12, 14 8" fill="#c59b27" />
+                                        <polygon points="4 18, 8 22, 4 26, 0 22" fill="#c59b27" />
+                                    </svg>
+                                    <svg className="cert-corner-filigree corner-br" viewBox="0 0 50 50">
+                                        <path d="M 4 46 L 4 4 L 46 4" fill="none" stroke="#c59b27" strokeWidth="3" />
+                                        <path d="M 10 40 L 10 10 L 40 10" fill="none" stroke="#7f0000" strokeWidth="1.8" />
+                                        <path d="M 15 35 L 15 15 L 35 15" fill="none" stroke="#e5b93b" strokeWidth="0.8" />
+                                        <circle cx="10" cy="10" r="3" fill="#7f0000" stroke="#e5b93b" strokeWidth="0.75" />
+                                        <circle cx="4" cy="4" r="2.5" fill="#c59b27" />
+                                        <polygon points="18 4, 22 8, 18 12, 14 8" fill="#c59b27" />
+                                        <polygon points="4 18, 8 22, 4 26, 0 22" fill="#c59b27" />
+                                    </svg>
 
                                     {(() => {
                                         const isOfficial = ['APPROVED', 'ACCEPTED', 'ISSUED', 'ACTIVE', 'COMPLETED'].includes((result.status || '').toUpperCase());
@@ -319,72 +381,110 @@ const VerifyCertificate: React.FC = () => {
                                                     </div>
 
                                                     <div className="cert-brand-center">
-                                                        <span className="cert-brand-name">VINIX</span>
-                                                        <span className="cert-brand-tagline">Empowering Future Innovators</span>
+                                                        <div className="brand-crest-stars">
+                                                            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                                            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                                            <svg className="center-star" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                                            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                                            <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                                                        </div>
+                                                        <span className="cert-credential-heading">ACADEMIC &amp; PROFESSIONAL CREDENTIAL</span>
+                                                        <span className="cert-brand-tagline">GOVERNMENT REGISTERED MSME ENTERPRISE</span>
                                                     </div>
 
                                                     <div className="cert-logo-right">
-                                                        {isOfficial && <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Seal" />}
+                                                        <div className="cert-msme-container">
+                                                            {isOfficial && <img src={`${import.meta.env.BASE_URL}msme.png`} alt="MSME Seal" />}
+                                                        </div>
                                                     </div>
                                                 </div>
 
                                                 {/* Certificate Headings */}
                                                 <div className="cert-title-section">
+                                                    <div className="cert-ribbon-tag" style={{ display: 'inline-block', textAlign: 'center', background: 'linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%)', backgroundColor: '#800000', color: '#ffffff', fontFamily: 'Montserrat, Inter, sans-serif', fontSize: '0.64rem', fontWeight: 800, letterSpacing: '2.5px', textTransform: 'uppercase', height: '24px', lineHeight: '22px', padding: '0 24px', borderRadius: '9999px', border: '1.5px solid #e5b93b', boxShadow: '0 3px 10px rgba(183, 28, 28, 0.35)', marginBottom: '8px', boxSizing: 'border-box', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                                                        <span style={{ color: '#ffffff', display: 'inline', lineHeight: 'inherit', fontWeight: 800 }}>★ OFFICIAL VERIFIED CREDENTIAL ★</span>
+                                                    </div>
                                                     <h1 className="cert-title-main">CERTIFICATE</h1>
-                                                    <h3 className="cert-title-sub">OF INTERNSHIP COMPLETION</h3>
+                                                    <div className="cert-title-sub-wrap">
+                                                        <div className="cert-hairline"></div>
+                                                        <svg width="8" height="8" viewBox="0 0 10 10" style={{ display: 'block', flexShrink: 0 }}><polygon points="5,0 10,5 5,10 0,5" fill="#7f0000" stroke="#e5b93b" strokeWidth="1.5"/></svg>
+                                                        <h3 className="cert-title-sub">OF INTERNSHIP COMPLETION</h3>
+                                                        <svg width="8" height="8" viewBox="0 0 10 10" style={{ display: 'block', flexShrink: 0 }}><polygon points="5,0 10,5 5,10 0,5" fill="#7f0000" stroke="#e5b93b" strokeWidth="1.5"/></svg>
+                                                        <div className="cert-hairline"></div>
+                                                    </div>
                                                 </div>
 
                                                 {/* Certificate main body */}
                                                 <div className="cert-body-section">
                                                     <p className="cert-presentation-text">This certificate is proudly presented to</p>
-                                                    <h2 className="recipient-name" style={{ textTransform: 'uppercase' }}>{result.studentName}</h2>
+                                                    <h2 className="cert-recipient-name" style={{ margin: '6px 0 16px 0' }}>{result.studentName}</h2>
+                                                    <div className="cert-name-accent-line" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginTop: '0px', marginBottom: '18px' }}>
+                                                        <div className="line-side" style={{ width: '170px', height: '1.5px', background: 'linear-gradient(90deg, transparent, #d4af37, #d4af37)' }}></div>
+                                                        <div className="gem-wrap" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                                            <div style={{ width: '5px', height: '5px', background: '#d4af37', transform: 'rotate(45deg)' }}></div>
+                                                            <div style={{ width: '9px', height: '9px', background: '#7f0000', transform: 'rotate(45deg)', border: '1.5px solid #d4af37', boxShadow: '0 0 6px rgba(197, 155, 39, 0.6)' }}></div>
+                                                            <div style={{ width: '5px', height: '5px', background: '#d4af37', transform: 'rotate(45deg)' }}></div>
+                                                        </div>
+                                                        <div className="line-side" style={{ width: '170px', height: '1.5px', background: 'linear-gradient(90deg, #d4af37, #d4af37, transparent)' }}></div>
+                                                    </div>
 
-                                                    <p className="cert-description">
-                                                        for successfully completing the task-based virtual internship program in <span className="bold-text">{result.courseName}</span> at <span className="bold-text">VINIX Technologies</span>, demonstrating dedication, technical skill, and professional excellence throughout the program.
+                                                    <p className="cert-description-text" style={{ fontSize: '0.88rem', lineHeight: 1.65, color: '#334155', maxWidth: '840px', margin: '0 auto' }}>
+                                                        for successfully completing the task-based virtual internship program in <strong className="domain-highlight" style={{ color: '#7f0000', fontWeight: 800 }}>{result.courseName}</strong> at <strong>VINIX Technologies</strong>, demonstrating exceptional technical competency, professional diligence, and excellence in project execution throughout the program.
                                                     </p>
                                                 </div>
 
-                                                {/* Footer signatory block with single Founder & Issued Date side */}
-                                                <div className="cert-footer-section">
+                                                {/* Footer signatory block */}
+                                                <div className="cert-footer-row">
                                                     {/* Date of Issuance Column (Left side) */}
-                                                    <div className="footer-col-left">
-                                                        <div className="signature-area" style={{ justifyContent: 'flex-start', alignItems: 'flex-end' }}>
-                                                            {isOfficial && (
-                                                                <span className="issue-signer-date" style={{ fontWeight: 750, fontSize: '1.05rem', color: '#0f2942', marginBottom: '6px' }}>
-                                                                    {new Date(result.issueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
-                                                                </span>
-                                                            )}
+                                                    <div className="cert-footer-col left-col">
+                                                        <div className="cert-date-wrap">
+                                                            <div className="cert-date-value">
+                                                                {isOfficial ? (
+                                                                    new Date(result.issueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+                                                                ) : '28 September 2026'}
+                                                            </div>
                                                         </div>
-                                                        <div className="signer-line"></div>
-                                                        <span className="signer-name">Date of Issuance</span>
-                                                        <span className="signer-title" style={{ visibility: 'hidden' }}>&nbsp;</span>
-                                                        <span className="detail-left">Issued Date</span>
+                                                        <div className="cert-sig-line"></div>
+                                                        <div className="cert-signer-name">Date of Issuance</div>
+                                                        <span className="cert-signer-title">OFFICIAL RECORD</span>
                                                     </div>
 
                                                     {/* Official Stamp Column (Center) */}
-                                                    <div className="footer-col-center">
-                                                        <div className="stamp-container">
-                                                            {isOfficial ? (
-                                                                <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Company Stamp" className="stamp-img" style={{ mixBlendMode: 'multiply' }} />
-                                                            ) : (
-                                                                <span style={{ fontSize: '0.8rem', color: '#dc2626', fontWeight: 800, transform: 'rotate(-15deg)', padding: '10px', border: '2px dashed #dc2626', borderRadius: '5px' }}>UNVERIFIED / PENDING</span>
-                                                            )}
+                                                    <div className="cert-footer-col center-col">
+                                                        <div className="cert-stamp-wrap">
+                                                            <div className="cert-stamp-badge">
+                                                                {isOfficial ? (
+                                                                    <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Company Stamp" className="cert-stamp-img" />
+                                                                ) : (
+                                                                    <span style={{ fontSize: '0.75rem', color: '#dc2626', fontWeight: 800, transform: 'rotate(-15deg)', padding: '6px', border: '2px dashed #dc2626', borderRadius: '4px' }}>UNVERIFIED / PENDING</span>
+                                                                )}
+                                                            </div>
                                                         </div>
-                                                        <div className="detail-center-block">
-                                                            <span>Intern ID: VINIX-{result.certificateNumber.split('-').pop()}</span>
-                                                            <span>Verify at: <a href={`https://verify.vinix.co/credentials/${result.certificateNumber}`} className="verify-web-link" target="_blank" rel="noreferrer">verify.vinix.co/{result.certificateNumber}</a></span>
+                                                        <div className="cert-meta-verify">
+                                                            <span className="cert-meta-intern-id">Intern ID: VINIX-{result.certificateNumber.split('-').pop()}</span>
+                                                            <span className="cert-meta-verify-link">Verify at: <strong>verify.vinix.online/{result.certificateNumber}</strong></span>
                                                         </div>
                                                     </div>
 
                                                     {/* Founder Signatory Column (Right side) */}
-                                                    <div className="footer-col-right flex-col items-center">
-                                                        <div className="signature-area w-full" style={{ justifyContent: 'center', alignItems: 'flex-end' }}>
-                                                            {isOfficial && <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Founder Signature" className="signature-img" />}
+                                                    <div className="cert-footer-col right-col">
+                                                        <div className="cert-signature-wrap">
+                                                            {isOfficial && <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Founder Signature" className="cert-signature-img" />}
                                                         </div>
-                                                        <div className="signer-line"></div>
-                                                        <span className="signer-name" style={{ textAlign: 'center' }}>Vishal R</span>
-                                                        <span className="signer-title" style={{ textAlign: 'center' }}>Founder & CEO</span>
-                                                        <span className="detail-right" style={{ textAlign: 'center' }}>Certificate ID: {result.certificateNumber}</span>
+                                                        <div className="cert-sig-line"></div>
+                                                        <div className="cert-signer-name">Vishal R</div>
+                                                        <span className="cert-signer-title">FOUNDER &amp; CEO, VINIX</span>
+                                                    </div>
+                                                </div>
+
+                                                {/* Bottom compliance bar */}
+                                                <div className="cert-bottom-bar">
+                                                    <div className="cert-compliance-tag">
+                                                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+                                                        <span>Tamper-Proof Blockchain Credential • ISO 9001:2015 Certified • MSME Reg: UDYAM-TN-21-0066185</span>
+                                                    </div>
+                                                    <div className="cert-id-wrap" style={{ color: '#0c0f17', fontWeight: 800 }}>
+                                                        Cert ID: <span className="cert-id-badge" style={{ color: '#b48324', fontWeight: 800, fontFamily: 'monospace' }}>{result.certificateNumber}</span>
                                                     </div>
                                                 </div>
                                             </>

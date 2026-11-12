@@ -26,6 +26,7 @@ export interface StudentNavbarProps {
     activeEnrollment?: any;
     unreadNotifications?: number;
     onReviewClick?: () => void;
+    hasSidebar?: boolean;
 }
 
 interface NotificationItem {
@@ -42,7 +43,8 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
     activeTab,
     setActiveTab,
     activeEnrollment,
-    onReviewClick
+    onReviewClick,
+    hasSidebar = false
 }) => {
     const { user, profile, studentProfile, signOut } = useAuth();
     const navigate = useNavigate();
@@ -224,6 +226,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
         switch (target) {
             case 'home':
                 setActiveTab('overview');
+                document.getElementById('dashboard-main-content')?.scrollTo({ top: 0, behavior: 'smooth' });
                 window.scrollTo({ top: 0, behavior: 'smooth' });
                 break;
             case 'tasks':
@@ -270,9 +273,9 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
 
     return (
         <>
-            {/* Top Navigation Bar (Header) - Matching Laptop View in Image 3 */}
+            {/* Top Navigation Bar (Header) - Full Screen Width */}
             <header className="sticky top-0 z-40 w-full bg-white dark:bg-slate-950 border-b border-slate-100 dark:border-slate-800/80 shadow-[0_2px_8px_-2px_rgba(0,0,0,0.05)] transition-colors duration-200">
-                <div className="mx-auto max-w-[1440px] px-4 sm:px-6 lg:px-8">
+                <div className="w-full px-4 sm:px-6 lg:px-8">
                     <div className="flex h-16 sm:h-[68px] items-center justify-between">
                         {/* Left: Brand Logo */}
                         <div className="flex items-center gap-6 shrink-0">
@@ -282,9 +285,9 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                 aria-label="Vinix Student Portal Home"
                             >
                                 <img
-                                    src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'}
-                                    alt="Vinix"
-                                    className="h-7 sm:h-8 w-auto shrink-0 object-contain mix-blend-multiply dark:mix-blend-normal dark:invert transition-all duration-300"
+                                    src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png?v=4'}
+                                    alt="VINIX"
+                                    className="h-7 sm:h-8 w-auto shrink-0 object-contain dark:drop-shadow-[0_0_2px_rgba(255,255,255,0.7)] transition-all duration-300"
                                 />
                             </button>
                         </div>
@@ -296,19 +299,19 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                 onClick={() => handleNavClick('home')}
                                 className={`flex items-center gap-1.5 text-xs font-semibold transition-colors cursor-pointer ${
                                     activeTab === 'overview' && window.scrollY < 100
-                                        ? 'text-blue-600 dark:text-blue-400 font-bold'
-                                        : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'
+                                        ? 'text-red-600 dark:text-red-400 font-bold'
+                                        : 'text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400'
                                 }`}
                             >
                                 <Home className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                 <span>Home</span>
                             </button>
 
-                            {/* My Tasks (Active in Image 3: solid blue pill button with white text & icon) */}
+                            {/* My Tasks (Active in Image 3: solid pill button with white text & icon) */}
                             {isItemActive('tasks') ? (
                                 <button
                                     onClick={() => handleNavClick('tasks')}
-                                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs shadow-blue-500/25 transition-all cursor-pointer"
+                                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs shadow-red-500/25 transition-all cursor-pointer"
                                 >
                                     <ClipboardList className="w-4 h-4 text-white" />
                                     <span>My Tasks</span>
@@ -316,7 +319,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             ) : (
                                 <button
                                     onClick={() => handleNavClick('tasks')}
-                                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
                                 >
                                     <ClipboardList className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                     <span>My Tasks</span>
@@ -326,7 +329,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             {/* My Internships */}
                             <button
                                 onClick={() => handleNavClick('internships')}
-                                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
                             >
                                 <Briefcase className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                 <span>My Internships</span>
@@ -336,7 +339,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             {isItemActive('payment') ? (
                                 <button
                                     onClick={() => handleNavClick('payment')}
-                                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs shadow-blue-500/25 transition-all cursor-pointer"
+                                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs shadow-red-500/25 transition-all cursor-pointer"
                                 >
                                     <CreditCard className="w-4 h-4 text-white" />
                                     <span>Payment</span>
@@ -344,7 +347,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             ) : (
                                 <button
                                     onClick={() => handleNavClick('payment')}
-                                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
                                 >
                                     <CreditCard className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                     <span>Payment</span>
@@ -355,7 +358,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             {isItemActive('certificates') ? (
                                 <button
                                     onClick={() => handleNavClick('certificates')}
-                                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs shadow-blue-500/25 transition-all cursor-pointer"
+                                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs shadow-red-500/25 transition-all cursor-pointer"
                                 >
                                     <Award className="w-4 h-4 text-white" />
                                     <span>Certificates</span>
@@ -363,7 +366,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             ) : (
                                 <button
                                     onClick={() => handleNavClick('certificates')}
-                                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
                                 >
                                     <Award className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                     <span>Certificates</span>
@@ -374,7 +377,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             {isItemActive('profile') ? (
                                 <button
                                     onClick={() => handleNavClick('profile')}
-                                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs shadow-blue-500/25 transition-all cursor-pointer"
+                                    className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-xs shadow-red-500/25 transition-all cursor-pointer"
                                 >
                                     <User className="w-4 h-4 text-white" />
                                     <span>Profile</span>
@@ -382,7 +385,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             ) : (
                                 <button
                                     onClick={() => handleNavClick('profile')}
-                                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
                                 >
                                     <User className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                     <span>Profile</span>
@@ -392,7 +395,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             {/* Review */}
                             <button
                                 onClick={() => handleNavClick('review')}
-                                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors cursor-pointer"
+                                className="flex items-center gap-1.5 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 transition-colors cursor-pointer"
                             >
                                 <MessageSquare className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                                 <span>Review</span>
@@ -412,11 +415,9 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                     aria-label="Student notifications"
                                 >
                                     <Bell className="w-[18px] h-[18px]" />
-                                    {unreadCount > 0 && (
-                                        <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] px-1 bg-[#f43f5e] text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs border-2 border-white dark:border-slate-950 animate-in fade-in">
-                                            9+
-                                        </span>
-                                    )}
+                                    <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] px-1 bg-red-600 text-white text-[10px] font-black rounded-full flex items-center justify-center shadow-xs border-2 border-white dark:border-slate-950 animate-in fade-in">
+                                        {unreadCount > 9 ? '9+' : (unreadCount || 2)}
+                                    </span>
                                 </button>
 
                                 {/* Notification Dropdown Popover */}
@@ -436,7 +437,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                             {unreadCount > 0 && (
                                                 <button
                                                     onClick={handleMarkAllNotificationsRead}
-                                                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
+                                                    className="text-xs font-semibold text-red-600 dark:text-red-400 hover:underline"
                                                 >
                                                     Mark all read
                                                 </button>
@@ -449,7 +450,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                                     key={item.id}
                                                     onClick={() => handleSelectNotification(item)}
                                                     className={`p-3.5 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors cursor-pointer flex gap-3 text-left ${
-                                                        !item.read ? 'bg-blue-50/40 dark:bg-blue-950/20' : ''
+                                                        !item.read ? 'bg-red-50/40 dark:bg-red-950/20' : ''
                                                     }`}
                                                 >
                                                     <div
@@ -457,7 +458,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                                             item.type === 'offer'
                                                                 ? 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-400'
                                                                 : item.type === 'task'
-                                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-400'
+                                                                ? 'bg-red-100 text-red-700 dark:bg-red-950/60 dark:text-red-400'
                                                                 : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-400'
                                                         }`}
                                                     >
@@ -506,8 +507,8 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                     className="flex items-center gap-1.5 lg:gap-2.5 pl-1.5 pr-2.5 lg:pr-3 py-1.5 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-850 transition-all shadow-xs cursor-pointer focus:outline-none shrink-0"
                                     aria-label="Student profile menu"
                                 >
-                                    {/* Circle Avatar with initial in vibrant blue matching Pic 2 */}
-                                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center overflow-hidden shadow-xs shrink-0">
+                                    {/* Circle Avatar with initial in vibrant brand color matching Pic 2 */}
+                                    <div className="w-8 h-8 rounded-full bg-red-600 text-white font-bold text-sm flex items-center justify-center overflow-hidden shadow-xs shrink-0">
                                         {authenticAvatar ? (
                                             <img
                                                 src={authenticAvatar}
@@ -544,7 +545,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                                 {studentEmail}
                                             </p>
                                             {studentProfile?.college && (
-                                                <span className="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-100 dark:border-blue-900/40">
+                                                <span className="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-400 border border-red-100 dark:border-red-900/40">
                                                     {studentProfile.college}
                                                 </span>
                                             )}
@@ -613,9 +614,9 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                             {/* Brand Logo */}
                             <div className="flex items-center shrink-0">
                                 <img
-                                    src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'}
-                                    alt="Vinix"
-                                    className="h-7 sm:h-8 w-auto shrink-0 object-contain mix-blend-multiply dark:mix-blend-normal dark:invert"
+                                    src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png?v=4'}
+                                    alt="VINIX"
+                                    className="h-7 sm:h-8 w-auto shrink-0 object-contain dark:drop-shadow-[0_0_2px_rgba(255,255,255,0.7)]"
                                 />
                             </div>
 
@@ -650,7 +651,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
 
                                 {/* User Pill Matching Pic 2 */}
                                 <div className="flex items-center gap-1.5 pl-1 pr-2.5 py-1 rounded-full border border-slate-200/90 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-                                    <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center overflow-hidden">
+                                    <div className="w-8 h-8 rounded-full bg-red-600 text-white font-black text-sm flex items-center justify-center overflow-hidden">
                                         {authenticAvatar ? (
                                             <img
                                                 src={authenticAvatar}
@@ -678,9 +679,9 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                         {/* Scrollable Drawer Body */}
                         <div className="flex-1 overflow-y-auto px-5 py-5 space-y-4 text-left">
                             {/* 1. Student Profile Card (Matching Image 3) */}
-                            <div className="bg-[#eff6ff] dark:bg-slate-900/80 border border-blue-100/80 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-xs">
+                            <div className="bg-red-50/40 dark:bg-slate-900/80 border border-red-100/80 dark:border-slate-800 rounded-2xl p-4 flex items-center justify-between shadow-xs">
                                 <div className="flex items-center gap-3.5 min-w-0">
-                                    <div className="w-12 h-12 rounded-full bg-blue-600 text-white font-black text-lg flex items-center justify-center shadow-md shadow-blue-500/25 shrink-0 overflow-hidden">
+                                    <div className="w-12 h-12 rounded-full bg-red-600 text-white font-black text-lg flex items-center justify-center shadow-md shadow-red-500/25 shrink-0 overflow-hidden">
                                         {authenticAvatar ? (
                                             <img
                                                 src={authenticAvatar}
@@ -704,7 +705,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                 {/* Quick Theme Toggle inside Profile Card */}
                                 <button
                                     onClick={toggleDarkMode}
-                                    className="w-9 h-9 rounded-full border border-blue-200/70 dark:border-slate-700 bg-white/90 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-105 transition-transform shadow-2xs shrink-0 cursor-pointer"
+                                    className="w-9 h-9 rounded-full border border-red-200/70 dark:border-slate-700 bg-white/90 dark:bg-slate-800 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:scale-105 transition-transform shadow-2xs shrink-0 cursor-pointer"
                                     title="Toggle theme"
                                     aria-label="Toggle theme in card"
                                 >
@@ -730,7 +731,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                     onClick={() => handleNavClick('home')}
                                     className="w-full bg-[#f8fafc] dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-100 dark:border-slate-800/70 rounded-2xl p-3.5 flex items-center gap-3.5 text-slate-700 dark:text-slate-200 font-bold text-sm transition-all group cursor-pointer"
                                 >
-                                    <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center justify-center transition-colors shadow-2xs">
+                                    <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400 flex items-center justify-center transition-colors shadow-2xs">
                                         <Home className="w-4 h-4" />
                                     </div>
                                     <span>Home</span>
@@ -740,14 +741,14 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                 {isItemActive('tasks') ? (
                                     <button
                                         onClick={() => handleNavClick('tasks')}
-                                        className="w-full bg-[#edf4ff] dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 rounded-2xl p-3.5 flex items-center gap-3.5 relative overflow-hidden transition-all shadow-xs cursor-pointer"
+                                        className="w-full bg-red-50 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/60 rounded-2xl p-3.5 flex items-center gap-3.5 relative overflow-hidden transition-all shadow-xs cursor-pointer"
                                     >
                                         {/* Left Active Indicator Bar */}
-                                        <div className="absolute left-0 top-3 bottom-3 w-1.5 bg-blue-600 rounded-r-full" />
-                                        <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/30 shrink-0">
+                                        <div className="absolute left-0 top-3 bottom-3 w-1.5 bg-red-600 rounded-r-full" />
+                                        <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md shadow-red-500/30 shrink-0">
                                             <ClipboardList className="w-4 h-4" />
                                         </div>
-                                        <span className="font-extrabold text-blue-600 dark:text-blue-400 text-sm">
+                                        <span className="font-extrabold text-red-600 dark:text-red-400 text-sm">
                                             My Tasks
                                         </span>
                                     </button>
@@ -756,7 +757,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                         onClick={() => handleNavClick('tasks')}
                                         className="w-full bg-[#f8fafc] dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-100 dark:border-slate-800/70 rounded-2xl p-3.5 flex items-center gap-3.5 text-slate-700 dark:text-slate-200 font-bold text-sm transition-all group cursor-pointer"
                                     >
-                                        <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center justify-center transition-colors shadow-2xs">
+                                        <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400 flex items-center justify-center transition-colors shadow-2xs">
                                             <ClipboardList className="w-4 h-4" />
                                         </div>
                                         <span>My Tasks</span>
@@ -768,7 +769,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                     onClick={() => handleNavClick('internships')}
                                     className="w-full bg-[#f8fafc] dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-100 dark:border-slate-800/70 rounded-2xl p-3.5 flex items-center gap-3.5 text-slate-700 dark:text-slate-200 font-bold text-sm transition-all group cursor-pointer"
                                 >
-                                    <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center justify-center transition-colors shadow-2xs">
+                                    <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400 flex items-center justify-center transition-colors shadow-2xs">
                                         <Briefcase className="w-4 h-4" />
                                     </div>
                                     <span>My Internships</span>
@@ -778,13 +779,13 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                 {isItemActive('payment') ? (
                                     <button
                                         onClick={() => handleNavClick('payment')}
-                                        className="w-full bg-[#edf4ff] dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 rounded-2xl p-3.5 flex items-center gap-3.5 relative overflow-hidden transition-all shadow-xs cursor-pointer"
+                                        className="w-full bg-red-50 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/60 rounded-2xl p-3.5 flex items-center gap-3.5 relative overflow-hidden transition-all shadow-xs cursor-pointer"
                                     >
-                                        <div className="absolute left-0 top-3 bottom-3 w-1.5 bg-blue-600 rounded-r-full" />
-                                        <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/30 shrink-0">
+                                        <div className="absolute left-0 top-3 bottom-3 w-1.5 bg-red-600 rounded-r-full" />
+                                        <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md shadow-red-500/30 shrink-0">
                                             <CreditCard className="w-4 h-4" />
                                         </div>
-                                        <span className="font-extrabold text-blue-600 dark:text-blue-400 text-sm">
+                                        <span className="font-extrabold text-red-600 dark:text-red-400 text-sm">
                                             Payment
                                         </span>
                                     </button>
@@ -793,7 +794,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                         onClick={() => handleNavClick('payment')}
                                         className="w-full bg-[#f8fafc] dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-100 dark:border-slate-800/70 rounded-2xl p-3.5 flex items-center gap-3.5 text-slate-700 dark:text-slate-200 font-bold text-sm transition-all group cursor-pointer"
                                     >
-                                        <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center justify-center transition-colors shadow-2xs">
+                                        <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400 flex items-center justify-center transition-colors shadow-2xs">
                                             <CreditCard className="w-4 h-4" />
                                         </div>
                                         <span>Payment</span>
@@ -804,13 +805,13 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                 {isItemActive('certificates') ? (
                                     <button
                                         onClick={() => handleNavClick('certificates')}
-                                        className="w-full bg-[#edf4ff] dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 rounded-2xl p-3.5 flex items-center gap-3.5 relative overflow-hidden transition-all shadow-xs cursor-pointer"
+                                        className="w-full bg-red-50 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/60 rounded-2xl p-3.5 flex items-center gap-3.5 relative overflow-hidden transition-all shadow-xs cursor-pointer"
                                     >
-                                        <div className="absolute left-0 top-3 bottom-3 w-1.5 bg-blue-600 rounded-r-full" />
-                                        <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/30 shrink-0">
+                                        <div className="absolute left-0 top-3 bottom-3 w-1.5 bg-red-600 rounded-r-full" />
+                                        <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md shadow-red-500/30 shrink-0">
                                             <Award className="w-4 h-4" />
                                         </div>
-                                        <span className="font-extrabold text-blue-600 dark:text-blue-400 text-sm">
+                                        <span className="font-extrabold text-red-600 dark:text-red-400 text-sm">
                                             Certificates
                                         </span>
                                     </button>
@@ -819,7 +820,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                         onClick={() => handleNavClick('certificates')}
                                         className="w-full bg-[#f8fafc] dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-100 dark:border-slate-800/70 rounded-2xl p-3.5 flex items-center gap-3.5 text-slate-700 dark:text-slate-200 font-bold text-sm transition-all group cursor-pointer"
                                     >
-                                        <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center justify-center transition-colors shadow-2xs">
+                                        <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400 flex items-center justify-center transition-colors shadow-2xs">
                                             <Award className="w-4 h-4" />
                                         </div>
                                         <span>Certificates</span>
@@ -830,13 +831,13 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                 {isItemActive('profile') ? (
                                     <button
                                         onClick={() => handleNavClick('profile')}
-                                        className="w-full bg-[#edf4ff] dark:bg-blue-950/40 border border-blue-200/80 dark:border-blue-900/60 rounded-2xl p-3.5 flex items-center gap-3.5 relative overflow-hidden transition-all shadow-xs cursor-pointer"
+                                        className="w-full bg-red-50 dark:bg-red-950/40 border border-red-200/80 dark:border-red-900/60 rounded-2xl p-3.5 flex items-center gap-3.5 relative overflow-hidden transition-all shadow-xs cursor-pointer"
                                     >
-                                        <div className="absolute left-0 top-3 bottom-3 w-1.5 bg-blue-600 rounded-r-full" />
-                                        <div className="w-9 h-9 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-md shadow-blue-500/30 shrink-0">
+                                        <div className="absolute left-0 top-3 bottom-3 w-1.5 bg-red-600 rounded-r-full" />
+                                        <div className="w-9 h-9 rounded-full bg-red-600 text-white flex items-center justify-center shadow-md shadow-red-500/30 shrink-0">
                                             <User className="w-4 h-4" />
                                         </div>
-                                        <span className="font-extrabold text-blue-600 dark:text-blue-400 text-sm">
+                                        <span className="font-extrabold text-red-600 dark:text-red-400 text-sm">
                                             Profile
                                         </span>
                                     </button>
@@ -845,7 +846,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                         onClick={() => handleNavClick('profile')}
                                         className="w-full bg-[#f8fafc] dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-100 dark:border-slate-800/70 rounded-2xl p-3.5 flex items-center gap-3.5 text-slate-700 dark:text-slate-200 font-bold text-sm transition-all group cursor-pointer"
                                     >
-                                        <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center justify-center transition-colors shadow-2xs">
+                                        <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400 flex items-center justify-center transition-colors shadow-2xs">
                                             <User className="w-4 h-4" />
                                         </div>
                                         <span>Profile</span>
@@ -857,7 +858,7 @@ const StudentNavbar: React.FC<StudentNavbarProps> = ({
                                     onClick={() => handleNavClick('review')}
                                     className="w-full bg-[#f8fafc] dark:bg-slate-900/40 hover:bg-slate-100 dark:hover:bg-slate-800/60 border border-slate-100 dark:border-slate-800/70 rounded-2xl p-3.5 flex items-center gap-3.5 text-slate-700 dark:text-slate-200 font-bold text-sm transition-all group cursor-pointer"
                                 >
-                                    <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 flex items-center justify-center transition-colors shadow-2xs">
+                                    <div className="w-9 h-9 rounded-full bg-white dark:bg-slate-800 border border-slate-200/70 dark:border-slate-700 text-slate-600 dark:text-slate-400 group-hover:text-red-600 dark:group-hover:text-red-400 flex items-center justify-center transition-colors shadow-2xs">
                                         <MessageSquare className="w-4 h-4" />
                                     </div>
                                     <span>Review</span>

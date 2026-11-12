@@ -38,7 +38,7 @@ export const About: React.FC = () => {
             title: 'Apply & Get Offer',
             desc: 'Pick a domain, fill your details, and receive your offer letter instantly — no interview needed.',
             icon: Briefcase,
-            color: 'text-blue-600 bg-blue-50 dark:bg-blue-950/20'
+            color: 'text-red-600 bg-red-50 dark:bg-red-950/20'
         },
         {
             no: '02',
@@ -79,16 +79,16 @@ export const About: React.FC = () => {
                 }}
             />
 
-            {/* HERO BANNER SECTION */}
-            <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 bg-gradient-to-b from-blue-50/40 via-white to-transparent dark:from-slate-900/20 dark:via-slate-955 dark:to-transparent">
+            {/* HERO BAN SECTION */}
+            <section className="relative pt-16 pb-20 md:pt-24 md:pb-28 bg-gradient-to-b from-red-50/40 via-white to-transparent dark:from-slate-900/20 dark:via-slate-955 dark:to-transparent">
 
                 {/* Glow Spheres */}
-                <div className="absolute top-20 left-1/4 -z-10 w-96 h-96 rounded-full bg-blue-500/10 blur-[100px] animate-pulse"></div>
-                <div className="absolute bottom-10 right-1/4 -z-10 w-96 h-96 rounded-full bg-indigo-500/10 blur-[100px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+                <div className="absolute top-20 left-1/4 -z-10 w-96 h-96 rounded-full bg-red-500/10 blur-[100px] animate-pulse"></div>
+                <div className="absolute bottom-10 right-1/4 -z-10 w-96 h-96 rounded-full bg-rose-500/10 blur-[100px] animate-pulse" style={{ animationDelay: '2s' }}></div>
 
                 <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 text-center space-y-6">
                     <div className="inline-flex items-center space-x-1.5 px-3.5 py-1 text-[10px] uppercase font-bold text-slate-800 bg-white shadow-sm border border-slate-100 rounded-full dark:bg-slate-900 dark:border-slate-800 dark:text-slate-350">
-                        <Sparkles size={11} className="text-blue-550" />
+                        <Sparkles size={11} className="text-red-500" />
                         <span>About Vinix</span>
                     </div>
 
@@ -109,7 +109,7 @@ export const About: React.FC = () => {
 
                         {/* Left contents */}
                         <div className="lg:col-span-6 space-y-5">
-                            <span className="inline-flex px-3 py-1 text-[10px] font-extrabold uppercase bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded-full tracking-wider">
+                            <span className="inline-flex px-3 py-1 text-[10px] font-extrabold uppercase bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 rounded-full tracking-wider">
                                 OUR MISSION
                             </span>
                             <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 dark:text-white leading-tight">
@@ -124,7 +124,7 @@ export const About: React.FC = () => {
                         <div className="lg:col-span-6 grid grid-cols-2 gap-4">
                             {milestones.map((item, idx) => (
                                 <div key={idx} className="p-6 bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-808 rounded-2xl shadow-sm text-center space-y-1 hover:shadow-lg transition">
-                                    <h3 className="text-3xl font-extrabold text-blue-600 dark:text-blue-400">{item.number}</h3>
+                                    <h3 className="text-3xl font-extrabold text-red-600 dark:text-red-400">{item.number}</h3>
                                     <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">{item.label}</p>
                                 </div>
                             ))}
@@ -176,7 +176,7 @@ export const About: React.FC = () => {
                                 <div key={idx} className="relative p-6 bg-white dark:bg-slate-900 border border-slate-205 dark:border-slate-805 rounded-2xl shadow-sm space-y-4 hover:-translate-y-1 transition duration-300">
 
                                     {/* Step No badge */}
-                                    <span className="absolute top-4 right-4 w-6 h-6 rounded-full bg-blue-900 text-white text-[10px] font-bold flex items-center justify-center font-mono">
+                                    <span className="absolute top-4 right-4 w-6 h-6 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center font-mono">
                                         {s.no}
                                     </span>
 
@@ -197,18 +197,18 @@ export const About: React.FC = () => {
             {/* CTA FOOTER BANNER - SCREEN 3 */}
             <section className="py-16">
                 <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-                    <div className="relative p-8 md:p-12 bg-gradient-to-r from-blue-900 to-indigo-900 text-white rounded-[32px] overflow-hidden shadow-2xl border border-slate-700/50 flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-blue-500/20 blur-3xl"></div>
+                    <div className="relative p-8 md:p-12 bg-gradient-to-r from-zinc-950 via-neutral-900 to-zinc-950 text-white rounded-[32px] overflow-hidden shadow-2xl border border-red-900/40 flex flex-col md:flex-row items-center justify-between gap-8">
+                        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-red-500/15 blur-3xl"></div>
 
                         <div className="space-y-4 text-center md:text-left z-10">
                             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight">Be part of the Vinix journey</h2>
-                            <p className="text-xs text-blue-200 font-semibold uppercase tracking-wider">Get your offer letter in seconds. No application fee.</p>
+                            <p className="text-xs text-red-200 font-semibold uppercase tracking-wider">Get your offer letter in seconds. No application fee.</p>
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-3 z-10 w-full sm:w-auto">
                             <button
-                                onClick={() => navigate('/internship')}
-                                className="px-6 py-3.5 bg-white text-indigo-900 rounded-xl hover:bg-slate-100 font-bold transition flex items-center justify-center space-x-1.5 shadow"
+                                onClick={() => navigate('/internships')}
+                                className="px-6 py-3.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold transition flex items-center justify-center space-x-1.5 shadow-lg shadow-red-600/30"
                             >
                                 <span>Browse Internships</span>
                                 <ArrowRight size={14} />

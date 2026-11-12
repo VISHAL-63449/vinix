@@ -82,7 +82,7 @@ export default async function handler(req, res) {
 
         // 2. Load Images for PDF
         const logoBase64 = await getImageBase64('vinix-logo.png', req);
-        const msmeBase64 = await getImageBase64('msme.jpeg', req);
+        const msmeBase64 = (await getImageBase64('msme.png', req)) || (await getImageBase64('msme.jpeg', req));
         const stampBase64 = await getImageBase64('certificate-stamp.jpeg', req);
         const signBase64 = await getImageBase64('founder-sign.png', req);
 
@@ -191,7 +191,7 @@ export default async function handler(req, res) {
         doc.text(`Intern ID: VINIX-${shortInternId}`, 148, footerY + 19, { align: "center" });
         doc.setFontSize(7);
         doc.setFont('Helvetica', 'normal');
-        doc.text(`Verify at: verify.vinix.co/${tokenCert}`, 148, footerY + 23, { align: "center" });
+        doc.text(`Verify at: verify.vinix.online/${tokenCert}`, 148, footerY + 23, { align: "center" });
 
         // Right column - Founder Signature
         if (signBase64) {
@@ -240,7 +240,7 @@ export default async function handler(req, res) {
         const emailBody = `Dear ${sName},\n\n` +
             `We are extremely pleased to present your Certificate of Internship Completion for the ${finalCourseName} track at VINIX Technologies.\n\n` +
             `You have shown incredible dedication, completed all milestone challenges, and proven your technical skills.\n\n` +
-            `Please find your official Certificate of Completion attached to this email. You can verify the authenticity of this credential anytime at direct web URL: ${publicUrl} or via verify.vinix.co/${tokenCert}.\n\n` +
+            `Please find your official Certificate of Completion attached to this email. You can verify the authenticity of this credential anytime at direct web URL: ${publicUrl} or via verify.vinix.online/${tokenCert}.\n\n` +
             `Details:\n` +
             `- Certificate Number: ${tokenCert}\n` +
             `- Course: ${finalCourseName}\n` +

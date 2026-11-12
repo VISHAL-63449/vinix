@@ -113,7 +113,7 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({
                 {/* Body Content */}
                 <div className="p-6 sm:p-7 space-y-4">
                     <div className="space-y-1.5">
-                        <div className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/60 text-[#154ED0] dark:text-blue-400 font-bold text-[10px] uppercase tracking-wider border border-blue-200/60 dark:border-blue-900">
+                        <div className="inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 font-bold text-[10px] uppercase tracking-wider border border-red-200/60 dark:border-red-900">
                             <Sparkles className="w-3 h-3" />
                             <span>Featured Announcement</span>
                         </div>
@@ -131,7 +131,7 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({
                         <button
                             type="button"
                             onClick={handleActionClick}
-                            className="w-full py-3.5 px-6 rounded-2xl bg-[#0F286E] hover:bg-[#154ED0] text-white text-sm font-bold shadow-lg shadow-blue-600/20 transition-all flex items-center justify-center space-x-2 active:scale-98"
+                            className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white text-sm font-bold shadow-lg shadow-red-600/25 transition-all flex items-center justify-center space-x-2 active:scale-98"
                         >
                             <span>{popup.linkLabel || 'Learn More'}</span>
                             <ArrowRight className="w-4 h-4" />
@@ -143,7 +143,7 @@ export const PromoPopupModal: React.FC<PromoPopupModalProps> = ({
                                     type="checkbox"
                                     checked={dontShowToday}
                                     onChange={(e) => setDontShowToday(e.target.checked)}
-                                    className="rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500"
+                                    className="rounded border-slate-300 dark:border-slate-700 text-red-600 focus:ring-red-500"
                                 />
                                 <span>Don't show again today</span>
                             </label>

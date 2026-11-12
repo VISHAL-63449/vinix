@@ -1203,7 +1203,7 @@ const Internships: React.FC = () => {
                                             className={[
                                                 'text-left p-3 rounded-xl border-2 transition-all duration-150',
                                                 durationIdx === i
-                                                    ? 'border-brand-primary bg-blue-50 dark:bg-blue-950/20'
+                                                    ? 'border-brand-primary bg-red-50 dark:bg-red-950/20'
                                                     : 'border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-950 hover:border-slate-300',
                                             ].join(' ')}>
                                             <p className={`font-extrabold text-sm ${durationIdx === i ? 'text-brand-primary' : 'text-slate-800 dark:text-slate-100'}`}>
@@ -1235,8 +1235,7 @@ const Internships: React.FC = () => {
 
                             {/* Submit */}
                             <button type="submit" disabled={submitting}
-                                className="w-full py-4 rounded-xl font-extrabold text-sm text-white shadow-lg transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.99]"
-                                style={{ background: 'linear-gradient(90deg, #1a237e 0%, #283593 100%)' }}>
+                                className="w-full py-4 rounded-xl font-extrabold text-sm text-white shadow-lg shadow-red-600/20 hover:shadow-red-600/35 transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.99] bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-red-800">
                                 {submitting ? (
                                     <>
                                         <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
@@ -1263,8 +1262,8 @@ const Internships: React.FC = () => {
 };
 
 /* ── Shared styles ── */
-const inp = 'w-full px-4 py-3 bg-[#f8fafc] hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-950 dark:focus:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-[14px] font-semibold text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition';
-const sel = 'w-full pl-4 pr-10 py-3 bg-[#f8fafc] hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-950 dark:focus:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-[14px] font-semibold text-slate-800 dark:text-slate-100 appearance-none outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition';
+const inp = 'w-full px-4 py-3 bg-[#f8fafc] hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-950 dark:focus:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-[14px] font-semibold text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition';
+const sel = 'w-full pl-4 pr-10 py-3 bg-[#f8fafc] hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-950 dark:focus:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-[14px] font-semibold text-slate-800 dark:text-slate-100 appearance-none outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition';
 
 const Field: React.FC<{ label: string; required?: boolean; optional?: boolean; children: React.ReactNode }> =
     ({ label, required, optional, children }) => (

@@ -45,8 +45,8 @@ export default defineConfig({
                 req.url = `/api/admin/resend-offer?applicationId=${encodeURIComponent(appId)}`;
               }
               const cleanPath = reqUrl.split('?')[0];
-              if (cleanPath === '/favicon.ico' || cleanPath === '/favicon.png') {
-                const targetFile = cleanPath.endsWith('.ico') ? 'favicon.ico' : 'favicon.png';
+              if (cleanPath.startsWith('/favicon') || cleanPath === '/apple-touch-icon.png' || cleanPath.startsWith('/icon-')) {
+                const targetFile = path.basename(cleanPath);
                 const iconPath = path.resolve(dirname, 'public', targetFile);
                 if (fs.existsSync(iconPath)) {
                   res.setHeader('Content-Type', targetFile.endsWith('.ico') ? 'image/x-icon' : 'image/png');

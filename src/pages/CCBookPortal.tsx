@@ -205,7 +205,7 @@ const CCBookPortal: React.FC = () => {
         return (
             <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center p-4">
                 <div className="relative w-12 h-12 mb-4">
-                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-red-600 border-t-transparent"></div>
                 </div>
                 <h3 className="text-base font-bold text-slate-800 dark:text-slate-100 animate-pulse">Loading Counselling Portal...</h3>
                 <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Fetching student profiles and records</p>
@@ -226,11 +226,11 @@ const CCBookPortal: React.FC = () => {
             <h2 className="text-2xl font-black text-slate-800">Student Counselling / CC Book</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
                 {[
-                    { title: 'Total Students', value: students.length, icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
+                    { title: 'Total Students', value: students.length, icon: Users, color: 'text-red-600', bg: 'bg-red-50' },
                     { title: 'Students Counselled', value: new Set(records.map(r => r.student_id)).size, icon: UserCheck, color: 'text-emerald-600', bg: 'bg-emerald-50' },
                     { title: 'Pending Counselling', value: students.length - new Set(records.map(r => r.student_id)).size, icon: AlertCircle, color: 'text-amber-600', bg: 'bg-amber-50' },
                     { title: 'Follow-ups Due', value: records.filter(r => r.follow_up_required).length, icon: Clock, color: 'text-purple-600', bg: 'bg-purple-50' },
-                    { title: "This Month's", value: records.filter(r => new Date(r.counselling_date).getMonth() === new Date().getMonth()).length, icon: Calendar, color: 'text-indigo-600', bg: 'bg-indigo-50' }
+                    { title: "This Month's", value: records.filter(r => new Date(r.counselling_date).getMonth() === new Date().getMonth()).length, icon: Calendar, color: 'text-rose-600', bg: 'bg-rose-50' }
                 ].map((stat, i) => (
                     <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
                         <div className={`p-3 rounded-xl ${stat.bg} ${stat.color}`}>
@@ -250,7 +250,7 @@ const CCBookPortal: React.FC = () => {
         <div className="bg-white p-6 md:p-8 rounded-2xl border border-slate-200 shadow-sm animate-fadeIn max-w-4xl mx-auto">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
                 <h3 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-                    {editingRecordId ? <Edit3 className="w-5 h-5 text-blue-600" /> : <Plus className="w-5 h-5 text-blue-600" />}
+                    {editingRecordId ? <Edit3 className="w-5 h-5 text-red-600" /> : <Plus className="w-5 h-5 text-red-600" />}
                     {editingRecordId ? 'Edit Counselling Record' : 'New Counselling Record'}
                 </h3>
                 <button onClick={() => { setShowNewRecordForm(false); setEditingRecordId(null); }} className="text-slate-400 hover:text-slate-600">
@@ -268,7 +268,7 @@ const CCBookPortal: React.FC = () => {
                                 required
                                 value={selectedStudentId}
                                 onChange={(e) => setSelectedStudentId(e.target.value)}
-                                className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500"
                             >
                                 <option value="">-- Choose Student --</option>
                                 {students.map(s => (
@@ -281,7 +281,7 @@ const CCBookPortal: React.FC = () => {
                             <select
                                 value={formRecord.counselling_type}
                                 onChange={(e) => setFormRecord({ ...formRecord, counselling_type: e.target.value })}
-                                className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-red-500"
                             >
                                 <option>Academic</option>
                                 <option>Career</option>
@@ -345,7 +345,7 @@ const CCBookPortal: React.FC = () => {
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 flex justify-end">
-                    <button type="submit" className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl flex items-center gap-2">
+                    <button type="submit" className="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl flex items-center gap-2">
                         <Save className="w-4 h-4" /> Save Record
                     </button>
                 </div>
@@ -360,7 +360,7 @@ const CCBookPortal: React.FC = () => {
             <div className="space-y-6 animate-fadeIn">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <h2 className="text-2xl font-black text-slate-800 flex items-center gap-2">
-                        <BookOpen className="w-6 h-6 text-blue-600" /> CC Book Registry
+                        <BookOpen className="w-6 h-6 text-red-600" /> CC Book Registry
                     </h2>
                     <button onClick={() => {
                         setFormRecord({
@@ -378,7 +378,7 @@ const CCBookPortal: React.FC = () => {
                         setSelectedStudentId('');
                         setEditingRecordId(null);
                         setShowNewRecordForm(true);
-                    }} className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl flex items-center gap-2 shadow-sm text-sm">
+                    }} className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl flex items-center gap-2 shadow-sm text-sm">
                         <Plus className="w-4 h-4" /> Add Record
                     </button>
                 </div>
@@ -437,7 +437,7 @@ const CCBookPortal: React.FC = () => {
                                         </td>
                                         <td className="px-4 py-3 text-right">
                                             <div className="flex items-center justify-end gap-2">
-                                                <button onClick={() => { setActiveStudent(r.mz_students!); setActiveTab('student-profile') }} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition" title="View Profile">
+                                                <button onClick={() => { setActiveStudent(r.mz_students!); setActiveTab('student-profile') }} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition" title="View Profile">
                                                     <Eye className="w-4 h-4" />
                                                 </button>
                                                 <button onClick={() => {
@@ -490,7 +490,7 @@ const CCBookPortal: React.FC = () => {
                 </button>
 
                 <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row gap-6">
-                    <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0 text-blue-600 text-2xl font-black">
+                    <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0 text-red-600 text-2xl font-black">
                         {activeStudent.name.charAt(0)}
                     </div>
                     <div className="flex-1 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-left">
@@ -507,13 +507,13 @@ const CCBookPortal: React.FC = () => {
                 <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
                     {studentRecords.map(r => (
                         <div key={r.counselling_id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active text-left">
-                            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-blue-50 text-blue-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 font-bold z-10">
+                            <div className="flex items-center justify-center w-10 h-10 rounded-full border border-white bg-red-50 text-red-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 font-bold z-10">
                                 {r.session_number}
                             </div>
                             <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-2xl border border-slate-200 bg-white shadow-sm">
                                 <div className="flex items-center justify-between mb-2">
                                     <span className="font-bold text-slate-800">{new Date(r.counselling_date).toLocaleDateString()}</span>
-                                    <span className="text-[10px] uppercase font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">{r.counselling_type}</span>
+                                    <span className="text-[10px] uppercase font-bold text-red-600 bg-red-50 px-2 py-0.5 rounded">{r.counselling_type}</span>
                                 </div>
                                 <div className="space-y-2 mt-3">
                                     {r.student_concern && <div><p className="text-xs font-bold text-slate-500">Concern</p><p className="text-sm text-slate-700">{r.student_concern}</p></div>}
@@ -537,12 +537,12 @@ const CCBookPortal: React.FC = () => {
             {/* Sidebar */}
             <aside className="w-full md:w-64 bg-white border-r border-slate-200 flex-shrink-0 p-4 flex flex-col select-none no-print">
                 <div className="flex items-center gap-2 mb-8 px-2">
-                    <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center">
+                    <div className="w-8 h-8 rounded-lg bg-red-600 flex items-center justify-center">
                         <BookOpen className="w-4 h-4 text-white" />
                     </div>
                     <div>
                         <h1 className="font-black text-sm tracking-tight leading-none text-slate-900">Mount Zion</h1>
-                        <p className="text-[9px] font-bold text-blue-600 uppercase tracking-widest leading-tight">CC Book System</p>
+                        <p className="text-[9px] font-bold text-red-600 uppercase tracking-widest leading-tight">CC Book System</p>
                     </div>
                 </div>
 
@@ -555,7 +555,7 @@ const CCBookPortal: React.FC = () => {
                         { id: 'reports', label: 'Reports', icon: FileText },
                         { id: 'settings', label: 'Settings', icon: Settings },
                     ].map(item => (
-                        <button key={item.id} onClick={() => { setActiveTab(item.id as any); if (item.id !== 'student-profile') setActiveStudent(null); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === item.id ? 'bg-blue-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}>
+                        <button key={item.id} onClick={() => { setActiveTab(item.id as any); if (item.id !== 'student-profile') setActiveStudent(null); }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-bold transition-all ${activeTab === item.id ? 'bg-red-600 text-white shadow-md' : 'text-slate-500 hover:text-slate-800 hover:bg-slate-50'}`}>
                             <item.icon className="w-4 h-4" /> {item.label}
                         </button>
                     ))}

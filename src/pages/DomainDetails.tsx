@@ -332,7 +332,7 @@ export default function DomainDetails() {
     if (loading) {
         return (
             <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col justify-center items-center">
-                <div className="w-12 h-12 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-12 h-12 border-4 border-red-600 border-t-transparent rounded-full animate-spin"></div>
                 <p className="mt-4 text-slate-500 font-bold dark:text-slate-400">Loading domain details...</p>
             </div>
         );
@@ -345,7 +345,7 @@ export default function DomainDetails() {
                     <X className="w-12 h-12 text-red-500 mx-auto mb-4" />
                     <h3 className="text-xl font-black text-slate-950 dark:text-white">Failed to load</h3>
                     <p className="text-slate-500 dark:text-slate-400 mt-2 font-semibold">{error || 'Domain was not found.'}</p>
-                    <Link to="/domains" className="mt-6 inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-blue-600 text-white font-extrabold text-xs shadow hover:bg-blue-500 transition">
+                    <Link to="/domains" className="mt-6 inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-red-600 text-white font-extrabold text-xs shadow hover:bg-red-700 transition">
                         <ArrowLeft className="w-4 h-4" />
                         <span>Back to Domains</span>
                     </Link>
@@ -393,11 +393,11 @@ export default function DomainDetails() {
 
                     <div className="relative z-10 max-w-3xl space-y-4">
                         <div className="flex items-center space-x-4">
-                            <div className="w-16 h-16 rounded-2xl bg-blue-600/70 backdrop-blur border border-blue-500/20 flex items-center justify-center">
+                            <div className="w-16 h-16 rounded-2xl bg-red-600/80 backdrop-blur border border-red-500/20 flex items-center justify-center">
                                 {getIconElement(domain.icon)}
                             </div>
                             <div>
-                                <span className="text-[10px] tracking-wider uppercase font-black px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 border border-blue-400/25">
+                                <span className="text-[10px] tracking-wider uppercase font-black px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 border border-red-400/25">
                                     Learning Track
                                 </span>
                                 <h1 className="text-3xl sm:text-4xl font-black mt-1">
@@ -424,7 +424,7 @@ export default function DomainDetails() {
                     <div className="lg:col-span-1 bg-white dark:bg-slate-900/60 rounded-3xl p-6 border border-slate-205 dark:border-slate-800/40 space-y-6 h-fit sticky top-6">
                         <div className="flex items-center justify-between border-b pb-4 border-slate-100 dark:border-slate-800">
                             <h3 className="font-black text-sm text-slate-800 dark:text-white flex items-center space-x-2">
-                                <Filter className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                                <Filter className="w-4 h-4 text-red-600 dark:text-red-500" />
                                 <span>Filter Internships</span>
                             </h3>
                             <button
@@ -435,7 +435,7 @@ export default function DomainDetails() {
                                     setFilterMode('All');
                                     setFilterStipend('All');
                                 }}
-                                className="text-[11px] font-black text-blue-650 hover:text-blue-500 transition cursor-pointer"
+                                className="text-[11px] font-black text-red-600 hover:text-red-700 transition cursor-pointer"
                             >
                                 Reset All
                             </button>
@@ -451,7 +451,7 @@ export default function DomainDetails() {
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Search by keywords..."
-                                    className="w-full bg-slate-50 dark:bg-slate-950 pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850 text-xs font-semibold focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition-all text-slate-905 dark:text-white"
+                                    className="w-full bg-slate-50 dark:bg-slate-950 pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850 text-xs font-semibold focus:border-red-500 focus:ring-1 focus:ring-red-500 transition-all text-slate-905 dark:text-white"
                                 />
                             </div>
                         </div>
@@ -462,7 +462,7 @@ export default function DomainDetails() {
                             <select
                                 value={filterLevel}
                                 onChange={(e) => setFilterLevel(e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-blue-505 transition text-slate-700 dark:text-slate-300"
+                                className="w-full bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-red-500 transition text-slate-700 dark:text-slate-300"
                             >
                                 <option value="All">All Levels</option>
                                 <option value="Beginner">Beginner</option>
@@ -477,7 +477,7 @@ export default function DomainDetails() {
                             <select
                                 value={filterMode}
                                 onChange={(e) => setFilterMode(e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-blue-505 transition text-slate-700 dark:text-slate-300"
+                                className="w-full bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-red-500 transition text-slate-700 dark:text-slate-300"
                             >
                                 <option value="All">All Modes</option>
                                 <option value="Remote">Remote</option>
@@ -492,7 +492,7 @@ export default function DomainDetails() {
                             <select
                                 value={filterDuration}
                                 onChange={(e) => setFilterDuration(e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-blue-505 transition text-slate-700 dark:text-slate-300"
+                                className="w-full bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-red-500 transition text-slate-700 dark:text-slate-300"
                             >
                                 <option value="All">All Durations</option>
                                 <option value="4 Weeks">4 Weeks</option>
@@ -508,7 +508,7 @@ export default function DomainDetails() {
                             <select
                                 value={filterStipend}
                                 onChange={(e) => setFilterStipend(e.target.value)}
-                                className="w-full bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-blue-505 transition text-slate-700 dark:text-slate-300"
+                                className="w-full bg-slate-50 dark:bg-slate-950 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-850 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-red-500 transition text-slate-700 dark:text-slate-300"
                             >
                                 <option value="All">All Compensations</option>
                                 <option value="Paid">Paid / Stipend Available</option>
@@ -542,12 +542,12 @@ export default function DomainDetails() {
                                     return (
                                         <div
                                             key={internship.id}
-                                            className="group bg-white dark:bg-slate-900/65 rounded-3xl border border-slate-205 dark:border-slate-800/40 hover:border-blue-500/40 dark:hover:border-blue-500/25 p-6 hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row md:items-center md:justify-between gap-6"
+                                            className="group bg-white dark:bg-slate-900/65 rounded-3xl border border-slate-205 dark:border-slate-800/40 hover:border-red-500/40 dark:hover:border-red-500/25 p-6 hover:shadow-xl transition-all duration-300 flex flex-col md:flex-row md:items-center md:justify-between gap-6"
                                         >
                                             <div className="space-y-4 flex-grow max-w-2xl">
                                                 {/* Meta Info */}
                                                 <div className="flex flex-wrap items-center gap-2">
-                                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-500/10">
+                                                    <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-500/10">
                                                         {internship.difficulty || internship.level || 'Intermediate'}
                                                     </span>
                                                     <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200">
@@ -561,7 +561,7 @@ export default function DomainDetails() {
 
                                                 {/* Title */}
                                                 <div>
-                                                    <h3 className="text-xl font-black text-slate-900 dark:text-white group-hover:text-blue-650 dark:group-hover:text-blue-450 transition-colors">
+                                                    <h3 className="text-xl font-black text-slate-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-500 transition-colors">
                                                         {internship.title}
                                                     </h3>
                                                     <span className="text-xs font-bold text-slate-400 dark:text-slate-500">
@@ -610,14 +610,14 @@ export default function DomainDetails() {
                                                 ) : appStatus === 'pending' ? (
                                                     <button
                                                         disabled
-                                                        className="w-full px-6 py-3 rounded-2xl text-xs font-extrabold text-blue-600 bg-blue-50 dark:bg-blue-950/20 border border-blue-200/50 dark:border-blue-900/30 cursor-not-allowed text-center"
+                                                        className="w-full px-6 py-3 rounded-2xl text-xs font-extrabold text-red-600 bg-red-50 dark:bg-red-950/20 border border-red-200/50 dark:border-red-900/30 cursor-not-allowed text-center"
                                                     >
                                                         Applied - Under Review
                                                     </button>
                                                 ) : appStatus === 'approved' ? (
                                                     <Link
                                                         to="/dashboard"
-                                                        className="w-full flex items-center justify-center space-x-1 px-6 py-3 rounded-2xl text-xs font-extrabold text-white bg-blue-600 hover:bg-blue-500 transition shadow cursor-pointer"
+                                                        className="w-full flex items-center justify-center space-x-1 px-6 py-3 rounded-2xl text-xs font-extrabold text-white bg-red-600 hover:bg-red-700 transition shadow cursor-pointer"
                                                     >
                                                         <span>Go to Dashboard</span>
                                                         <ChevronRight className="w-4 h-4" />
@@ -631,7 +631,7 @@ export default function DomainDetails() {
                                                                 setSelectedInternship(internship);
                                                             }
                                                         }}
-                                                        className="w-full px-6 py-3 rounded-2xl text-xs font-extrabold text-white bg-blue-606 hover:bg-blue-500 dark:bg-blue-600 dark:hover:bg-blue-500 shadow hover:shadow-md transition active:scale-98 cursor-pointer text-center"
+                                                        className="w-full px-6 py-3 rounded-2xl text-xs font-extrabold text-white bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-700 shadow hover:shadow-md transition active:scale-98 cursor-pointer text-center"
                                                     >
                                                         {user ? 'Apply Now' : 'Login to Enroll'}
                                                     </button>
@@ -653,7 +653,7 @@ export default function DomainDetails() {
                         {/* Header */}
                         <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 mb-6">
                             <div>
-                                <span className="text-[10px] tracking-wider uppercase font-black px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-500/10">
+                                <span className="text-[10px] tracking-wider uppercase font-black px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 dark:text-red-400 border border-red-500/10">
                                     APPLY FOR VIRTUAL INTERNSHIP
                                 </span>
                                 <h3 className="text-lg font-black text-slate-900 dark:text-white mt-1">
@@ -695,7 +695,7 @@ export default function DomainDetails() {
                                         value={appForm.name}
                                         onChange={(e) => setAppForm(prev => ({ ...prev, name: e.target.value }))}
                                         placeholder="Enter your registered full name"
-                                        className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-xs font-semibold text-slate-850 dark:text-white"
+                                        className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-red-500 transition text-xs font-semibold text-slate-850 dark:text-white"
                                     />
                                 </div>
 
@@ -708,7 +708,7 @@ export default function DomainDetails() {
                                         value={appForm.email}
                                         onChange={(e) => setAppForm(prev => ({ ...prev, email: e.target.value }))}
                                         placeholder="Enter your contact email"
-                                        className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-xs font-semibold text-slate-850 dark:text-white"
+                                        className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-red-500 transition text-xs font-semibold text-slate-850 dark:text-white"
                                     />
                                 </div>
 
@@ -722,7 +722,7 @@ export default function DomainDetails() {
                                             value={appForm.phone}
                                             onChange={(e) => setAppForm(prev => ({ ...prev, phone: e.target.value }))}
                                             placeholder="Contact phone"
-                                            className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-xs font-semibold text-slate-850 dark:text-white"
+                                            className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-red-500 transition text-xs font-semibold text-slate-850 dark:text-white"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
@@ -733,7 +733,7 @@ export default function DomainDetails() {
                                             value={appForm.college}
                                             onChange={(e) => setAppForm(prev => ({ ...prev, college: e.target.value }))}
                                             placeholder="College/University"
-                                            className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-xs font-semibold text-slate-850 dark:text-white"
+                                            className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-red-500 transition text-xs font-semibold text-slate-850 dark:text-white"
                                         />
                                     </div>
                                 </div>
@@ -747,7 +747,7 @@ export default function DomainDetails() {
                                         value={appForm.resumeUrl}
                                         onChange={(e) => setAppForm(prev => ({ ...prev, resumeUrl: e.target.value }))}
                                         placeholder="https://drive.google.com/..."
-                                        className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-xs font-semibold text-slate-850 dark:text-white"
+                                        className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-red-500 transition text-xs font-semibold text-slate-850 dark:text-white"
                                     />
                                 </div>
 
@@ -760,7 +760,7 @@ export default function DomainDetails() {
                                             value={appForm.githubUrl}
                                             onChange={(e) => setAppForm(prev => ({ ...prev, githubUrl: e.target.value }))}
                                             placeholder="https://github.com/..."
-                                            className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-xs font-semibold text-slate-850 dark:text-white"
+                                            className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-red-500 transition text-xs font-semibold text-slate-850 dark:text-white"
                                         />
                                     </div>
                                     <div className="space-y-1.5">
@@ -770,7 +770,7 @@ export default function DomainDetails() {
                                             value={appForm.linkedinUrl}
                                             onChange={(e) => setAppForm(prev => ({ ...prev, linkedinUrl: e.target.value }))}
                                             placeholder="https://linkedin.com/in/..."
-                                            className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-blue-500 transition text-xs font-semibold text-slate-850 dark:text-white"
+                                            className="w-full bg-slate-50 dark:bg-slate-950/80 px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-800 focus:outline-none focus:ring-1 focus:ring-red-500 transition text-xs font-semibold text-slate-850 dark:text-white"
                                         />
                                     </div>
                                 </div>
@@ -787,7 +787,7 @@ export default function DomainDetails() {
                                     <button
                                         type="submit"
                                         disabled={submittingApp}
-                                        className="px-6 py-2.5 rounded-xl bg-blue-606 hover:bg-blue-500 text-xs font-extrabold text-white shadow hover:shadow-md transition cursor-pointer flex items-center space-x-2"
+                                        className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-xs font-extrabold text-white shadow hover:shadow-md transition cursor-pointer flex items-center space-x-2"
                                     >
                                         {submittingApp && (
                                             <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

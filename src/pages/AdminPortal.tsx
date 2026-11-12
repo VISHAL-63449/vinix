@@ -1444,12 +1444,12 @@ function saveAdminCache(data: any) {
                     {/* Drawer Brand Header */}
                     <div className="flex items-center justify-between pb-3 px-1 border-b border-slate-100 dark:border-slate-800">
                         <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0F286E] to-[#154ED0] text-white flex items-center justify-center shadow-md">
-                                <Rocket className="w-5 h-5 text-blue-200 rotate-45" />
+                            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#0F286E] to-[#DC2626] text-white flex items-center justify-center shadow-md">
+                                <Rocket className="w-5 h-5 text-red-200 rotate-45" />
                             </div>
                             <div>
                                 <span className="font-extrabold text-base tracking-tight text-slate-900 dark:text-white">
-                                    Vinix<span className="text-[#154ED0]">Admin</span>
+                                    Vinix<span className="text-[#DC2626]">Admin</span>
                                 </span>
                             </div>
                         </div>
@@ -1477,7 +1477,7 @@ function saveAdminCache(data: any) {
                                     }}
                                     className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition ${
                                         isSelected
-                                            ? 'bg-[#154ED0] text-white shadow-md shadow-blue-500/25'
+                                            ? 'bg-red-600 text-white shadow-md shadow-red-500/25'
                                             : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
                                     }`}
                                 >
@@ -1496,7 +1496,7 @@ function saveAdminCache(data: any) {
                             }}
                             className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition ${
                                 activeTab === 'promotions'
-                                    ? 'bg-[#154ED0] text-white shadow-md shadow-blue-500/25'
+                                    ? 'bg-red-600 text-white shadow-md shadow-red-500/25'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
                             }`}
                         >
@@ -1510,7 +1510,7 @@ function saveAdminCache(data: any) {
                             }}
                             className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition ${
                                 activeTab === 'promo-popup'
-                                    ? 'bg-[#154ED0] text-white shadow-md shadow-blue-500/25'
+                                    ? 'bg-red-600 text-white shadow-md shadow-red-500/25'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
                             }`}
                         >
@@ -1524,7 +1524,7 @@ function saveAdminCache(data: any) {
                             }}
                             className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition ${
                                 activeTab === 'news-ticker'
-                                    ? 'bg-[#154ED0] text-white shadow-md shadow-blue-500/25'
+                                    ? 'bg-red-600 text-white shadow-md shadow-red-500/25'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
                             }`}
                         >
@@ -1584,7 +1584,7 @@ function saveAdminCache(data: any) {
                             }}
                             className={`w-full flex items-center space-x-3 px-3.5 py-2.5 rounded-2xl text-sm font-semibold transition ${
                                 activeTab === 'backup'
-                                    ? 'bg-[#154ED0] text-white shadow-md shadow-blue-500/25'
+                                    ? 'bg-red-600 text-white shadow-md shadow-red-500/25'
                                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800/60'
                             }`}
                         >
@@ -1620,12 +1620,12 @@ function saveAdminCache(data: any) {
             <aside className="w-full md:w-[260px] bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 flex flex-col justify-between p-4 flex-shrink-0 select-none overflow-y-auto hidden md:flex">
                 <div className="space-y-6">
                     <div className="flex items-center space-x-3 px-2 pb-2">
-                        <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#0F286E] to-[#154ED0] text-white flex items-center justify-center shadow-md">
-                            <Rocket className="w-5 h-5 text-blue-200 rotate-45" />
+                        <div className="w-9 h-9 rounded-2xl bg-gradient-to-tr from-[#0F286E] to-[#DC2626] text-white flex items-center justify-center shadow-md">
+                            <Rocket className="w-5 h-5 text-red-200 rotate-45" />
                         </div>
                         <div>
                             <span className="font-extrabold text-base tracking-tight block text-slate-900 dark:text-white">
-                                Vinix<span className="text-[#154ED0]">Admin</span>
+                                Vinix<span className="text-[#DC2626]">Admin</span>
                             </span>
                         </div>
                     </div>
@@ -1641,7 +1641,7 @@ function saveAdminCache(data: any) {
                                     onClick={item.action}
                                     className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
                                         isSelected
-                                            ? 'bg-[#154ED0] text-white shadow-md'
+                                            ? 'bg-[#DC2626] text-white shadow-md'
                                             : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
                                     }`}
                                 >
@@ -1657,7 +1657,7 @@ function saveAdminCache(data: any) {
                             onClick={() => setActiveTab('promotions')}
                             className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
                                 activeTab === 'promotions'
-                                    ? 'bg-[#154ED0] text-white shadow-md'
+                                    ? 'bg-[#DC2626] text-white shadow-md'
                                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
                             }`}
                         >
@@ -1668,7 +1668,7 @@ function saveAdminCache(data: any) {
                             onClick={() => setActiveTab('promo-popup')}
                             className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
                                 activeTab === 'promo-popup'
-                                    ? 'bg-[#154ED0] text-white shadow-md'
+                                    ? 'bg-[#DC2626] text-white shadow-md'
                                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
                             }`}
                         >
@@ -1679,7 +1679,7 @@ function saveAdminCache(data: any) {
                             onClick={() => setActiveTab('news-ticker')}
                             className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
                                 activeTab === 'news-ticker'
-                                    ? 'bg-[#154ED0] text-white shadow-md'
+                                    ? 'bg-[#DC2626] text-white shadow-md'
                                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
                             }`}
                         >
@@ -1724,7 +1724,7 @@ function saveAdminCache(data: any) {
                             onClick={() => setActiveTab('backup')}
                             className={`w-full flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition ${
                                 activeTab === 'backup'
-                                    ? 'bg-[#154ED0] text-white shadow-md'
+                                    ? 'bg-[#DC2626] text-white shadow-md'
                                     : 'text-slate-500 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-slate-800'
                             }`}
                         >
@@ -1781,7 +1781,7 @@ function saveAdminCache(data: any) {
                             <input
                                 type="text"
                                 placeholder="Search students, applications, ⌘K"
-                                className="w-full pl-10 pr-4 py-2 border border-slate-200 bg-slate-50 dark:bg-slate-800 dark:border-slate-700 rounded-full text-sm outline-none focus:ring-2 focus:ring-blue-500 transition-shadow"
+                                className="w-full pl-10 pr-4 py-2 border border-slate-200 bg-slate-50 dark:bg-slate-800 dark:border-slate-700 rounded-full text-sm outline-none focus:ring-2 focus:ring-red-500 transition-shadow"
                             />
                         </div>
 
@@ -1934,7 +1934,7 @@ function saveAdminCache(data: any) {
                                     </div>
                                     <div
                                         style={{ width: '50px', height: '50px', minWidth: '50px', minHeight: '50px', maxWidth: '50px', maxHeight: '50px' }}
-                                        className="rounded-2xl bg-[#EEF4FF] text-[#2563EB] dark:bg-blue-950/60 dark:text-blue-400 flex items-center justify-center flex-shrink-0 shadow-sm"
+                                        className="rounded-2xl bg-[#EEF4FF] text-[#2563EB] dark:bg-red-950/60 dark:text-red-400 flex items-center justify-center flex-shrink-0 shadow-sm"
                                     >
                                         <FileText className="w-6 h-6" strokeWidth={2} />
                                     </div>
@@ -1982,12 +1982,12 @@ function saveAdminCache(data: any) {
                             {/* "Upgrade Your Platform" Promotional Banner Card (Matching sample) */}
                             <div className="relative overflow-hidden rounded-[26px] bg-[#091124] text-white p-7 sm:p-9 shadow-xl border border-slate-800 text-center flex flex-col items-center justify-center w-full">
                                 {/* Stylized background rocket watermark */}
-                                <div className="absolute -bottom-8 -right-6 pointer-events-none opacity-10 select-none text-blue-400">
+                                <div className="absolute -bottom-8 -right-6 pointer-events-none opacity-10 select-none text-red-400">
                                     <Rocket className="w-52 h-52 rotate-45" strokeWidth={1.2} />
                                 </div>
 
                                 {/* Pill Badge */}
-                                <div className="inline-flex items-center px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-600/30 text-blue-300 border border-blue-400/20 mb-3 shadow-sm">
+                                <div className="inline-flex items-center px-3.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-600/30 text-red-300 border border-red-400/20 mb-3 shadow-sm">
                                     PREMIUM FEATURES
                                 </div>
 
@@ -2004,7 +2004,7 @@ function saveAdminCache(data: any) {
                                 {/* CTA Button */}
                                 <button
                                     onClick={() => showToast('Priority platform upgrade requested!', 'success')}
-                                    className="inline-flex items-center space-x-2 px-7 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-lg shadow-blue-600/30 transition-all active:scale-95 cursor-pointer"
+                                    className="inline-flex items-center space-x-2 px-7 py-2.5 rounded-full font-bold text-sm bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white shadow-lg shadow-red-600/30 transition-all active:scale-95 cursor-pointer"
                                 >
                                     <span>Upgrade Now</span>
                                     <span className="text-base leading-none">›</span>
@@ -2020,7 +2020,7 @@ function saveAdminCache(data: any) {
                                             <h3 className="font-bold text-lg text-slate-900 dark:text-white">Recent Task Submissions</h3>
                                             <p className="text-xs text-slate-400 mt-0.5">Live student task submissions and evaluations</p>
                                         </div>
-                                        <button onClick={() => setActiveTab('submissions')} className="px-4 py-1.5 bg-blue-50 dark:bg-blue-950/40 text-[#154ED0] dark:text-blue-400 text-xs font-bold rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/60 transition">View All</button>
+                                        <button onClick={() => setActiveTab('submissions')} className="px-4 py-1.5 bg-red-50 dark:bg-red-950/40 text-[#DC2626] dark:text-red-400 text-xs font-bold rounded-full hover:bg-red-100 dark:hover:bg-red-900/60 transition">View All</button>
                                     </div>
                                     <div className="overflow-x-auto flex-1">
                                         <table className="w-full text-sm text-left">
@@ -2049,7 +2049,7 @@ function saveAdminCache(data: any) {
                                                                             <img
                                                                                 src={avatarSrc}
                                                                                 alt={sub.profiles?.full_name || 'Student'}
-                                                                                className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/20 shadow-sm"
+                                                                                className="w-8 h-8 rounded-full object-cover ring-2 ring-red-500/20 shadow-sm"
                                                                                 onError={(e) => {
                                                                                     e.currentTarget.style.display = 'none';
                                                                                     const fallback = e.currentTarget.parentElement?.querySelector('.sub-avatar-initials') as HTMLElement;
@@ -2058,7 +2058,7 @@ function saveAdminCache(data: any) {
                                                                             />
                                                                         ) : null}
                                                                         <div
-                                                                            className={`sub-avatar-initials w-8 h-8 rounded-full bg-blue-600 text-white items-center justify-center font-bold text-xs uppercase shadow-sm flex-shrink-0 ${avatarSrc ? 'hidden' : 'flex'}`}
+                                                                            className={`sub-avatar-initials w-8 h-8 rounded-full bg-red-600 text-white items-center justify-center font-bold text-xs uppercase shadow-sm flex-shrink-0 ${avatarSrc ? 'hidden' : 'flex'}`}
                                                                         >
                                                                             {initials}
                                                                         </div>
@@ -2072,7 +2072,7 @@ function saveAdminCache(data: any) {
                                                             <td className="py-2.5 pr-4">
                                                                 <span
                                                                     onClick={() => { setSelectedSubForReview(sub); setAdminFeedback(sub.admin_feedback || ''); }}
-                                                                    className="font-semibold text-[#154ED0] dark:text-blue-400 text-xs cursor-pointer hover:underline block"
+                                                                    className="font-semibold text-[#DC2626] dark:text-red-400 text-xs cursor-pointer hover:underline block"
                                                                 >
                                                                     Task {sub.internship_tasks?.task_number || 1}: {sub.internship_tasks?.title || 'Milestone Task'}
                                                                 </span>
@@ -2116,12 +2116,12 @@ function saveAdminCache(data: any) {
                                 {/* Quick Actions */}
                                 <div className="lg:col-span-1 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm flex flex-col">
                                     <h3 className="font-bold text-sm text-slate-900 mb-6 flex items-center">
-                                        <Sparkles className="w-4 h-4 text-blue-400 mr-2" />
+                                        <Sparkles className="w-4 h-4 text-red-400 mr-2" />
                                         Quick Actions
                                     </h3>
                                     <div className="grid grid-cols-2 gap-3 flex-1">
                                         <button className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 hover:border-slate-200 hover:shadow-sm transition">
-                                            <Megaphone className="w-5 h-5 text-[#154ED0] mb-2" />
+                                            <Megaphone className="w-5 h-5 text-[#DC2626] mb-2" />
                                             <span className="text-[10px] font-semibold text-slate-600 text-center">Add Announcement</span>
                                         </button>
                                         <button className="flex flex-col items-center justify-center p-3 rounded-xl border border-slate-100 hover:border-slate-200 hover:shadow-sm transition">
@@ -2145,7 +2145,7 @@ function saveAdminCache(data: any) {
                                             <span className="text-[10px] font-semibold text-slate-600 text-center">Export Students</span>
                                         </button>
                                     </div>
-                                    <button className="mt-4 w-full py-2.5 bg-[#154ED0] text-white font-semibold text-xs rounded-xl shadow-sm flex justify-center items-center h-10">
+                                    <button className="mt-4 w-full py-2.5 bg-[#DC2626] text-white font-semibold text-xs rounded-xl shadow-sm flex justify-center items-center h-10">
                                         Explore All Features <ArrowRight className="w-3.5 h-3.5 ml-1" />
                                     </button>
                                 </div>
@@ -2193,7 +2193,7 @@ function saveAdminCache(data: any) {
                                                 <div className="text-slate-900 font-bold">{pendingApps.length} <span className="text-slate-400 font-medium ml-1">({enrollments.length > 0 ? Math.round((pendingApps.length / enrollments.length) * 100) : 0}%)</span></div>
                                             </div>
                                             <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
-                                                <div className="flex items-center"><span className="w-2 h-2 rounded-full bg-blue-500 mr-2"></span>Shortlisted</div>
+                                                <div className="flex items-center"><span className="w-2 h-2 rounded-full bg-red-500 mr-2"></span>Shortlisted</div>
                                                 <div className="text-slate-900 font-bold">{pendingSubCount} <span className="text-slate-400 font-medium ml-1">({enrollments.length > 0 ? Math.round((pendingSubCount / enrollments.length) * 100) : 0}%)</span></div>
                                             </div>
                                             <div className="flex justify-between items-center text-xs font-semibold text-slate-600">
@@ -2234,7 +2234,7 @@ function saveAdminCache(data: any) {
                                                             <span className="text-slate-900">{count}</span>
                                                         </div>
                                                         <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
-                                                            <div className="bg-[#154ED0] h-full rounded-full" style={{ width: `${percentage}%` }}></div>
+                                                            <div className="bg-[#DC2626] h-full rounded-full" style={{ width: `${percentage}%` }}></div>
                                                         </div>
                                                     </div>
                                                 )
@@ -2252,7 +2252,7 @@ function saveAdminCache(data: any) {
                                             Upcoming Deadlines 
                                             <span 
                                                 onClick={() => setActiveTab('submissions')} 
-                                                className="text-[10px] text-[#154ED0] dark:text-blue-400 hover:underline cursor-pointer"
+                                                className="text-[10px] text-[#DC2626] dark:text-red-400 hover:underline cursor-pointer"
                                             >
                                                 View All
                                             </span>
@@ -2322,7 +2322,7 @@ function saveAdminCache(data: any) {
                                                 className="flex justify-between items-center text-xs font-semibold text-slate-600 dark:text-slate-300 border-b border-slate-50 dark:border-slate-800/60 pb-2 cursor-pointer hover:text-slate-900 dark:hover:text-white transition"
                                             >
                                                 <div className="flex items-center">
-                                                    <div className="w-4 h-4 flex items-center justify-center text-[#154ED0] mr-2">
+                                                    <div className="w-4 h-4 flex items-center justify-center text-[#DC2626] mr-2">
                                                         <Award className="w-3.5 h-3.5" />
                                                     </div>
                                                     Active Coupons
@@ -2462,7 +2462,7 @@ function saveAdminCache(data: any) {
                                                                     <img
                                                                         src={appAvatarSrc}
                                                                         alt={enroll.profiles?.full_name || 'Student'}
-                                                                        className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/20 shadow-sm"
+                                                                        className="w-8 h-8 rounded-full object-cover ring-2 ring-red-500/20 shadow-sm"
                                                                         onError={(e) => {
                                                                             e.currentTarget.style.display = 'none';
                                                                             const fallback = e.currentTarget.parentElement?.querySelector('.app-avatar-initials') as HTMLElement;
@@ -2471,7 +2471,7 @@ function saveAdminCache(data: any) {
                                                                     />
                                                                 ) : null}
                                                                 <div
-                                                                    className={`app-avatar-initials w-8 h-8 rounded-full bg-blue-600 text-white items-center justify-center font-bold text-xs uppercase shadow-sm flex-shrink-0 ${appAvatarSrc ? 'hidden' : 'flex'}`}
+                                                                    className={`app-avatar-initials w-8 h-8 rounded-full bg-red-600 text-white items-center justify-center font-bold text-xs uppercase shadow-sm flex-shrink-0 ${appAvatarSrc ? 'hidden' : 'flex'}`}
                                                                 >
                                                                     {enroll.profiles?.full_name?.charAt(0).toUpperCase() || 'S'}
                                                                 </div>
@@ -2515,7 +2515,7 @@ function saveAdminCache(data: any) {
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => handleApproveEnrollment(enroll)}
-                                                                    className="px-2.5 py-1 bg-brand-primary hover:bg-blue-700 text-white font-bold rounded-lg text-xs transition shadow-sm mr-1 cursor-pointer"
+                                                                    className="px-2.5 py-1 bg-brand-primary hover:bg-red-700 text-white font-bold rounded-lg text-xs transition shadow-sm mr-1 cursor-pointer"
                                                                 >
                                                                     Approve
                                                                 </button>
@@ -2525,7 +2525,7 @@ function saveAdminCache(data: any) {
                                                                 type="button"
                                                                 onClick={() => setSelectedEnrollForDetails(enroll)}
                                                                 title="View application details"
-                                                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer"
+                                                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer"
                                                             >
                                                                 <Eye className="w-4 h-4" />
                                                             </button>
@@ -2535,9 +2535,9 @@ function saveAdminCache(data: any) {
                                                                 onClick={() => handleResendOffer(enroll)}
                                                                 disabled={resendingOfferId === enroll.id}
                                                                 title="Resend offer letter email"
-                                                                className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer disabled:opacity-50"
+                                                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-800 rounded-lg transition cursor-pointer disabled:opacity-50"
                                                             >
-                                                                <Mail className={`w-4 h-4 ${resendingOfferId === enroll.id ? 'animate-bounce text-blue-500' : ''}`} />
+                                                                <Mail className={`w-4 h-4 ${resendingOfferId === enroll.id ? 'animate-bounce text-red-500' : ''}`} />
                                                             </button>
                                                             {/* 3. Delete Application (Permanent) */}
                                                             <button
@@ -2611,7 +2611,7 @@ function saveAdminCache(data: any) {
                                         placeholder="Search intern name, email, task..."
                                         value={submissionSearch}
                                         onChange={(e) => setSubmissionSearch(e.target.value)}
-                                        className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-full text-sm outline-none focus:ring-1 focus:ring-blue-500 transition-shadow"
+                                        className="w-full pl-10 pr-4 py-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-full text-sm outline-none focus:ring-1 focus:ring-red-500 transition-shadow"
                                     />
                                 </div>
                             </div>
@@ -2665,7 +2665,7 @@ function saveAdminCache(data: any) {
                                                             Submitted: <span className="font-bold text-slate-700 dark:text-slate-300">{formatLastActive(sub.submitted_at || '')}</span>
                                                         </p>
                                                         {(sub.github_url || sub.linkedin_url) && (
-                                                            <a href={sub.github_url || sub.linkedin_url || '#'} target="_blank" rel="noreferrer" className="font-bold text-brand-primary dark:text-blue-400 flex items-center gap-1 hover:underline">
+                                                            <a href={sub.github_url || sub.linkedin_url || '#'} target="_blank" rel="noreferrer" className="font-bold text-brand-primary dark:text-red-400 flex items-center gap-1 hover:underline">
                                                                 <ExternalLink className="w-3.5 h-3.5" /> Live Demo
                                                             </a>
                                                         )}
@@ -2713,7 +2713,7 @@ function saveAdminCache(data: any) {
                                         enrollments.filter(e => e.application_status?.startsWith('PAYMENT_')).map(enroll => (
                                             <div key={enroll.id} className="py-4 flex flex-col md:flex-row justify-between items-start md:items-center text-xs gap-4 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-900/50 px-2 transition">
                                                 <div className="flex items-center space-x-3">
-                                                    <div className="w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-600 flex items-center justify-center font-bold text-sm shadow-sm border border-blue-100 dark:border-blue-800">
+                                                    <div className="w-10 h-10 rounded-full bg-red-50 dark:bg-red-900/30 text-red-600 flex items-center justify-center font-bold text-sm shadow-sm border border-red-100 dark:border-red-800">
                                                         {enroll.profiles?.full_name?.charAt(0).toUpperCase() || 'S'}
                                                     </div>
                                                     <div>
@@ -2850,7 +2850,7 @@ function saveAdminCache(data: any) {
                                         placeholder="Search student, UTR..."
                                         value={paymentSearch}
                                         onChange={(e) => setPaymentSearch(e.target.value)}
-                                        className="w-full pl-9 pr-4 py-2.5 sm:py-2 border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 rounded-full text-xs sm:text-sm outline-none shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        className="w-full pl-9 pr-4 py-2.5 sm:py-2 border border-slate-200 bg-white dark:bg-slate-900 dark:border-slate-800 rounded-full text-xs sm:text-sm outline-none shadow-sm focus:border-red-500 focus:ring-1 focus:ring-red-500"
                                     />
                                 </div>
                             </div>
@@ -2911,7 +2911,7 @@ function saveAdminCache(data: any) {
                                                                             <img
                                                                                 src={payAvatarSrc}
                                                                                 alt={payment.profiles?.full_name || 'Student'}
-                                                                                className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/20 shadow-sm"
+                                                                                className="w-10 h-10 rounded-full object-cover ring-2 ring-red-500/20 shadow-sm"
                                                                                 onError={(e) => {
                                                                                     e.currentTarget.style.display = 'none';
                                                                                     const fallback = e.currentTarget.parentElement?.querySelector('.pay-avatar-initials') as HTMLElement;
@@ -2920,7 +2920,7 @@ function saveAdminCache(data: any) {
                                                                             />
                                                                         ) : null}
                                                                         <div
-                                                                            className={`pay-avatar-initials w-10 h-10 rounded-full bg-blue-600 text-white items-center justify-center font-bold text-sm uppercase shadow-sm flex-shrink-0 ${payAvatarSrc ? 'hidden' : 'flex'}`}
+                                                                            className={`pay-avatar-initials w-10 h-10 rounded-full bg-red-600 text-white items-center justify-center font-bold text-sm uppercase shadow-sm flex-shrink-0 ${payAvatarSrc ? 'hidden' : 'flex'}`}
                                                                         >
                                                                             {initials}
                                                                         </div>
@@ -2980,7 +2980,7 @@ function saveAdminCache(data: any) {
                                 <button
                                     onClick={() => setSubTab('domains')}
                                     className={`px-4 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition duration-200 cursor-pointer ${subTab === 'domains'
-                                        ? 'bg-blue-600 text-white shadow-md'
+                                        ? 'bg-red-600 text-white shadow-md'
                                         : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
                                         }`}
                                 >
@@ -2989,7 +2989,7 @@ function saveAdminCache(data: any) {
                                 <button
                                     onClick={() => setSubTab('internships')}
                                     className={`px-4 py-2 text-xs font-black uppercase tracking-wider rounded-xl transition duration-200 cursor-pointer ${subTab === 'internships'
-                                        ? 'bg-blue-600 text-white shadow-md'
+                                        ? 'bg-red-600 text-white shadow-md'
                                         : 'text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white'
                                         }`}
                                 >
@@ -3116,7 +3116,7 @@ function saveAdminCache(data: any) {
                                                 <button
                                                     type="submit"
                                                     disabled={savingDomain}
-                                                    className="px-5 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl shadow transition duration-200 hover:bg-blue-500 cursor-pointer"
+                                                    className="px-5 py-2 bg-red-600 text-white text-xs font-bold rounded-xl shadow transition duration-200 hover:bg-red-500 cursor-pointer"
                                                 >
                                                     {savingDomain ? 'Saving...' : editingDomainId ? 'Save Changes' : 'Create Pathways'}
                                                 </button>
@@ -3162,7 +3162,7 @@ function saveAdminCache(data: any) {
                                                             <td className="p-3 text-right space-x-2">
                                                                 <button
                                                                     onClick={() => handleToggleDomainActive(dom)}
-                                                                    className="text-slate-400 hover:text-blue-600 transition p-1"
+                                                                    className="text-slate-400 hover:text-red-600 transition p-1"
                                                                     title="Toggle Visibility"
                                                                 >
                                                                     <Activity className="w-3.5 h-3.5" />
@@ -3301,7 +3301,7 @@ function saveAdminCache(data: any) {
                                             <button
                                                 type="submit"
                                                 disabled={savingInternship}
-                                                className="w-full py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl shadow transition duration-205 hover:bg-blue-500 cursor-pointer"
+                                                className="w-full py-2.5 bg-red-600 text-white text-xs font-bold rounded-xl shadow transition duration-205 hover:bg-red-500 cursor-pointer"
                                             >
                                                 {savingInternship ? 'Creating Track...' : 'Initialize Internship Track'}
                                             </button>
@@ -3332,7 +3332,7 @@ function saveAdminCache(data: any) {
                                                                     <span className="text-[10px] text-slate-400 font-mono mt-0.5">{track.duration} • {(track as any).difficulty || 'Intermediate'}</span>
                                                                 </td>
                                                                 <td className="p-3">
-                                                                    <span className="font-bold text-blue-650 dark:text-blue-450 block truncate max-w-[120px]">
+                                                                    <span className="font-bold text-red-600 dark:text-red-400 block truncate max-w-[120px]">
                                                                         {domObj ? domObj.name : track.category}
                                                                     </span>
                                                                 </td>
@@ -3390,7 +3390,7 @@ function saveAdminCache(data: any) {
                                         placeholder="Search students..."
                                         value={studentsSearch}
                                         onChange={(e) => setStudentsSearch(e.target.value)}
-                                        className="w-full pl-9 pr-4 py-2 border border-slate-205 bg-white dark:bg-slate-900 dark:border-slate-800 rounded-xl text-xs outline-none shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                                        className="w-full pl-9 pr-4 py-2 border border-slate-205 bg-white dark:bg-slate-900 dark:border-slate-800 rounded-xl text-xs outline-none shadow-sm focus:border-red-500 focus:ring-1 focus:ring-red-500"
                                     />
                                 </div>
                             </div>
@@ -3455,7 +3455,7 @@ function saveAdminCache(data: any) {
                                                                             <img
                                                                                 src={studentAvatar}
                                                                                 alt={enroll.profiles?.full_name || 'Student'}
-                                                                                className="w-9 h-9 rounded-full object-cover ring-2 ring-blue-500/20 shadow-sm"
+                                                                                className="w-9 h-9 rounded-full object-cover ring-2 ring-red-500/20 shadow-sm"
                                                                                 onError={(e) => {
                                                                                     e.currentTarget.style.display = 'none';
                                                                                     const fallback = e.currentTarget.parentElement?.querySelector('.avatar-initials') as HTMLElement;
@@ -3464,7 +3464,7 @@ function saveAdminCache(data: any) {
                                                                             />
                                                                         ) : null}
                                                                         <div
-                                                                            className={`avatar-initials w-9 h-9 rounded-full bg-blue-600 text-white items-center justify-center font-bold text-xs uppercase shadow-sm flex-shrink-0 ${studentAvatar ? 'hidden' : 'flex'}`}
+                                                                            className={`avatar-initials w-9 h-9 rounded-full bg-red-600 text-white items-center justify-center font-bold text-xs uppercase shadow-sm flex-shrink-0 ${studentAvatar ? 'hidden' : 'flex'}`}
                                                                         >
                                                                             {initials}
                                                                         </div>
@@ -3489,7 +3489,7 @@ function saveAdminCache(data: any) {
                                                                 )}
                                                             </td>
                                                             <td className="px-6 py-4">
-                                                                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                                                                <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300">
                                                                     {enroll.internships?.title || enroll.internships?.category || 'Full Stack Development'}
                                                                 </span>
                                                             </td>
@@ -3557,7 +3557,7 @@ function saveAdminCache(data: any) {
                                     </button>
                                     <a
                                         href={`mailto:${selectedStudentForDetail.profiles?.email}`}
-                                        className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-xl transition shadow-md flex items-center space-x-1.5 cursor-pointer"
+                                        className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white text-xs font-bold rounded-xl transition shadow-md flex items-center space-x-1.5 cursor-pointer"
                                     >
                                         <Mail className="w-3.5 h-3.5" />
                                         <span>Send Email</span>
@@ -3580,7 +3580,7 @@ function saveAdminCache(data: any) {
                                                         <img
                                                             src={detailAvatarSrc}
                                                             alt={selectedStudentForDetail.profiles?.full_name || 'Student'}
-                                                            className="w-24 h-24 rounded-full object-cover shadow-inner ring-4 ring-blue-500/20"
+                                                            className="w-24 h-24 rounded-full object-cover shadow-inner ring-4 ring-red-500/20"
                                                             onError={(e) => {
                                                                 e.currentTarget.style.display = 'none';
                                                                 const fallback = e.currentTarget.parentElement?.querySelector('.detail-avatar-initials') as HTMLElement;
@@ -3589,7 +3589,7 @@ function saveAdminCache(data: any) {
                                                         />
                                                     ) : null}
                                                     <div
-                                                        className={`detail-avatar-initials w-24 h-24 rounded-full bg-blue-600 text-white items-center justify-center font-bold text-3xl shadow-inner ${detailAvatarSrc ? 'hidden' : 'flex'}`}
+                                                        className={`detail-avatar-initials w-24 h-24 rounded-full bg-red-600 text-white items-center justify-center font-bold text-3xl shadow-inner ${detailAvatarSrc ? 'hidden' : 'flex'}`}
                                                     >
                                                         {selectedStudentForDetail.profiles?.full_name?.charAt(0).toUpperCase() || 'S'}
                                                     </div>
@@ -3612,7 +3612,7 @@ function saveAdminCache(data: any) {
                                             })();
                                             return (
                                                 <div className="mt-4 flex flex-wrap gap-2 justify-center">
-                                                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
+                                                    <span className="px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-300">
                                                         {selectedStudentForDetail.status || 'Active'}
                                                     </span>
                                                     {isOnline ? (
@@ -3638,7 +3638,7 @@ function saveAdminCache(data: any) {
                                             </div>
                                             <div className="flex justify-between items-center text-xs">
                                                 <span className="text-slate-400 font-bold uppercase tracking-wider text-[9px]">Current Progress</span>
-                                                <span className="font-bold text-blue-605 dark:text-blue-400">{selectedStudentForDetail.progress || 0}%</span>
+                                                <span className="font-bold text-red-600 dark:text-red-400">{selectedStudentForDetail.progress || 0}%</span>
                                             </div>
                                         </div>
                                     </div>
@@ -3648,12 +3648,12 @@ function saveAdminCache(data: any) {
                                         <div className="relative pt-1">
                                             <div className="flex mb-2 items-center justify-between">
                                                 <div>
-                                                    <span className="text-xs font-bold inline-block py-1 px-2.5 uppercase rounded-full text-blue-700 bg-blue-105/30">
+                                                    <span className="text-xs font-bold inline-block py-1 px-2.5 uppercase rounded-full text-red-700 bg-red-100/30">
                                                         Track Completion
                                                     </span>
                                                 </div>
                                                 <div className="text-right">
-                                                    <span className="text-xs font-black inline-block text-blue-600">
+                                                    <span className="text-xs font-black inline-block text-red-600">
                                                         {selectedStudentForDetail.progress || 0}%
                                                     </span>
                                                 </div>
@@ -3661,7 +3661,7 @@ function saveAdminCache(data: any) {
                                             <div className="overflow-hidden h-2 text-xs flex rounded-full bg-slate-100 dark:bg-slate-800">
                                                 <div
                                                     style={{ width: `${selectedStudentForDetail.progress || 0}%` }}
-                                                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-blue-600 transition-all duration-500"
+                                                    className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-red-600 transition-all duration-500"
                                                 ></div>
                                             </div>
                                         </div>
@@ -3747,7 +3747,7 @@ function saveAdminCache(data: any) {
                                             </div>
                                             <div className="p-3 bg-slate-50/50 dark:bg-slate-950/40 border border-slate-100 dark:border-slate-800 rounded-xl">
                                                 <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Intern ID</span>
-                                                <p className="text-xs font-mono font-bold text-blue-600 dark:text-blue-400 mt-0.5">
+                                                <p className="text-xs font-mono font-bold text-red-600 dark:text-red-400 mt-0.5">
                                                     {offerLetters.find(o => o.student_email === selectedStudentForDetail.profiles?.email)?.offer_letter_id || 'SKX-2026-3880'}
                                                 </p>
                                             </div>
@@ -3783,7 +3783,7 @@ function saveAdminCache(data: any) {
                                                 statusColor = 'bg-green-50 text-green-700 border border-green-200 dark:bg-green-950/30 dark:text-green-300 dark:border-green-800/40';
                                                 statusText = 'Approved';
                                             } else if (sub.status === 'submitted') {
-                                                statusColor = 'bg-blue-50 text-blue-700 border border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-800/40';
+                                                statusColor = 'bg-red-50 text-red-700 border border-red-200 dark:bg-red-950/30 dark:text-red-300 dark:border-red-800/40';
                                                 statusText = 'Under Review';
                                             } else if (sub.status === 'resubmission_required') {
                                                 statusColor = 'bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-800/40';
@@ -3801,7 +3801,7 @@ function saveAdminCache(data: any) {
                                             <div key={num} className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50/50 dark:bg-slate-900/30 border border-slate-100 dark:border-slate-855 rounded-2xl gap-4 hover:border-slate-200 dark:hover:border-slate-800 transition">
                                                 <div className="space-y-1 max-w-xl">
                                                     <div className="flex items-center space-x-2.5">
-                                                        <span className="w-6 h-6 rounded-lg bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
+                                                        <span className="w-6 h-6 rounded-lg bg-red-600 text-white font-bold text-xs flex items-center justify-center">
                                                             {num}
                                                         </span>
                                                         <h5 className="font-bold text-slate-800 dark:text-slate-100 text-sm leading-tight">{taskTitle}</h5>
@@ -3816,7 +3816,7 @@ function saveAdminCache(data: any) {
                                                             {sub.github_url && (
                                                                 <p className="flex items-center space-x-1.5 text-slate-500 font-mono">
                                                                     <span className="font-black text-slate-400">GitHub:</span>
-                                                                    <a href={sub.github_url} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-450 hover:underline inline-flex items-center">
+                                                                    <a href={sub.github_url} target="_blank" rel="noreferrer" className="text-red-600 dark:text-red-400 hover:underline inline-flex items-center">
                                                                         {sub.github_url} <ExternalLink className="w-3 h-3 ml-0.5" />
                                                                     </a>
                                                                 </p>
@@ -3824,7 +3824,7 @@ function saveAdminCache(data: any) {
                                                             {sub.linkedin_url && (
                                                                 <p className="flex items-center space-x-1.5 text-slate-505 font-mono">
                                                                     <span className="font-black text-slate-405">LinkedIn:</span>
-                                                                    <a href={sub.linkedin_url} target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-450 hover:underline inline-flex items-center">
+                                                                    <a href={sub.linkedin_url} target="_blank" rel="noreferrer" className="text-red-600 dark:text-red-400 hover:underline inline-flex items-center">
                                                                         {sub.linkedin_url} <ExternalLink className="w-3 h-3 ml-0.5" />
                                                                     </a>
                                                                 </p>
@@ -3840,7 +3840,7 @@ function saveAdminCache(data: any) {
                                                                 setSelectedSubForReview(sub);
                                                                 setAdminFeedback(sub.admin_feedback || '');
                                                             }}
-                                                            className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs rounded-xl shadow cursor-pointer transition"
+                                                            className="px-4 py-2 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-xl shadow cursor-pointer transition"
                                                         >
                                                             Evaluate Milestone
                                                         </button>
@@ -3864,7 +3864,7 @@ function saveAdminCache(data: any) {
                         <div className="space-y-6 text-left animate-fade-in-up">
                             <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
                                 <h2 className="text-xl font-bold flex items-center space-x-2 text-slate-900 dark:text-white">
-                                    <Tag className="w-5 h-5 text-[#154ED0]" />
+                                    <Tag className="w-5 h-5 text-[#DC2626]" />
                                     <span>Coupons & Discount Codes</span>
                                 </h2>
                                 <p className="text-xs text-slate-500 mt-0.5">Manage promotional codes, registration fee discounts, and special offers.</p>
@@ -3881,7 +3881,7 @@ function saveAdminCache(data: any) {
                                                 value={newCouponCode}
                                                 onChange={(e) => setNewCouponCode(e.target.value.toUpperCase())}
                                                 placeholder="e.g. VINIX100, SUMMER50"
-                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl font-mono uppercase font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#154ED0]"
+                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl font-mono uppercase font-bold text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
                                             />
                                         </div>
                                         <div>
@@ -3893,7 +3893,7 @@ function saveAdminCache(data: any) {
                                                 placeholder="e.g. 50"
                                                 min="1"
                                                 max="100"
-                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#154ED0]"
+                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
                                             />
                                         </div>
                                         <div>
@@ -3904,12 +3904,12 @@ function saveAdminCache(data: any) {
                                                 onChange={(e) => setNewCouponMax(e.target.value)}
                                                 placeholder="Unlimited or number"
                                                 min="1"
-                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#154ED0]"
+                                                className="w-full px-3 py-2 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-[#DC2626]"
                                             />
                                         </div>
                                         <button
                                             onClick={handleCreateCoupon}
-                                            className="w-full py-2.5 bg-[#154ED0] text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition mt-2 cursor-pointer"
+                                            className="w-full py-2.5 bg-[#DC2626] text-white font-bold rounded-xl shadow-md hover:bg-red-700 transition mt-2 cursor-pointer"
                                         >
                                             Publish Coupon
                                         </button>
@@ -3919,7 +3919,7 @@ function saveAdminCache(data: any) {
                                 <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm md:col-span-2">
                                     <div className="flex justify-between items-center mb-4">
                                         <h3 className="font-bold text-sm text-slate-900 dark:text-white">Active Promotional Coupons</h3>
-                                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-[#154ED0] dark:text-blue-400">
+                                        <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-red-50 dark:bg-red-950/40 text-[#DC2626] dark:text-red-400">
                                             {couponsList.filter(c => c.status === 'active').length} Active
                                         </span>
                                     </div>
@@ -3937,7 +3937,7 @@ function saveAdminCache(data: any) {
                                             <tbody className="divide-y divide-slate-50 dark:divide-slate-800/60 font-medium">
                                                 {couponsList.map((c) => (
                                                     <tr key={c.id}>
-                                                        <td className="py-3 font-mono font-bold text-[#154ED0] dark:text-blue-400">{c.code}</td>
+                                                        <td className="py-3 font-mono font-bold text-[#DC2626] dark:text-red-400">{c.code}</td>
                                                         <td className="py-3 font-bold text-emerald-600 dark:text-emerald-400">{c.discountPercent}% OFF</td>
                                                         <td className="py-3 text-slate-500 dark:text-slate-400">{c.usedCount} / {c.maxRedemptions} used</td>
                                                         <td className="py-3">
@@ -3959,7 +3959,7 @@ function saveAdminCache(data: any) {
                                                                     navigator.clipboard?.writeText(c.code);
                                                                     showToast(`Copied ${c.code}!`, 'info');
                                                                 }} 
-                                                                className="text-[#154ED0] hover:underline text-xs cursor-pointer"
+                                                                className="text-[#DC2626] hover:underline text-xs cursor-pointer"
                                                             >
                                                                 Copy
                                                             </button>
@@ -3992,7 +3992,7 @@ function saveAdminCache(data: any) {
                         <div className="space-y-6 text-left animate-fade-in-up">
                             <div className="border-b border-slate-200 dark:border-slate-800 pb-4">
                                 <h2 className="text-xl font-bold flex items-center space-x-2 text-slate-900 dark:text-white">
-                                    <Percent className="w-5 h-5 text-[#154ED0]" />
+                                    <Percent className="w-5 h-5 text-[#DC2626]" />
                                     <span>Promotions & Announcements</span>
                                 </h2>
                                 <p className="text-xs text-slate-500 mt-0.5">Broadcast alerts, banner notifications, and marketing updates across candidate dashboards.</p>
@@ -4020,7 +4020,7 @@ function saveAdminCache(data: any) {
                                         </div>
                                         <button
                                             onClick={() => showToast('Announcement broadcasted to all students!', 'success')}
-                                            className="w-full py-2.5 bg-[#154ED0] text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition"
+                                            className="w-full py-2.5 bg-[#DC2626] text-white font-bold rounded-xl shadow-md hover:bg-red-700 transition"
                                         >
                                             Broadcast Announcement
                                         </button>
@@ -4129,7 +4129,7 @@ function saveAdminCache(data: any) {
                                     <div className="flex items-center justify-between mb-1.5">
                                         <span className="font-bold text-slate-400 uppercase tracking-widest text-[9px] block">Student notes</span>
                                         {selectedSubForReview.student_note && selectedSubForReview.student_note.length > 150 && (
-                                            <span className="text-[9px] font-semibold text-brand-primary dark:text-brand-accent bg-blue-50 dark:bg-blue-950/40 px-2 py-0.5 rounded-full">
+                                            <span className="text-[9px] font-semibold text-brand-primary dark:text-brand-accent bg-red-50 dark:bg-red-950/40 px-2 py-0.5 rounded-full">
                                                 Scrollable ({selectedSubForReview.student_note.length} chars)
                                             </span>
                                         )}
@@ -4179,7 +4179,7 @@ function saveAdminCache(data: any) {
                                 type="button"
                                 onClick={() => handleGradeSubmission('approved')}
                                 disabled={reviewLoading}
-                                className="w-full sm:flex-1 py-2.5 px-3 bg-brand-primary hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                                className="w-full sm:flex-1 py-2.5 px-3 bg-brand-primary hover:bg-red-700 text-white text-xs font-bold rounded-xl transition shadow flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
                             >
                                 {reviewLoading ? (
                                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
@@ -4212,7 +4212,7 @@ function saveAdminCache(data: any) {
                                                 <img
                                                     src={modalAvatar}
                                                     alt={selectedEnrollForDetails.profiles?.full_name || 'Student'}
-                                                    className="w-10 h-10 rounded-full object-cover ring-2 ring-blue-500/20 shadow-sm"
+                                                    className="w-10 h-10 rounded-full object-cover ring-2 ring-red-500/20 shadow-sm"
                                                     onError={(e) => {
                                                         e.currentTarget.style.display = 'none';
                                                         const fallback = e.currentTarget.parentElement?.querySelector('.modal-avatar-initials') as HTMLElement;
@@ -4221,7 +4221,7 @@ function saveAdminCache(data: any) {
                                                 />
                                             ) : null}
                                             <div
-                                                className={`modal-avatar-initials w-10 h-10 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-md flex-shrink-0 ${modalAvatar ? 'hidden' : 'flex'}`}
+                                                className={`modal-avatar-initials w-10 h-10 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-sm shadow-md flex-shrink-0 ${modalAvatar ? 'hidden' : 'flex'}`}
                                             >
                                                 {(selectedEnrollForDetails.profiles?.full_name || 'S').charAt(0).toUpperCase()}
                                             </div>
@@ -4312,9 +4312,9 @@ function saveAdminCache(data: any) {
                             </div>
 
                             {/* Enrolled Track Badge Card */}
-                            <div className="p-2.5 sm:p-3 bg-blue-50/70 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/40 rounded-xl flex items-center justify-between">
+                            <div className="p-2.5 sm:p-3 bg-red-50/70 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 rounded-xl flex items-center justify-between">
                                 <div className="min-w-0">
-                                    <span className="font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest text-[9px] block">Assigned Internship</span>
+                                    <span className="font-bold text-red-600 dark:text-red-400 uppercase tracking-widest text-[9px] block">Assigned Internship</span>
                                     <p className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white mt-0.5 truncate">
                                         {selectedEnrollForDetails.internships?.title || 'Virtual Internship'}
                                     </p>
@@ -4338,7 +4338,7 @@ function saveAdminCache(data: any) {
                                         href={`mailto:${selectedEnrollForDetails.profiles.email}`}
                                         className="px-3 py-2 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center gap-1.5"
                                     >
-                                        <Mail className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                                        <Mail className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
                                         <span>Email</span>
                                     </a>
                                 )}
@@ -4358,7 +4358,7 @@ function saveAdminCache(data: any) {
                             <button
                                 type="button"
                                 onClick={() => setSelectedEnrollForDetails(null)}
-                                className="px-5 py-2 bg-[#154ED0] hover:bg-blue-700 text-white text-xs font-bold rounded-xl transition shadow cursor-pointer"
+                                className="px-5 py-2 bg-[#DC2626] hover:bg-red-700 text-white text-xs font-bold rounded-xl transition shadow cursor-pointer"
                             >
                                 Close Details
                             </button>

@@ -14,12 +14,12 @@ export const NotFound: React.FC = () => {
             />
 
             <div className="max-w-md w-full text-center space-y-6">
-                <div className="w-20 h-20 mx-auto rounded-3xl bg-blue-50 dark:bg-blue-950/50 text-[#154ED0] flex items-center justify-center shadow-sm">
+                <div className="w-20 h-20 mx-auto rounded-3xl bg-red-50 dark:bg-red-950/50 text-red-600 flex items-center justify-center shadow-sm">
                     <FileQuestion className="w-10 h-10" />
                 </div>
 
                 <div className="space-y-2">
-                    <span className="text-xs font-black tracking-widest text-blue-600 dark:text-blue-400 uppercase">Error 404</span>
+                    <span className="text-xs font-black tracking-widest text-red-600 dark:text-red-400 uppercase">Error 404</span>
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white">Page Not Found</h1>
                     <p className="text-xs text-slate-500 dark:text-slate-400 max-w-sm mx-auto">
                         The page you are looking for does not exist or may have been moved. Choose a destination below to continue.
@@ -29,7 +29,7 @@ export const NotFound: React.FC = () => {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs font-bold">
                     <Link
                         to="/"
-                        className="flex items-center justify-center gap-2 py-3 px-4 bg-[#154ED0] hover:bg-blue-700 text-white rounded-xl shadow-sm transition"
+                        className="flex items-center justify-center gap-2 py-3 px-4 bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-sm transition"
                     >
                         <Home className="w-4 h-4" />
                         <span>Go to Home</span>
@@ -39,7 +39,7 @@ export const NotFound: React.FC = () => {
                         to="/internships"
                         className="flex items-center justify-center gap-2 py-3 px-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-xl shadow-sm transition"
                     >
-                        <Briefcase className="w-4 h-4 text-blue-600" />
+                        <Briefcase className="w-4 h-4 text-red-600" />
                         <span>Explore Internships</span>
                     </Link>
 

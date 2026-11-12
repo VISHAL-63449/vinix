@@ -223,9 +223,9 @@ export const Reviews: React.FC = () => {
         switch (domain) {
             case 'Full Stack Development':
                 return {
-                    badge: 'bg-blue-50 text-blue-700 border-blue-100 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-900/30',
-                    gradient: 'from-blue-600 to-indigo-650',
-                    shadow: 'hover:shadow-[0_10px_35px_-10px_rgba(59,130,246,0.2)]'
+                    badge: 'bg-red-50 text-red-700 border-red-100 dark:bg-red-950/30 dark:text-red-300 dark:border-red-900/30',
+                    gradient: 'from-red-600 to-rose-600',
+                    shadow: 'hover:shadow-[0_10px_35px_-10px_rgba(220,38,38,0.2)]'
                 };
             case 'Data Science & AI':
                 return {
@@ -282,8 +282,8 @@ export const Reviews: React.FC = () => {
             <div className="absolute inset-0 bg-[linear-gradient(to_right,#33415508_1px,transparent_1px),linear-gradient(to_bottom,#33415508_1px,transparent_1px)] dark:bg-[linear-gradient(to_right,#38bdf805_1px,transparent_1px),linear-gradient(to_bottom,#38bdf805_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_10%,#000_80%,transparent_100%)] pointer-events-none z-0"></div>
 
             {/* Ambient Lighting bubbles */}
-            <div className="absolute top-1/4 right-1/4 -translate-y-1/2 w-[380px] h-[380px] rounded-full bg-purple-500/10 dark:bg-purple-600/5 blur-[120px] pointer-events-none z-0"></div>
-            <div className="absolute bottom-1/4 left-1/4 w-[380px] h-[380px] rounded-full bg-blue-500/10 dark:bg-blue-600/5 blur-[120px] pointer-events-none z-0"></div>
+            <div className="absolute top-1/4 right-1/4 -translate-y-1/2 w-[380px] h-[380px] rounded-full bg-rose-500/10 dark:bg-rose-600/5 blur-[120px] pointer-events-none z-0"></div>
+            <div className="absolute bottom-1/4 left-1/4 w-[380px] h-[380px] rounded-full bg-red-500/10 dark:bg-red-600/5 blur-[120px] pointer-events-none z-0"></div>
 
             <div className="relative max-w-7xl mx-auto px-6 lg:px-12 space-y-16 z-10 w-full animate-fade-in">
 
@@ -366,7 +366,7 @@ export const Reviews: React.FC = () => {
                                     </div>
 
                                     <div className="pt-4 mt-6 border-t border-slate-100 dark:border-slate-800 flex items-center gap-3">
-                                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-blue-700 to-indigo-900 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
+                                        <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-red-600 to-rose-700 text-white font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm">
                                             {getInitials(t.name)}
                                         </div>
                                         <div className="min-w-0">
@@ -472,7 +472,7 @@ export const Reviews: React.FC = () => {
                                     <select
                                         value={selectedInternshipId}
                                         onChange={(e) => setSelectedInternshipId(e.target.value)}
-                                        className="w-full text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-black transition-all duration-200 text-slate-805 dark:text-white cursor-pointer shadow-inner"
+                                        className="w-full text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 focus:outline-none focus:border-red-500 focus:bg-white dark:focus:bg-black transition-all duration-200 text-slate-805 dark:text-white cursor-pointer shadow-inner"
                                     >
                                         {dbInternships.length > 0 ? (
                                             dbInternships.map(intern => (
@@ -521,7 +521,7 @@ export const Reviews: React.FC = () => {
                                     placeholder="Write details of projects, mentors, LOR benefits..."
                                     value={newText}
                                     onChange={(e) => setNewText(e.target.value)}
-                                    className="w-full text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500 focus:bg-white dark:focus:bg-black transition-all duration-200 text-slate-805 dark:text-white resize-none shadow-inner"
+                                    className="w-full text-xs font-semibold bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3.5 focus:outline-none focus:border-red-500 focus:bg-white dark:focus:bg-black transition-all duration-200 text-slate-805 dark:text-white resize-none shadow-inner"
                                 />
                             </div>
 

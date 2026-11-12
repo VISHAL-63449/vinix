@@ -9,15 +9,15 @@ export default {
     extend: {
       colors: {
         brand: {
-          primary: '#2563EB',
-          secondary: '#7C3AED',
-          accent: '#06B6D4',
-          bgLight: '#F8FAFC',
-          bgDark: '#0D0E12',
+          primary: '#DC2626',
+          secondary: '#18181B',
+          accent: '#EF4444',
+          bgLight: '#FFFFFF',
+          bgDark: '#0A0A0C',
           cardLight: '#FFFFFF',
-          cardDark: '#13151D',
-          hoverLight: '#EFF6FF',
-          hoverDark: '#1E293B',
+          cardDark: '#121215',
+          hoverLight: '#FEF2F2',
+          hoverDark: '#1C1917',
         }
       },
       fontFamily: {
@@ -30,4 +30,3 @@ export default {
   },
   plugins: [],
 }
-

@@ -157,7 +157,7 @@ const Login: React.FC = () => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="name@college.edu"
-                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-955 dark:focus:bg-slate-955 border border-slate-200 dark:border-slate-805 rounded-xl text-[13px] font-bold text-slate-850 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-955 dark:focus:bg-slate-955 border border-slate-200 dark:border-slate-805 rounded-xl text-[13px] font-bold text-slate-850 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition"
                                     />
                                 </div>
                             </div>
@@ -175,7 +175,7 @@ const Login: React.FC = () => {
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="••••••••"
-                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-955 dark:focus:bg-slate-955 border border-slate-200 dark:border-slate-805 rounded-xl text-[13px] font-bold text-slate-850 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition"
+                                        className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 hover:bg-white focus:bg-white dark:bg-slate-900/40 dark:hover:bg-slate-955 dark:focus:bg-slate-955 border border-slate-200 dark:border-slate-805 rounded-xl text-[13px] font-bold text-slate-850 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 outline-none focus:border-red-600 focus:ring-1 focus:ring-red-600 transition"
                                     />
                                 </div>
                             </div>

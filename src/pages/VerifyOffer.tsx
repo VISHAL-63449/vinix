@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase, supabaseAdmin } from '../utils/supabase';
@@ -133,6 +134,11 @@ const VerifyOffer: React.FC = () => {
         try {
             const element = document.getElementById('offer-letter-print-area');
             if (element) {
+                // Ensure all fonts are fully loaded before rendering
+                if (document.fonts) {
+                    await document.fonts.ready;
+                }
+
                 // Save current scroll position
                 const scrollY = window.scrollY;
                 const scrollX = window.scrollX;
@@ -140,17 +146,20 @@ const VerifyOffer: React.FC = () => {
                 // Scroll to top-left to avoid html2canvas viewport offset/cropping bugs
                 window.scrollTo(0, 0);
 
-                element.classList.add('pdf-download-mode');
                 // Give a microtask delay for DOM and style updates
-                await new Promise(resolve => setTimeout(resolve, 250));
+                await new Promise(resolve => setTimeout(resolve, 200));
 
                 const canvas = await html2canvas(element, {
                     scale: 2,
                     useCORS: true,
                     backgroundColor: '#ffffff',
                     logging: false,
-                    scrollY: 0,
-                    scrollX: 0
+                    width: 794,
+                    height: 1123,
+                    windowWidth: 794,
+                    windowHeight: 1123,
+                    scrollX: 0,
+                    scrollY: 0
                 });
 
                 // Restore scroll positions immediately
@@ -182,7 +191,6 @@ const VerifyOffer: React.FC = () => {
                 );
 
                 pdf.save(`${result.offerLetterId || 'Offer_Letter'}.pdf`);
-                element.classList.remove('pdf-download-mode');
             }
         } catch (err: any) {
             alert(`Direct download failed: ${err.message}. Using fallback print option.`);
@@ -278,57 +286,62 @@ const VerifyOffer: React.FC = () => {
                 {/* Result Card */}
                 {result && (
                     <div className="space-y-6">
-                        {/* Printable corporate offer letter preview */}
+                        {/* Upgraded Royal Red & Gold Offer Letter Preview */}
                         <div
                             id="offer-letter-print-area"
-                            className="bg-white select-text text-left overflow-hidden z-10 font-sans relative offer-letter mx-auto"
-                            style={{
-                                boxSizing: 'border-box',
-                                width: '794px',
-                                height: '1123px',
-                                padding: '45px 50px',
-                                color: '#0f172a',
-                                boxShadow: '0 10px 30px rgba(0, 0, 0, 0.1)',
-                                position: 'relative'
-                            }}
+                            className="bg-white select-text text-left overflow-hidden z-10 font-sans relative offer-letter mx-auto shadow-2xl"
                         >
-                            {/* Elegant background watermark */}
+                            {/* Watermark */}
                             <div className="doc-watermark">VINIX TECHNOLOGIES</div>
 
-                            {/* Decorative double-border frames */}
+                            {/* Top Ribbon Stripe */}
+                            <div className="doc-top-bar"></div>
+
+                            {/* 4-Tier Luxury Royal Red & Gold Frame */}
                             <div className="doc-frame-outer"></div>
+                            <div className="doc-frame-gold-mid"></div>
                             <div className="doc-frame-inner"></div>
+                            <div className="doc-frame-gold-hairline"></div>
+
+                            {/* 4 Corner Ornate Accents */}
+                            <svg className="doc-corner-filigree doc-corner-tl" viewBox="0 0 40 40"><path d="M 4 36 L 4 4 L 36 4" fill="none" stroke="#d4af37" strokeWidth="2.5"/><path d="M 9 32 L 9 9 L 32 9" fill="none" stroke="#b71c1c" strokeWidth="1.5"/><circle cx="9" cy="9" r="2.5" fill="#800000"/><circle cx="4" cy="4" r="2" fill="#d4af37"/></svg>
+                            <svg className="doc-corner-filigree doc-corner-tr" viewBox="0 0 40 40"><path d="M 4 36 L 4 4 L 36 4" fill="none" stroke="#d4af37" strokeWidth="2.5"/><path d="M 9 32 L 9 9 L 32 9" fill="none" stroke="#b71c1c" strokeWidth="1.5"/><circle cx="9" cy="9" r="2.5" fill="#800000"/><circle cx="4" cy="4" r="2" fill="#d4af37"/></svg>
+                            <svg className="doc-corner-filigree doc-corner-bl" viewBox="0 0 40 40"><path d="M 4 36 L 4 4 L 36 4" fill="none" stroke="#d4af37" strokeWidth="2.5"/><path d="M 9 32 L 9 9 L 32 9" fill="none" stroke="#b71c1c" strokeWidth="1.5"/><circle cx="9" cy="9" r="2.5" fill="#800000"/><circle cx="4" cy="4" r="2" fill="#d4af37"/></svg>
+                            <svg className="doc-corner-filigree doc-corner-br" viewBox="0 0 40 40"><path d="M 4 36 L 4 4 L 36 4" fill="none" stroke="#d4af37" strokeWidth="2.5"/><path d="M 9 32 L 9 9 L 32 9" fill="none" stroke="#b71c1c" strokeWidth="1.5"/><circle cx="9" cy="9" r="2.5" fill="#800000"/><circle cx="4" cy="4" r="2" fill="#d4af37"/></svg>
 
                             {/* Header Section */}
                             <div className="doc-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', width: '100%', marginBottom: '2px', zIndex: 2 }}>
                                 {(() => {
                                     const isOfficial = ['APPROVED', 'ACCEPTED', 'ACTIVE'].includes((result.status || '').toUpperCase());
+                                    const formattedIssueDate = (() => {
+                                        const d = new Date(result.issueDate);
+                                        return isNaN(d.getTime()) ? result.issueDate : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+                                    })();
                                     return (
                                         <>
                                             <div className="header-left" style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                                                <div className="header-logo-container" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                    <span className="header-logo" style={{ height: '36px', display: 'flex', alignItems: 'center' }}>
-                                                        {isOfficial && <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" style={{ height: '100%', objectFit: 'contain' }} />}
+                                                <div className="header-logo-container" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                                    <span className="header-logo" style={{ height: '48px', display: 'flex', alignItems: 'center' }}>
+                                                        {isOfficial && <img src={`${import.meta.env.BASE_URL}vinix-title.png`} alt="VINIX Logo" style={{ height: '48px', objectFit: 'contain' }} />}
                                                     </span>
-                                                    <div style={{ width: '1.5px', height: '28px', backgroundColor: '#cbd5e1' }}></div>
                                                     <div className="header-branding-text" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-                                                        <span className="company-name" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: '1.25rem', color: '#0f2942', lineHeight: 1.1, letterSpacing: '0.5px' }}>VINIX</span>
-                                                        <span className="company-tagline" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '0.62rem', fontWeight: 700, color: '#0284c7', letterSpacing: '0.5px', marginTop: '1px' }}>Empowering Future Innovators</span>
+                                                        <span className="company-name" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 900, fontSize: '1.25rem', color: '#111111', lineHeight: 1.1, letterSpacing: '1px' }}>VINIX</span>
+                                                        <span className="company-tagline" style={{ fontFamily: 'Montserrat, sans-serif', fontSize: '0.62rem', fontWeight: 800, color: '#b71c1c', letterSpacing: '1.5px', textTransform: 'uppercase', marginTop: '2px' }}>Empowering Future Innovators</span>
                                                     </div>
                                                 </div>
-                                                <div className="company-contact-row" style={{ fontSize: '0.62rem', color: '#64748b', marginTop: '5px', fontWeight: 550 }}>
-                                                    www.vinix.online | academic@vinix.online
+                                                <div className="company-contact-row" style={{ fontSize: '0.62rem', color: '#64748b', marginTop: '4px', fontWeight: 600, letterSpacing: '0.3px' }}>
+                                                    academic@vinix.online • www.vinix.online
                                                 </div>
                                             </div>
                                             <div className="header-right" style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                                                 <div className="meta-item" style={{ display: 'flex', flexDirection: 'column' }}>
-                                                    <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>INTERNSHIP ID</span>
-                                                    <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>{result.offerLetterId}</span>
+                                                    <span className="meta-label" style={{ fontSize: '0.55rem', color: '#b71c1c', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '1px' }}>INTERNSHIP ID</span>
+                                                    <span className="meta-value" style={{ fontSize: '0.75rem', fontWeight: 750, color: '#111111' }}>{result.offerLetterId}</span>
                                                 </div>
-                                                <div className="meta-item" style={{ marginTop: '5px', display: 'flex', flexDirection: 'column' }}>
-                                                    <span className="meta-label" style={{ fontSize: '0.55rem', color: '#64748b', fontWeight: 700, letterSpacing: '0.5px', marginBottom: '1px' }}>ISSUE DATE</span>
-                                                    <span className="meta-value" style={{ fontSize: '0.72rem', fontWeight: 700, color: '#0f172a' }}>
-                                                        {isOfficial && new Date(result.issueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                                <div className="meta-item" style={{ marginTop: '4px', display: 'flex', flexDirection: 'column' }}>
+                                                    <span className="meta-label" style={{ fontSize: '0.55rem', color: '#b71c1c', fontWeight: 800, letterSpacing: '1px', textTransform: 'uppercase', marginBottom: '1px' }}>ISSUE DATE</span>
+                                                    <span className="meta-value" style={{ fontSize: '0.75rem', fontWeight: 750, color: '#111111' }}>
+                                                        {isOfficial && formattedIssueDate}
                                                     </span>
                                                 </div>
                                             </div>
@@ -338,64 +351,73 @@ const VerifyOffer: React.FC = () => {
                             </div>
 
                             {/* Divider Line */}
-                            <div className="header-line" style={{ width: '100%', height: '1.5px', backgroundColor: '#e2e8f0', marginTop: '8px', marginBottom: '16px', zIndex: 2 }}></div>
+                            <div className="header-line" style={{ width: '100%', height: '2.5px', background: 'linear-gradient(90deg, #800000 0%, #b71c1c 30%, #d4af37 50%, #b71c1c 70%, #800000 100%)', marginTop: '8px', marginBottom: '12px', zIndex: 2, borderRadius: '2px' }}></div>
 
                             {/* Body Content */}
-                            <div className="doc-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', zIndex: 2 }}>
-                                <h1 className="document-title" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 800, fontSize: '1.2rem', color: '#0f2942', marginBottom: '2px', letterSpacing: '0.2px' }}>INTERNSHIP OFFER LETTER</h1>
-                                <div className="document-date" style={{ fontSize: '0.72rem', color: '#cca353', marginBottom: '15px', fontWeight: 600 }}>
-                                    Date: {new Date(result.issueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                            <div className="doc-body" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', zIndex: 2, paddingTop: '2px' }}>
+                                <div className="offer-ribbon-tag" style={{ display: 'inline-block', textAlign: 'center', background: 'linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%)', backgroundColor: '#800000', color: '#ffffff', fontFamily: 'Montserrat, Inter, sans-serif', fontSize: '0.62rem', fontWeight: 800, letterSpacing: '2px', textTransform: 'uppercase', height: '24px', lineHeight: '22px', padding: '0 20px', borderRadius: '9999px', border: '1.5px solid #d4af37', boxShadow: '0 2px 8px rgba(183, 28, 28, 0.3)', marginBottom: '8px', boxSizing: 'border-box', verticalAlign: 'middle', whiteSpace: 'nowrap', width: 'fit-content' }}>
+                                    <span style={{ color: '#ffffff', display: 'inline', lineHeight: 'inherit', fontWeight: 800 }}>★ OFFICIAL VERIFIED CREDENTIAL ★</span>
                                 </div>
 
-                                <div className="greeting-block" style={{ fontSize: '0.73rem', color: '#334155', marginBottom: '8px' }}>
-                                    Dear <strong>{result.studentName}</strong>,
+                                <h1 className="document-title" style={{ fontFamily: 'Montserrat, sans-serif', fontWeight: 900, fontSize: '1.25rem', color: '#111111', marginBottom: '3px', letterSpacing: '1px', textTransform: 'uppercase' }}>INTERNSHIP OFFER LETTER</h1>
+                                <div className="document-date" style={{ fontSize: '0.72rem', color: '#475569', marginBottom: '10px', fontWeight: 600 }}>
+                                    Date: {(() => {
+                                        const d = new Date(result.issueDate);
+                                        return isNaN(d.getTime()) ? result.issueDate : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+                                    })()}
                                 </div>
 
-                                <div className="intro-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '10px', textAlign: 'justify' }}>
-                                    We are delighted to offer you the position of <strong>Virtual Intern – {result.internshipTitle}</strong> at <strong>Vinix Technologies</strong>. After reviewing your application, we are confident that your skills and enthusiasm make you a valuable addition to our program.
+                                <div className="greeting-block" style={{ fontSize: '0.73rem', color: '#1e293b', marginBottom: '6px' }}>
+                                    Dear <strong style={{ color: '#111111' }}>{result.studentName}</strong>,
                                 </div>
 
-                                <div className="intro-sub-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '10px', textAlign: 'justify' }}>
+                                <div className="intro-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '6px', textAlign: 'justify' }}>
+                                    We are delighted to offer you the position of <strong style={{ color: '#111111' }}>Virtual Intern – {result.internshipTitle}</strong> at <strong style={{ color: '#111111' }}>Vinix Technologies</strong>. After reviewing your application, we are confident that your skills and enthusiasm make you a valuable addition to our program.
+                                </div>
+
+                                <div className="intro-sub-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '8px', textAlign: 'justify' }}>
                                     Your virtual internship details and key particulars are finalized as follows:
                                 </div>
 
                                 {/* Particulars Table */}
-                                <table className="particulars-table" style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '6px', overflow: 'hidden', border: '1px solid #e2e8f0', marginBottom: '12px', fontSize: '0.7rem' }}>
+                                <table className="particulars-table" style={{ width: '100%', borderCollapse: 'collapse', borderRadius: '6px', overflow: 'hidden', border: '1.5px solid rgba(212, 175, 55, 0.45)', marginBottom: '10px', fontSize: '0.7rem', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.02)' }}>
                                     <thead>
                                         <tr>
-                                            <th colSpan={2} style={{ backgroundColor: '#0f2942', color: '#ffffff', fontWeight: 700, padding: '8px 12px', textAlign: 'left', fontSize: '0.68rem', letterSpacing: '0.5px', border: 'none' }}>INTERNSHIP PROGRAM PARTICULARS</th>
+                                            <th colSpan={2} style={{ background: 'linear-gradient(135deg, #111111 0%, #800000 55%, #b71c1c 100%)', color: '#ffffff', fontWeight: 800, padding: '7px 12px', textAlign: 'left', fontSize: '0.68rem', letterSpacing: '1px', borderBottom: '2px solid #d4af37' }}>INTERNSHIP PROGRAM PARTICULARS</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr>
-                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Internship Track</td>
-                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{result.internshipTitle}</td>
+                                            <td className="label-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#475569', width: '35%' }}>Internship Track</td>
+                                            <td className="value-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, color: '#111111' }}>{result.internshipTitle}</td>
+                                        </tr>
+                                        <tr style={{ backgroundColor: '#faf9f6' }}>
+                                            <td className="label-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#475569', width: '35%' }}>Intern ID</td>
+                                            <td className="value-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, color: '#111111' }}>{result.offerLetterId}</td>
                                         </tr>
                                         <tr>
-                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Intern ID</td>
-                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{result.offerLetterId}</td>
+                                            <td className="label-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#475569', width: '35%' }}>Duration</td>
+                                            <td className="value-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, color: '#111111' }}>{result.duration || '4 Weeks'}</td>
                                         </tr>
-                                        <tr>
-                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Duration</td>
-                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>{result.duration}</td>
-                                        </tr>
-                                        <tr>
-                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Commencement Date</td>
-                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>
+                                        <tr style={{ backgroundColor: '#faf9f6' }}>
+                                            <td className="label-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#475569', width: '35%' }}>Commencement Date</td>
+                                            <td className="value-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, color: '#111111' }}>
                                                 {(() => {
                                                     const d = new Date(result.issueDate);
+                                                    if (isNaN(d.getTime())) return '01-Sep-2026';
                                                     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
                                                     return `${String(d.getDate()).padStart(2, '0')}-${months[d.getMonth()]}-${d.getFullYear()}`;
                                                 })()}
                                             </td>
                                         </tr>
                                         <tr>
-                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Estimated Completion</td>
-                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>
+                                            <td className="label-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#475569', width: '35%' }}>Estimated Completion</td>
+                                            <td className="value-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, color: '#111111' }}>
                                                 {(() => {
                                                     const d = new Date(result.issueDate);
+                                                    if (isNaN(d.getTime())) return '28-Sep-2026';
                                                     const num = parseInt(result.duration) || 1;
-                                                    if (result.duration.toLowerCase().includes('week')) {
+                                                    if ((result.duration || '').toLowerCase().includes('week')) {
                                                         d.setDate(d.getDate() + num * 7);
                                                     } else {
                                                         d.setMonth(d.getMonth() + num);
@@ -406,93 +428,97 @@ const VerifyOffer: React.FC = () => {
                                                 })()}
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 600, color: '#475569', width: '35%' }}>Stipend Details</td>
-                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: '1px solid #e2e8f0', fontWeight: 700, color: '#0f172a' }}>Unpaid (Performance-Based Internship)</td>
+                                        <tr style={{ backgroundColor: '#faf9f6' }}>
+                                            <td className="label-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 600, color: '#475569', width: '35%' }}>Stipend Details</td>
+                                            <td className="value-cell" style={{ padding: '5px 12px', borderBottom: '1px solid #f1f5f9', fontWeight: 700, color: '#111111' }}>Unpaid (Performance-Based Internship)</td>
                                         </tr>
                                         <tr>
-                                            <td className="label-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 600, color: '#475569', width: '35%' }}>Location & Model</td>
-                                            <td className="value-cell" style={{ padding: '6px 12px', borderBottom: 'none', fontWeight: 700, color: '#0f172a' }}>Remote / Virtual</td>
+                                            <td className="label-cell" style={{ padding: '5px 12px', borderBottom: 'none', fontWeight: 600, color: '#475569', width: '35%' }}>Location &amp; Model</td>
+                                            <td className="value-cell" style={{ padding: '5px 12px', borderBottom: 'none', fontWeight: 700, color: '#111111' }}>Remote / Virtual</td>
                                         </tr>
                                     </tbody>
                                 </table>
 
                                 {/* General Terms & Conditions */}
-                                <div className="terms-card" style={{ border: '1px solid #e2e8f0', borderRadius: '6px', padding: '10px 12px', marginBottom: '10px', backgroundColor: '#f8fafc' }}>
-                                    <span className="card-title" style={{ color: '#0f2942', fontSize: '0.72rem', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>General Terms &amp; Conditions of Internship:</span>
-                                    <div className="terms-list" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>1. Task Execution:</strong> You will be evaluated based on the functional completeness of the assigned tasks. You must submit weekly progress updates.</div>
-                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>2. Code of Conduct:</strong> Plagiarism or any forms of professional misconduct will lead to immediate cancellation of your internship program.</div>
-                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334155' }}><strong>3. Confidentiality:</strong> Any documentation, source code, or mock datasets shared during this program are strictly confidential.</div>
-                                        <div className="bullet-item" style={{ fontSize: '0.71rem', lineHeight: '1.4', color: '#334555' }}><strong>4. Certification:</strong> An official Certificate of Internship Completion will be issued only upon successful submission and mentoring approval of all milestone tasks.</div>
+                                <div className="terms-card" style={{ border: '1px solid rgba(212, 175, 55, 0.4)', borderLeft: '3.5px solid #800000', borderRadius: '6px', padding: '8px 12px', marginBottom: '8px', backgroundColor: '#fdfbf7' }}>
+                                    <span className="card-title" style={{ color: '#800000', fontSize: '0.72rem', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.6px', fontFamily: 'Montserrat, sans-serif', fontWeight: 800 }}>General Terms &amp; Conditions of Internship:</span>
+                                    <div className="terms-list" style={{ display: 'flex', flexDirection: 'column', gap: '3px', fontSize: '0.7rem', lineHeight: '1.38', color: '#334155' }}>
+                                        <div className="bullet-item"><strong>1. Task Execution:</strong> You will be evaluated based on the functional completeness of the assigned tasks. You must submit weekly progress updates.</div>
+                                        <div className="bullet-item"><strong>2. Code of Conduct:</strong> Plagiarism or any forms of professional misconduct will lead to immediate cancellation of your internship program.</div>
+                                        <div className="bullet-item"><strong>3. Confidentiality:</strong> Any documentation, source code, or mock datasets shared during this program are strictly confidential.</div>
+                                        <div className="bullet-item"><strong>4. Certification:</strong> An official Certificate of Internship Completion will be issued only upon successful submission and mentoring approval of all milestone tasks.</div>
                                     </div>
                                 </div>
 
                                 {/* Certificate Section */}
-                                <div className="cert-completion-card" style={{ border: '1px solid #cbd5e1', borderRadius: '6px', padding: '10px 12px', marginBottom: '10px', backgroundColor: '#ffffff' }}>
-                                    <span className="card-title" style={{ color: '#0f2942', fontSize: '0.72rem', display: 'block', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: 'Montserrat, sans-serif', fontWeight: 700 }}>CERTIFICATE OF COMPLETION</span>
-                                    <div className="completion-text" style={{ fontSize: '0.71rem', lineHeight: '1.45', color: '#334155', textAlign: 'justify' }}>
+                                <div className="cert-completion-card" style={{ border: '1px solid rgba(212, 175, 55, 0.4)', borderLeft: '3.5px solid #d4af37', borderRadius: '6px', padding: '8px 12px', marginBottom: '8px', backgroundColor: '#ffffff' }}>
+                                    <span className="card-title" style={{ color: '#111111', fontSize: '0.72rem', display: 'block', marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.6px', fontFamily: 'Montserrat, sans-serif', fontWeight: 800 }}>CERTIFICATE OF COMPLETION</span>
+                                    <div className="completion-text" style={{ fontSize: '0.7rem', lineHeight: '1.4', color: '#334155', textAlign: 'justify' }}>
                                         Upon successful completion of the internship and fulfillment of all assigned tasks, you will receive a Certificate of Internship with QR-code verification for authenticity.
                                     </div>
                                 </div>
 
-                                <div className="outro-paragraph" style={{ fontSize: '0.72rem', lineHeight: '1.45', color: '#334155', marginBottom: '8px' }}>
+                                <div className="outro-paragraph" style={{ fontSize: '0.7rem', lineHeight: '1.4', color: '#334155', marginBottom: '6px' }}>
                                     Please return the signed copy of this letter as a token of your formal acceptance of this offer. We look forward to a mutually rewarding learning experience.
                                 </div>
                             </div>
 
                             {/* Signatures Section */}
-                            <div className="signatures-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', width: '100%', paddingBottom: '12px', zIndex: 2 }}>
+                            <div className="signatures-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: 'auto', width: '100%', paddingBottom: '6px', zIndex: 2 }}>
                                 {(() => {
                                     const isOfficial = ['APPROVED', 'ACCEPTED', 'ACTIVE'].includes((result.status || '').toUpperCase());
                                     return (
                                         <>
                                             {/* Company Seal (Left) */}
                                             <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-start' }}>
-                                                <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px' }}>
+                                                <div className="sig-image-wrap" style={{ height: '64px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '3px' }}>
                                                     {isOfficial ? (
-                                                        <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Official Seal" className="stamp-overlay" style={{ width: '80px', height: '80px', objectFit: 'contain', opacity: 0.9 }} />
+                                                        <img src={`${import.meta.env.BASE_URL}certificate-stamp.jpeg`} alt="Official Seal" className="stamp-overlay" style={{ width: '64px', height: '64px', objectFit: 'contain', opacity: 0.92 }} />
                                                     ) : (
                                                         <span style={{ fontSize: '0.7rem', color: '#dc2626', fontWeight: 800, padding: '5px', border: '1.5px dashed #dc2626', borderRadius: '4px' }}>PENDING VERIFICATION</span>
                                                     )}
                                                 </div>
-                                                <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>COMPANY SEAL</span>
+                                                <div className="sig-title" style={{ fontSize: '0.58rem', color: '#800000', textTransform: 'uppercase', fontWeight: 750, letterSpacing: '0.8px', lineHeight: '14px' }}>COMPANY SEAL</div>
                                             </div>
 
                                             {/* Director Signatory (Right) */}
                                             <div className="sig-col" style={{ display: 'flex', flexDirection: 'column', width: '33%', alignItems: 'flex-end', textAlign: 'right', marginLeft: 'auto' }}>
-                                                <div className="sig-image-wrap" style={{ height: '80px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '4px', justifyContent: 'flex-end' }}>
+                                                <div className="sig-image-wrap" style={{ height: '64px', display: 'flex', alignItems: 'flex-end', position: 'relative', marginBottom: '3px', justifyContent: 'flex-end' }}>
                                                     {isOfficial && <img src={`${import.meta.env.BASE_URL}founder-sign.png`} alt="Director Signature" className="sig-image" style={{ maxHeight: '42px', objectFit: 'contain' }} />}
                                                 </div>
-                                                <span className="sig-name" style={{ fontWeight: 700, fontSize: '0.72rem', color: '#0f172a' }}>Vishal R</span>
-                                                <span className="sig-title" style={{ fontSize: '0.55rem', color: '#94a3b8', textTransform: 'uppercase', fontWeight: 705, letterSpacing: '0.5px' }}>FOUNDER &amp; CEO</span>
+                                                <div className="sig-name" style={{ fontFamily: 'Playfair Display, serif', fontWeight: 700, fontSize: '0.86rem', color: '#111111', lineHeight: '16px' }}>Vishal R</div>
+                                                <div className="sig-title" style={{ fontSize: '0.58rem', color: '#800000', textTransform: 'uppercase', fontWeight: 750, letterSpacing: '0.8px', lineHeight: '14px', marginTop: '1px' }}>FOUNDER &amp; CEO</div>
                                             </div>
                                         </>
                                     );
                                 })()}
                             </div>
 
-                            {/* Footer */}
-                            <div className="doc-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontSize: '0.6rem', color: '#475569', fontWeight: 700, letterSpacing: '0.3px', zIndex: 2, borderTop: '1px solid #cbd5e1', paddingTop: '8px' }}>
+                            {/* Footer with MSME, Partners & Official Record ID */}
+                            <div className="doc-footer" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', fontSize: '0.62rem', color: '#64748b', fontWeight: 600, zIndex: 2, borderTop: '1.5px solid #d4af37', paddingTop: '8px', paddingBottom: '2px', marginTop: 'auto' }}>
                                 {(() => {
                                     const isOfficial = ['APPROVED', 'ACCEPTED', 'ACTIVE'].includes((result.status || '').toUpperCase());
                                     return (
                                         <>
                                             {/* Left Column: MSME + Skyrovix */}
-                                            <div className="footer-left-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                                {isOfficial && <img src={`${import.meta.env.BASE_URL}msme.jpeg`} alt="MSME Logo" style={{ height: '36px', objectFit: 'contain' }} />}
-                                                <div style={{ width: '1px', height: '30px', backgroundColor: '#cbd5e1' }}></div>
-                                                {isOfficial && <img src={`${import.meta.env.BASE_URL}skyrovix.jpeg`} alt="Skyrovix Logo" style={{ height: '32px', objectFit: 'contain' }} />}
+                                            <div className="footer-left-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '150px' }}>
+                                                {isOfficial && <img src={`${import.meta.env.BASE_URL}msme.png`} alt="MSME Logo" style={{ height: '34px', objectFit: 'contain' }} />}
+                                                <div style={{ width: '1px', height: '24px', backgroundColor: '#cbd5e1' }}></div>
+                                                {isOfficial && <img src={`${import.meta.env.BASE_URL}skyrovix.jpeg`} alt="Skyrovix Logo" style={{ height: '24px', objectFit: 'contain' }} />}
                                             </div>
                                             {/* Center Column: Text */}
-                                            <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.45, color: '#64748b' }}>
-                                                <strong style={{ color: '#0f2942' }}>VINIX Technologies</strong><br />
-                                                UDYAM Registry: UDYAM-TN-21-0066185<br />
-                                                academic@vinix.online | www.vinix.online
+                                            <div className="footer-text" style={{ textAlign: 'center', lineHeight: 1.45, color: '#475569', fontSize: '0.62rem', flex: 1, padding: '0 6px' }}>
+                                                <strong style={{ color: '#111111', fontWeight: 800, fontSize: '0.65rem' }}>VINIX Technologies Private Limited</strong><br />
+                                                <span style={{ color: '#b71c1c', fontWeight: 700 }}>UDYAM Registry:</span> <span style={{ color: '#111111', fontWeight: 700 }}>UDYAM-TN-21-0066185</span><br />
+                                                <span style={{ color: '#64748b', fontSize: '0.58rem' }}>academic@vinix.online • www.vinix.online</span>
                                             </div>
-                                            {/* Right Column: Yrnovatech */}
-                                            <div className="footer-right-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
-                                                {isOfficial && <img src={`${import.meta.env.BASE_URL}yrnovatech.png`} alt="Yrnovatech Logo" style={{ height: '35px', objectFit: 'contain' }} />}
+                                            {/* Right Column: Yrnovatech & Official Record Badge */}
+                                            <div className="footer-right-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px', justifyContent: 'flex-end', minWidth: '150px' }}>
+                                                {isOfficial && <img src={`${import.meta.env.BASE_URL}yrnovatech.png`} alt="Yrnovatech Logo" style={{ height: '28px', objectFit: 'contain' }} />}
+                                                <div className="record-badge" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', justifyContent: 'center' }}>
+                                                    <div style={{ fontSize: '0.54rem', letterSpacing: '1px', color: '#800000', fontWeight: 800, textTransform: 'uppercase', lineHeight: '13px', whiteSpace: 'nowrap', textAlign: 'right' }}>OFFICIAL RECORD</div>
+                                                    <div style={{ color: '#0f172a', fontSize: '0.68rem', fontWeight: 800, fontFamily: 'monospace', letterSpacing: '0.5px', lineHeight: '14px', whiteSpace: 'nowrap', textAlign: 'right' }}>{result.offerLetterId}</div>
+                                                </div>
                                             </div>
                                         </>
                                     );

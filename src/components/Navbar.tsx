@@ -103,9 +103,9 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                     <div className="flex items-center shrink-0">
                         <Link to="/" className="flex items-center hover:opacity-90 transition shrink-0">
                             <img
-                                src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png'}
-                                alt="Vinix"
-                                className="h-8 w-auto shrink-0 object-contain mix-blend-multiply dark:mix-blend-normal dark:invert transition-all duration-300"
+                                src={window.location.origin + import.meta.env.BASE_URL + 'vinix-title.png?v=4'}
+                                alt="VINIX"
+                                className="h-8 sm:h-9 w-auto shrink-0 object-contain dark:drop-shadow-[0_0_2px_rgba(255,255,255,0.7)] transition-all duration-300"
                             />
                         </Link>
                     </div>
@@ -119,15 +119,15 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                 <Link
                                     key={link.path}
                                     to={link.path}
-                                    className={`relative flex items-center space-x-1 px-1 py-1 text-sm font-semibold transition-colors hover:text-blue-600 dark:hover:text-blue-400 ${active
-                                        ? 'text-blue-600 dark:text-blue-400'
-                                        : 'text-slate-500 dark:text-slate-400'
+                                    className={`relative flex items-center space-x-1 px-1 py-1 text-sm font-semibold transition-colors hover:text-red-600 dark:hover:text-red-400 ${active
+                                        ? 'text-red-600 dark:text-red-400 font-bold'
+                                        : 'text-slate-600 dark:text-slate-400'
                                         }`}
                                 >
-                                    <Icon className={`w-3.5 h-3.5 ${active ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                                    <Icon className={`w-3.5 h-3.5 ${active ? 'text-red-600 dark:text-red-400' : 'text-slate-400'}`} />
                                     <span>{link.name}</span>
                                     {active && (
-                                        <div className="absolute bottom-[-22px] left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400"></div>
+                                        <div className="absolute bottom-[-22px] left-0 right-0 h-0.5 bg-red-600 dark:bg-red-500"></div>
                                     )}
                                 </Link>
                             );
@@ -167,18 +167,16 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                 {/* Dashboard Button */}
                                 <Link
                                     to={profile?.role === 'admin' ? '/admin' : profile?.role === 'mentor' ? '/mentor' : '/dashboard'}
-                                    className="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-blue-600 rounded-full hover:bg-blue-700 transition shadow select-none cursor-pointer"
+                                    className="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-red-600 rounded-full hover:bg-red-700 transition shadow select-none cursor-pointer"
                                 >
                                     <LayoutDashboard className="w-3.25 h-3.25" />
                                     <span>Dashboard</span>
                                 </Link>
 
-
-
                                 {/* Logout Button */}
                                 <button
                                     onClick={handleSignOut}
-                                    className="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-red-650 hover:bg-red-50 dark:hover:bg-red-950/30 border border-red-105 rounded-full transition cursor-pointer"
+                                    className="flex items-center space-x-1.5 px-3.5 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 border border-red-200 dark:border-red-900/50 rounded-full transition cursor-pointer"
                                 >
                                     <LogOut className="w-3.25 h-3.25" />
                                     <span>Logout</span>
@@ -201,14 +199,14 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                             <div className="flex items-center space-x-1.5">
                                 <Link
                                     to="/login"
-                                    className="flex items-center space-x-1 px-3.5 py-2 text-[13px] font-bold text-slate-600 hover:text-blue-600 dark:text-slate-300 dark:hover:text-white transition-all duration-200 cursor-pointer"
+                                    className="flex items-center space-x-1 px-3.5 py-2 text-[13px] font-bold text-slate-600 hover:text-red-600 dark:text-slate-300 dark:hover:text-white transition-all duration-200 cursor-pointer"
                                 >
                                     <LogIn className="w-3.5 h-3.5" />
                                     <span>Login</span>
                                 </Link>
                                 <Link
                                     to="/register"
-                                    className="flex items-center justify-center px-6 py-2 rounded-full text-[13px] font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-650 hover:opacity-95 shadow-md transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
+                                    className="flex items-center justify-center px-6 py-2 rounded-full text-[13px] font-bold text-white bg-gradient-to-r from-red-600 via-rose-600 to-red-700 hover:from-red-700 hover:to-rose-800 shadow-md shadow-red-600/20 transform hover:-translate-y-0.5 transition-all duration-200 cursor-pointer"
                                 >
                                     Register
                                 </Link>
@@ -221,7 +219,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                         {/* Theme Toggle */}
                         <button
                             onClick={() => setDarkMode(!darkMode)}
-                            className="p-1.5 sm:p-2 rounded-xl text-slate-500 hover:text-brand-primary dark:text-slate-400 dark:hover:text-brand-accent hover:bg-slate-100 dark:hover:bg-brand-hoverDark transition-all duration-200"
+                            className="p-1.5 sm:p-2 rounded-xl text-slate-500 hover:text-red-600 dark:text-slate-400 dark:hover:text-red-400 hover:bg-slate-100 dark:hover:bg-zinc-800 transition-all duration-200"
                         >
                             {darkMode ? <Sun className="w-4 h-4 sm:w-5 sm:h-5" /> : <Moon className="w-4 h-4 sm:w-5 sm:h-5" />}
                         </button>
@@ -233,7 +231,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                     setMobileMenuOpen(false);
                                     navigate('/login');
                                 }}
-                                className="flex items-center justify-center space-x-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm select-none"
+                                className="flex items-center justify-center space-x-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition shadow-sm select-none"
                             >
                                 <User className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                 <span className="whitespace-nowrap">Login / Register</span>
@@ -244,7 +242,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                     setMobileMenuOpen(false);
                                     navigate(profile?.role === 'admin' ? '/admin' : profile?.role === 'mentor' ? '/mentor' : '/dashboard');
                                 }}
-                                className="flex items-center justify-center space-x-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm select-none"
+                                className="flex items-center justify-center space-x-1.5 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-[10px] sm:text-xs font-bold text-white bg-red-600 hover:bg-red-700 transition shadow-sm select-none"
                             >
                                 <LayoutDashboard className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                                 <span className="whitespace-nowrap">Dashboard</span>
@@ -268,9 +266,9 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                     <div className="max-w-md mx-auto space-y-6 pb-24">
 
                         {/* User Profile / Header Box */}
-                        <div className="bg-blue-50/60 dark:bg-slate-900/50 border border-blue-100/50 dark:border-slate-800 rounded-[24px] p-4 flex items-center justify-between">
+                        <div className="bg-red-50/60 dark:bg-zinc-900/60 border border-red-100/50 dark:border-zinc-800 rounded-[24px] p-4 flex items-center justify-between">
                             <div className="flex items-center space-x-3.5">
-                                <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-lg shadow-sm select-none overflow-hidden">
+                                <div className="w-12 h-12 rounded-full bg-red-600 text-white flex items-center justify-center font-bold text-lg shadow-sm select-none overflow-hidden">
                                     {user ? (
                                         profile?.avatar_url ? (
                                             <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
@@ -316,20 +314,20 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                         to={link.path}
                                         onClick={() => setMobileMenuOpen(false)}
                                         className={`relative flex items-center space-x-4 px-3 py-2 rounded-2xl transition-all ${active
-                                            ? 'bg-blue-50/80 dark:bg-blue-900/20'
+                                            ? 'bg-red-50/80 dark:bg-red-950/30'
                                             : 'hover:bg-slate-100 dark:hover:bg-slate-900/30'
                                             }`}
                                     >
                                         {active && (
-                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[55%] bg-blue-600 rounded-r-md"></div>
+                                            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-[55%] bg-red-600 rounded-r-md"></div>
                                         )}
                                         <div className={`w-11 h-11 flex-shrink-0 rounded-full flex items-center justify-center shadow-sm ${active
-                                            ? 'bg-blue-600 text-white'
+                                            ? 'bg-red-600 text-white'
                                             : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400'
                                             }`}>
                                             <Icon size={18} strokeWidth={active ? 2.5 : 2} />
                                         </div>
-                                        <span className={`text-[15px] font-bold ${active ? 'text-blue-700 dark:text-blue-400' : 'text-slate-700 dark:text-slate-300'
+                                        <span className={`text-[15px] font-bold ${active ? 'text-red-600 dark:text-red-400' : 'text-slate-700 dark:text-slate-300'
                                             }`}>
                                             {link.name}
                                         </span>
@@ -382,7 +380,7 @@ const Navbar: React.FC<NavbarProps> = ({ darkMode, setDarkMode }) => {
                                     <Link
                                         to="/register"
                                         onClick={() => setMobileMenuOpen(false)}
-                                        className="flex justify-center py-3.5 px-4 bg-blue-600 text-[14px] font-bold rounded-2xl text-white shadow-md hover:bg-blue-700 hover:shadow-lg transition-all"
+                                        className="flex justify-center py-3.5 px-4 bg-gradient-to-r from-red-600 via-rose-600 to-red-700 text-[14px] font-bold rounded-2xl text-white shadow-md hover:from-red-700 hover:to-red-800 hover:shadow-lg transition-all"
                                     >
                                         Sign Up
                                     </Link>

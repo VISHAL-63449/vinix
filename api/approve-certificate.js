@@ -53,7 +53,7 @@ export default async function handler(req, res) {
         const issueDate = new Date().toISOString();
 
         const logoBase64 = await getImageBase64('vinix-logo.png', req);
-        const msmeBase64 = await getImageBase64('msme.jpeg', req);
+        const msmeBase64 = (await getImageBase64('msme.png', req)) || (await getImageBase64('msme.jpeg', req));
         const stampBase64 = await getImageBase64('certificate-stamp.jpeg', req);
         const signBase64 = await getImageBase64('founder-sign.png', req);
 

@@ -235,7 +235,7 @@ export const PromoPopupTab: React.FC<PromoPopupTabProps> = ({
                                 setImageUrl(e.target.value);
                                 setImagePreview(e.target.value || null);
                             }}
-                            className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition"
+                            className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-red-500 transition"
                         />
                     </div>
 
@@ -282,7 +282,7 @@ export const PromoPopupTab: React.FC<PromoPopupTabProps> = ({
                             placeholder="Summer Sale!"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
-                            className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition font-semibold"
+                            className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-red-500 transition font-semibold"
                         />
                     </div>
 
@@ -296,7 +296,7 @@ export const PromoPopupTab: React.FC<PromoPopupTabProps> = ({
                             placeholder="Limited time offer..."
                             value={description}
                             onChange={(e) => setDescription(e.target.value)}
-                            className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition leading-relaxed"
+                            className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-red-500 transition leading-relaxed"
                         />
                     </div>
 
@@ -311,7 +311,7 @@ export const PromoPopupTab: React.FC<PromoPopupTabProps> = ({
                                 placeholder="https://... or /internships"
                                 value={linkUrl}
                                 onChange={(e) => setLinkUrl(e.target.value)}
-                                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-red-500 transition"
                             />
                         </div>
                         <div>
@@ -323,7 +323,7 @@ export const PromoPopupTab: React.FC<PromoPopupTabProps> = ({
                                 placeholder="Learn More"
                                 value={linkLabel}
                                 onChange={(e) => setLinkLabel(e.target.value)}
-                                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-blue-500 transition font-semibold"
+                                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-xl text-slate-900 dark:text-white outline-none focus:ring-2 focus:ring-red-500 transition font-semibold"
                             />
                         </div>
                     </div>
@@ -360,7 +360,7 @@ export const PromoPopupTab: React.FC<PromoPopupTabProps> = ({
                                 }}
                                 className="px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-bold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition flex items-center space-x-1.5"
                             >
-                                <Eye className="w-4 h-4 text-blue-600" />
+                                <Eye className="w-4 h-4 text-red-600" />
                                 <span>Preview In-Page</span>
                             </button>
                         )}
@@ -409,7 +409,7 @@ export const PromoPopupTab: React.FC<PromoPopupTabProps> = ({
                             key={popup.id}
                             className={`bg-white dark:bg-slate-900 rounded-3xl border ${
                                 popup.isActive
-                                    ? 'border-blue-500/80 shadow-md ring-2 ring-blue-500/10'
+                                    ? 'border-red-500/80 shadow-md ring-2 ring-red-500/10'
                                     : 'border-slate-200/80 dark:border-slate-800 shadow-sm'
                             } overflow-hidden flex flex-col justify-between transition-all`}
                         >
@@ -458,7 +458,7 @@ export const PromoPopupTab: React.FC<PromoPopupTabProps> = ({
                                             href={popup.linkUrl}
                                             target={popup.linkUrl.startsWith('http') ? '_blank' : '_self'}
                                             rel="noreferrer"
-                                            className="inline-flex items-center space-x-1 text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline"
+                                            className="inline-flex items-center space-x-1 text-xs font-bold text-red-600 dark:text-red-400 hover:underline"
                                         >
                                             <ExternalLink className="w-3.5 h-3.5" />
                                             <span>{popup.linkLabel || 'Learn More'}</span>

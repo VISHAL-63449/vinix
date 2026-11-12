@@ -141,7 +141,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                 return 'bg-purple-500/15 text-purple-700 dark:text-purple-400 border-purple-500/30';
             case 'blue':
             default:
-                return 'bg-blue-500/15 text-blue-700 dark:text-blue-400 border-blue-500/30';
+                return 'bg-red-500/15 text-red-700 dark:text-red-400 border-red-500/30';
         }
     };
 
@@ -151,7 +151,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
                 <div>
                     <div className="flex items-center space-x-2">
-                        <span className="p-2 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400">
+                        <span className="p-2 rounded-xl bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400">
                             <Radio className="w-5 h-5 animate-pulse" />
                         </span>
                         <h2 className="text-xl sm:text-2xl font-black text-slate-900 dark:text-white">
@@ -188,7 +188,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                 </div>
 
                 {/* Simulated Ticker Preview Bar */}
-                <div className="w-full bg-[#081226] border border-blue-950 rounded-xl px-3 h-10 flex items-center overflow-hidden">
+                <div className="w-full bg-[#081226] border border-red-950 rounded-xl px-3 h-10 flex items-center overflow-hidden">
                     <div className="inline-flex items-center space-x-1.5 px-2.5 py-1 rounded bg-[#154ED0] text-white text-[10px] font-extrabold uppercase shrink-0 mr-3 border-r border-white/10 pr-3">
                         <span className="relative flex h-1.5 w-1.5">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-300 opacity-75"></span>
@@ -206,7 +206,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                                     </span>
                                 )}
                                 <span>{item.text}</span>
-                                <span className="text-blue-400/50">✦</span>
+                                <span className="text-red-400/50">✦</span>
                             </span>
                         ))}
                     </div>
@@ -219,7 +219,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                 <div className="lg:col-span-5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm space-y-4">
                     <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
                         <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center space-x-2">
-                            {editingId ? <Edit3 className="w-4 h-4 text-blue-600" /> : <Plus className="w-4 h-4 text-blue-600" />}
+                            {editingId ? <Edit3 className="w-4 h-4 text-red-600" /> : <Plus className="w-4 h-4 text-red-600" />}
                             <span>{editingId ? 'Edit Announcement' : 'Add New Announcement'}</span>
                         </h3>
                         {editingId && (
@@ -246,7 +246,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                                 rows={2}
                                 required
                                 placeholder="e.g. Summer 2026 Batch Applications Open — Apply for Free Task-Based Virtual Internships!"
-                                className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
                             />
                         </div>
 
@@ -261,7 +261,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                                     value={tag}
                                     onChange={(e) => setTag(e.target.value)}
                                     placeholder="e.g. NEW, BATCH 2026"
-                                    className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
                                 />
                             </div>
 
@@ -272,7 +272,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                                 <select
                                     value={tagColor}
                                     onChange={(e: any) => setTagColor(e.target.value)}
-                                    className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
                                 >
                                     <option value="blue">Blue (Default)</option>
                                     <option value="emerald">Emerald Green (New / Success)</option>
@@ -293,7 +293,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                                 value={link}
                                 onChange={(e) => setLink(e.target.value)}
                                 placeholder="e.g. /internships, /domains, /verify"
-                                className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full text-xs rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-red-500"
                             />
                         </div>
 
@@ -304,7 +304,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                                     type="checkbox"
                                     checked={isActive}
                                     onChange={(e) => setIsActive(e.target.checked)}
-                                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                    className="rounded border-slate-300 text-red-600 focus:ring-red-500"
                                 />
                                 <span className="font-medium">Active (Visible in ticker)</span>
                             </label>
@@ -314,7 +314,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                                     type="checkbox"
                                     checked={isExternal}
                                     onChange={(e) => setIsExternal(e.target.checked)}
-                                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                                    className="rounded border-slate-300 text-red-600 focus:ring-red-500"
                                 />
                                 <span className="font-medium">External link (opens tab)</span>
                             </label>
@@ -323,7 +323,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                         {/* Submit Button */}
                         <button
                             type="submit"
-                            className="w-full py-2.5 px-4 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-md shadow-blue-500/20 transition flex items-center justify-center space-x-2"
+                            className="w-full py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold text-xs shadow-md shadow-red-500/20 transition flex items-center justify-center space-x-2"
                         >
                             {editingId ? <Check className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
                             <span>{editingId ? 'Update Announcement' : 'Add Announcement to Ticker'}</span>
@@ -369,7 +369,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                                                 </span>
                                             )}
                                             {item.link && (
-                                                <span className="text-[10px] text-blue-600 dark:text-blue-400 truncate max-w-[140px] flex items-center space-x-0.5">
+                                                <span className="text-[10px] text-red-600 dark:text-red-400 truncate max-w-[140px] flex items-center space-x-0.5">
                                                     <span>{item.link}</span>
                                                     {item.isExternal && <ArrowUpRight className="w-2.5 h-2.5" />}
                                                 </span>
@@ -397,7 +397,7 @@ export const NewsTickerTab: React.FC<NewsTickerTabProps> = ({ showToast }) => {
                                         <button
                                             type="button"
                                             onClick={() => handleStartEdit(item)}
-                                            className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-slate-700 transition"
+                                            className="p-1.5 rounded-lg text-slate-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-slate-700 transition"
                                             title="Edit announcement"
                                         >
                                             <Edit3 className="w-3.5 h-3.5" />

@@ -41,7 +41,7 @@ export const CookieConsent: React.FC = () => {
         >
             <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-2xl text-left">
                 <div className="flex items-start gap-3.5">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-xl bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center flex-shrink-0">
                         <Cookie className="w-5 h-5" />
                     </div>
                     <div className="flex-1 space-y-1.5 pr-2">
@@ -54,7 +54,7 @@ export const CookieConsent: React.FC = () => {
                         <div className="pt-1">
                             <Link
                                 to="/privacy"
-                                className="text-[11px] font-bold text-blue-600 dark:text-blue-400 underline hover:text-blue-700"
+                                className="text-[11px] font-bold text-red-600 dark:text-red-400 underline hover:text-red-700"
                             >
                                 Review our Privacy Policy →
                             </Link>
@@ -80,7 +80,7 @@ export const CookieConsent: React.FC = () => {
                     <button
                         type="button"
                         onClick={handleAccept}
-                        className="px-4 py-2 text-xs font-black text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-sm transition"
+                        className="px-4 py-2 text-xs font-black text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-sm transition"
                     >
                         Accept All
                     </button>

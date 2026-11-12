@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GoogleAd from '../components/GoogleAd';
+import NewsTicker from '../components/NewsTicker';
+import CollegeTicker from '../components/CollegeTicker';
 import type { LucideIcon } from 'lucide-react';
 import SEO from '../components/SEO';
 import {
@@ -178,7 +180,7 @@ const ReviewCard: React.FC<{ item: Testimonial }> = ({ item }) => {
     return (
         <div className="w-[330px] sm:w-[390px] flex-shrink-0 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200/90 dark:border-slate-800/90 shadow-sm hover:shadow-xl transition-all duration-300 p-5 sm:p-6 flex flex-col justify-between relative group select-none">
             {/* Top curved gradient glow line */}
-            <div className="absolute top-0 left-6 right-6 h-[3px] bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full opacity-80 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute top-0 left-6 right-6 h-[3px] bg-gradient-to-r from-red-600 via-rose-500 to-red-700 rounded-full opacity-80 group-hover:opacity-100 transition-opacity" />
 
             {/* Top row: Star rating + Verified Badge */}
             <div className="flex items-center justify-between pt-1">
@@ -453,51 +455,31 @@ export const Home: React.FC = () => {
 
             {/* ═══════ HERO SECTION ═══════ */}
             <section className="relative z-10 overflow-hidden">
-                {/* Background: Clean, modern ambient lighting on mobile, high-res graphic on desktop */}
+                {/* ── Background: Dedicated Mobile vs Desktop ── */}
+                {/* Mobile Background (940x1672 Portrait): Custom red & black corner accents tailored for phone screens — top ribbon frames news ticker, center is pure clean white for 100% readable text, bottom ribbon frames the bottom */}
                 <div
-                    className="block sm:hidden absolute inset-0 z-[-2] bg-gradient-to-b from-blue-50/70 via-white to-blue-50/30 dark:from-slate-950 dark:via-slate-900/90 dark:to-slate-950"
-                >
-                    <div className="absolute top-0 right-0 w-72 h-72 bg-blue-400/10 dark:bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-                    <div className="absolute top-48 left-0 w-64 h-64 bg-indigo-400/10 dark:bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
+                    className="block sm:hidden absolute inset-0 z-[-2] bg-cover bg-top bg-no-repeat transition-opacity duration-300 dark:opacity-25"
+                    style={{ backgroundImage: `url('${window.location.origin}${import.meta.env.BASE_URL}mobile-hero-background.png?v=7')` }}
+                ></div>
+
+                {/* Tablet & Desktop Background (1305x731 Landscape): edge-to-edge 100% 100% which user loved ("laptop is super design") */}
+                <div
+                    className="hidden sm:block absolute inset-0 z-[-2] sm:bg-[length:100%_100%] bg-no-repeat transition-opacity duration-300 dark:opacity-25"
+                    style={{ backgroundImage: `url('${window.location.origin}${import.meta.env.BASE_URL}background.png?v=7')` }}
+                ></div>
+
+                {/* Ambient Red Glows complementing the red waves */}
+                <div className="absolute top-0 left-0 w-80 h-80 bg-red-600/10 dark:bg-red-600/15 rounded-full blur-3xl pointer-events-none z-[-1]"></div>
+                <div className="absolute bottom-0 right-0 w-80 h-80 bg-red-600/10 dark:bg-red-600/15 rounded-full blur-3xl pointer-events-none z-[-1]"></div>
+                {/* Soft Gradient Overlay for Readability and Contrast */}
+                <div className="absolute inset-0 z-[-1] bg-gradient-to-br from-white/10 via-transparent to-white/20 dark:from-slate-950/70 dark:via-slate-950/50 dark:to-slate-950/80 pointer-events-none"></div>
+
+                {/* ── Top News Ticker: Positioned inside Hero Section so the Hero Background is seamlessly UNDER it ── */}
+                <div className="relative z-20 pt-2.5 sm:pt-3">
+                    <NewsTicker embedded />
                 </div>
-                <div
-                    className="block sm:hidden absolute inset-0 z-[-2] bg-cover bg-top bg-no-repeat opacity-[0.08] dark:opacity-[0.04] pointer-events-none transition-opacity duration-300"
-                    style={{ backgroundImage: `url('${window.location.origin}${import.meta.env.BASE_URL}mobile-hero-background.png?v=2')` }}
-                ></div>
-                <div
-                    className="hidden sm:block absolute inset-0 z-[-2] bg-cover bg-top sm:bg-center bg-no-repeat"
-                    style={{ backgroundImage: `url('${window.location.origin}${import.meta.env.BASE_URL}background.png')` }}
-                ></div>
-                {/* Gradient Overlay for Readability */}
-                <div className="absolute inset-0 z-[-1] bg-gradient-to-br from-blue-50/10 via-white/5 to-transparent dark:from-slate-900/60 dark:via-slate-950/40 dark:to-slate-950/80 pointer-events-none"></div>
 
-                {/* Float background Tech stack labels matching screenshot */}
-                <FloatTechLogo style={{ top: '6%', left: '6%' }}>
-                    <HTML5Logo />
-                </FloatTechLogo>
-                <FloatTechLogo style={{ top: '10%', left: '85%' }}>
-                    <TSLogo />
-                </FloatTechLogo>
-                <FloatTechLogo style={{ top: '4%', left: '55%' }}>
-                    <JSLogo />
-                </FloatTechLogo>
-                <FloatTechLogo style={{ top: '35%', left: '80%' }}>
-                    <ReactLogo />
-                </FloatTechLogo>
-                <FloatTechLogo style={{ top: '48%', left: '-2%' }}>
-                    <PythonLogo />
-                </FloatTechLogo>
-                <FloatTechLogo style={{ top: '85%', left: '15%' }}>
-                    <GitLogo />
-                </FloatTechLogo>
-                <FloatTechLogo style={{ top: '55%', left: '85%' }}>
-                    <NodeLogo />
-                </FloatTechLogo>
-                <FloatTechLogo style={{ top: '88%', left: '60%' }}>
-                    <AWSLogo />
-                </FloatTechLogo>
-
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 py-8 sm:py-16 md:py-24 relative z-10">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 pt-3 sm:pt-6 md:pt-8 pb-12 sm:pb-20 relative z-10">
                     <div className="flex flex-col lg:flex-row items-center gap-8 sm:gap-12 lg:gap-8">
 
                         {/* ── LEFT Hero details ── */}
@@ -505,10 +487,10 @@ export const Home: React.FC = () => {
 
                             {/* Pill */}
                             <div className="inline-flex items-center gap-1.5 xs:gap-2 self-start px-2.5 xs:px-3 sm:px-3.5 py-1.5
-                                            rounded-full bg-blue-50/70 dark:bg-blue-950/30
-                                            border border-blue-100/70 dark:border-blue-900/40
+                                            rounded-full bg-red-50/70 dark:bg-red-950/30
+                                            border border-red-100/70 dark:border-red-900/40
                                             text-[8.5px] xs:text-[9.5px] sm:text-[10px] font-black tracking-wider uppercase
-                                            text-blue-700 dark:text-blue-350 shadow-xs animate-float max-w-full">
+                                            text-red-700 dark:text-red-400 shadow-xs animate-float max-w-full">
                                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse flex-shrink-0" />
                                 <span className="truncate">🎓 India's Most Practical Virtual Internship Platform</span>
                             </div>
@@ -517,10 +499,10 @@ export const Home: React.FC = () => {
                             <h1 className="font-extrabold text-slate-900 dark:text-white leading-[1.1] tracking-tight text-3xl xs:text-4xl sm:text-5xl md:text-6xl">
                                 <div>Build Skills.</div>
                                 <div>Gain Experience.</div>
-                                <div className="text-blue-600 dark:text-blue-400 flex items-center min-h-[2.5rem] xs:min-h-[3rem] sm:min-h-[4.5rem]">
+                                <div className="text-red-600 dark:text-red-500 flex items-center min-h-[2.5rem] xs:min-h-[3rem] sm:min-h-[4.5rem]">
                                     <span>{typed}</span>
                                     <span
-                                        className="inline-block w-[3px] rounded-sm bg-blue-600 dark:bg-blue-400 ml-1 align-middle animate-pulse"
+                                        className="inline-block w-[3px] rounded-sm bg-red-600 dark:bg-red-500 ml-1 align-middle animate-pulse"
                                         style={{
                                             height: '0.85em',
                                             opacity: blink ? 1 : 0.2,
@@ -541,9 +523,9 @@ export const Home: React.FC = () => {
                                 <FeatureItem
                                     icon={Code2}
                                     label="Real-world Projects"
-                                    bgClass="bg-blue-50/60 dark:bg-blue-950/20"
-                                    borderClass="border-blue-100/70 dark:border-blue-900/30"
-                                    textClass="text-blue-700 dark:text-blue-300"
+                                    bgClass="bg-red-50/60 dark:bg-red-950/20"
+                                    borderClass="border-red-100/70 dark:border-red-900/30"
+                                    textClass="text-red-700 dark:text-red-300"
                                 />
                                 <FeatureItem
                                     icon={Users}
@@ -572,9 +554,9 @@ export const Home: React.FC = () => {
                             <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-4 pt-1 sm:pt-4 w-full">
                                 <button
                                     onClick={() => navigate('/internships')}
-                                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-blue-600
-                                               hover:bg-blue-700 text-white font-bold rounded-xl sm:rounded-2xl
-                                               shadow-lg shadow-blue-600/25 hover:shadow-blue-600/40 transition active:scale-[0.97]"
+                                    className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-3.5 sm:px-8 sm:py-4 bg-red-600
+                                               hover:bg-red-700 text-white font-bold rounded-xl sm:rounded-2xl
+                                               shadow-lg shadow-red-600/25 hover:shadow-red-600/40 transition active:scale-[0.97]"
                                 >
                                     <span>Explore Internships</span>
                                     <ArrowRight size={16} />
@@ -598,14 +580,14 @@ export const Home: React.FC = () => {
 
                         {/* ── RIGHT Side Image with Dynamic Floating Cards ── */}
                         <div className="flex-1 relative z-10 w-full max-w-[550px] lg:max-w-none flex justify-center items-center py-6 sm:py-10">
-                            {/* Glowing blue backdrops */}
-                            <div className="w-[100%] h-[100%] bg-gradient-to-tr from-blue-500/10 to-indigo-500/10 rounded-full filter blur-[70px] absolute -z-10 animate-pulse"></div>
+                            {/* Glowing red backdrops */}
+                            <div className="w-[100%] h-[100%] bg-gradient-to-tr from-red-600/15 to-rose-600/10 rounded-full filter blur-[70px] absolute -z-10 animate-pulse"></div>
 
-                            <div className="relative w-full max-w-[340px] h-[225px] xs:h-[240px] sm:max-w-none sm:w-[480px] sm:h-[320px] lg:w-[500px] lg:h-[340px] flex justify-center items-center mx-auto">
+                            <div className="relative w-full max-w-[340px] xs:max-w-[380px] sm:max-w-none sm:w-[500px] lg:w-[540px] min-h-[240px] sm:min-h-[300px] flex justify-center items-center mx-auto">
                                 <img
-                                    src={window.location.origin + import.meta.env.BASE_URL + 'home-image.jpeg?v=2'}
+                                    src={window.location.origin + import.meta.env.BASE_URL + 'home-image.png?v=3'}
                                     alt="Vinix Internships"
-                                    className="w-full h-full object-cover rounded-2xl sm:rounded-3xl border border-slate-150/80 dark:border-slate-800/80 shadow-lg select-none transform hover:scale-[1.01] transition-transform duration-500"
+                                    className="w-full h-auto max-h-[340px] sm:max-h-[380px] object-contain select-none drop-shadow-2xl transform hover:scale-[1.02] transition-transform duration-500"
                                 />
 
                                 {/* Overlay/floating cards: display on both mobile and desktop (resizes responsively) */}
@@ -627,7 +609,7 @@ export const Home: React.FC = () => {
                                             <div className="relative w-7 h-7 sm:w-10 sm:h-10 flex-shrink-0">
                                                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 40 40">
                                                     <circle cx="20" cy="20" r="16" className="text-slate-100 dark:text-slate-800" strokeWidth="3" fill="transparent" stroke="currentColor" />
-                                                    <circle cx="20" cy="20" r="16" className="text-blue-600" strokeWidth="3" fill="transparent" strokeDasharray="100.5" strokeDashoffset="25.1" strokeLinecap="round" stroke="currentColor" />
+                                                    <circle cx="20" cy="20" r="16" className="text-red-600" strokeWidth="3" fill="transparent" strokeDasharray="100.5" strokeDashoffset="25.1" strokeLinecap="round" stroke="currentColor" />
                                                 </svg>
                                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
                                                     <span className="text-[7px] xs:text-[7.5px] sm:text-[10px] font-black text-slate-800 dark:text-white leading-none">75%</span>
@@ -635,13 +617,13 @@ export const Home: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className="min-w-0">
-                                                <p className="text-[7.5px] xs:text-[8px] sm:text-[11px] font-black text-blue-600 dark:text-blue-400 leading-tight truncate">Great job!</p>
+                                                <p className="text-[7.5px] xs:text-[8px] sm:text-[11px] font-black text-red-600 dark:text-red-400 leading-tight truncate">Great job!</p>
                                                 <p className="text-[6px] xs:text-[6.5px] sm:text-[9px] text-slate-500 dark:text-slate-400 leading-tight font-semibold truncate">Keep going strong.</p>
                                             </div>
                                         </div>
                                         <div className="mt-1 sm:mt-2.5 pt-1 sm:pt-2 border-t border-slate-100 dark:border-slate-800">
                                             <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 sm:h-1.5 rounded-full overflow-hidden">
-                                                <div className="bg-blue-600 h-full rounded-full" style={{ width: '75%' }}></div>
+                                                <div className="bg-red-600 h-full rounded-full" style={{ width: '75%' }}></div>
                                             </div>
                                             <span className="text-[5.5px] xs:text-[6px] sm:text-[8px] font-extrabold text-slate-400 dark:text-slate-500 mt-0.5 sm:mt-1 block truncate">3 of 4 milestones completed</span>
                                         </div>
@@ -651,7 +633,7 @@ export const Home: React.FC = () => {
                                     <div className="absolute -bottom-3 sm:-bottom-6 left-0 sm:-left-12 lg:-left-20 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md p-2 sm:p-3.5 rounded-xl sm:rounded-2xl border border-slate-150/80 dark:border-slate-800/80 shadow-md w-[138px] xs:w-[148px] sm:w-48 animate-float-delayed pointer-events-auto">
                                         <div className="flex items-center justify-between mb-1 sm:mb-1.5">
                                             <div className="flex items-center gap-1 min-w-0">
-                                                <span className="p-0.5 sm:p-1 bg-blue-500 text-white rounded flex items-center justify-center flex-shrink-0">
+                                                <span className="p-0.5 sm:p-1 bg-red-600 text-white rounded flex items-center justify-center flex-shrink-0">
                                                     <Code2 size={9} className="stroke-[3] sm:w-[10px] sm:h-[10px]" />
                                                 </span>
                                                 <span className="text-[7px] xs:text-[7.5px] sm:text-[9px] font-extrabold text-slate-800 dark:text-white truncate">Live Projects</span>
@@ -689,10 +671,10 @@ export const Home: React.FC = () => {
                                             </div>
                                             <button
                                                 onClick={() => navigate('/verify')}
-                                                className="flex items-center gap-0.5 text-[6px] xs:text-[6.5px] sm:text-[8px] font-black text-blue-400 hover:text-blue-300 transition flex-shrink-0"
+                                                className="flex items-center gap-0.5 text-[6px] xs:text-[6.5px] sm:text-[8px] font-black text-red-400 hover:text-red-300 transition flex-shrink-0"
                                             >
                                                 <span>Verify</span>
-                                                <span className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-[5px] sm:text-[7px]">→</span>
+                                                <span className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 rounded-full bg-red-500/20 text-red-400 flex items-center justify-center text-[5px] sm:text-[7px]">→</span>
                                             </button>
                                         </div>
                                     </div>
@@ -705,7 +687,7 @@ export const Home: React.FC = () => {
                                         </div>
                                         <div className="flex flex-wrap gap-0.5 sm:gap-1 items-center my-0.5 sm:my-1.5 font-sans">
                                             <span className="px-1 py-0.5 bg-orange-100 text-orange-700 dark:bg-orange-950/40 dark:text-orange-300 rounded text-[5.5px] xs:text-[6px] sm:text-[7px] font-black">HTML</span>
-                                            <span className="px-1 py-0.5 bg-blue-100 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300 rounded text-[5.5px] xs:text-[6px] sm:text-[7px] font-black">CSS</span>
+                                            <span className="px-1 py-0.5 bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300 rounded text-[5.5px] xs:text-[6px] sm:text-[7px] font-black">CSS</span>
                                             <span className="px-1 py-0.5 bg-yellow-100 text-yellow-800 dark:bg-yellow-950/40 dark:text-yellow-300 rounded text-[5.5px] xs:text-[6px] sm:text-[7px] font-black">JS</span>
                                             <span className="px-1 py-0.5 bg-cyan-100 text-cyan-700 dark:bg-cyan-950/40 dark:text-cyan-300 rounded text-[5.5px] xs:text-[6px] sm:text-[7px] font-black">React</span>
                                             <span className="px-1 py-0.5 bg-purple-100 text-purple-700 dark:bg-purple-950/40 dark:text-purple-300 rounded text-[5.5px] xs:text-[6px] sm:text-[7px] font-black">+8</span>
@@ -775,13 +757,13 @@ export const Home: React.FC = () => {
 
                         {/* Monthly Tasks */}
                         <div className="flex items-start gap-3.5 p-2 transition duration-300 hover:scale-[1.02] border-t md:border-t-0 md:border-l border-slate-100 dark:border-slate-800/60 md:pl-4">
-                            <div className="w-10 h-10 rounded-full bg-blue-100/70 dark:bg-blue-955/45 text-blue-650 dark:text-blue-400 flex items-center justify-center flex-shrink-0 shadow-sm">
+                            <div className="w-10 h-10 rounded-full bg-red-100/70 dark:bg-red-950/45 text-red-600 dark:text-red-400 flex items-center justify-center flex-shrink-0 shadow-sm">
                                 <Calendar size={18} className="stroke-[2.5]" />
                             </div>
                             <div className="space-y-1">
                                 <h4 className="text-xs font-black text-slate-800 dark:text-white leading-tight font-sans">Monthly Tasks</h4>
                                 <p className="text-[10px] text-slate-550 dark:text-slate-400 leading-normal font-semibold">
-                                    <span className="block font-black text-blue-650 dark:text-blue-400">1 Month – 4 Tasks</span>
+                                    <span className="block font-black text-red-600 dark:text-red-400">1 Month – 4 Tasks</span>
                                     <span className="block">2 Months – 8 Tasks</span>
                                     <span className="block">3 Months – 10 Tasks</span>
                                 </p>
@@ -831,11 +813,14 @@ export const Home: React.FC = () => {
                 </div>
             </section>
 
+            {/* ═══════ COLLEGE LOGO TICKER / CAMPUS TALENT NETWORK ═══════ */}
+            <CollegeTicker />
+
             {/* ═══════ HOW IT WORKS SECTION ═══════ */}
             <section id="how-it-works" className="py-20 max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
                 <div className="text-center space-y-3 mb-14">
-                    <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-blue-50/60 dark:bg-blue-955/20 border border-blue-100/50 dark:border-blue-900/30 rounded-full text-[10px] font-extrabold text-blue-650 dark:text-blue-300 uppercase tracking-widest">
-                        <Sparkles size={11} className="text-blue-500" />
+                    <div className="inline-flex items-center space-x-1.5 px-3 py-1 bg-red-50/60 dark:bg-red-955/20 border border-red-100/50 dark:border-red-900/30 rounded-full text-[10px] font-extrabold text-red-650 dark:text-red-400 uppercase tracking-widest">
+                        <Sparkles size={11} className="text-red-500" />
                         <span>Simple Process</span>
                     </div>
                     <h2 className="text-4xl font-extrabold text-slate-800 dark:text-white tracking-tight">How It Works</h2>
@@ -845,9 +830,9 @@ export const Home: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {[
-                        { no: '01', title: 'Apply & Register', desc: 'Pick a domain, fill in your details, and grab an instant offer letter — no interview processes.', color: 'text-blue-600   bg-blue-50/50   dark:bg-blue-955/20 border-blue-100' },
+                        { no: '01', title: 'Apply & Register', desc: 'Pick a domain, fill in your details, and grab an instant offer letter — no interview processes.', color: 'text-red-600 bg-red-50/50 dark:bg-red-955/20 border-red-100 dark:border-red-900/40' },
                         { no: '02', title: 'Get Your ID Card', desc: 'Receive your virtual intern identity card and step into Vinix\'s verified community network.', color: 'text-purple-600 bg-purple-50/50 dark:bg-purple-955/20 border-purple-100' },
-                        { no: '03', title: 'Complete Projects', desc: 'Work through 5–12 real-world coding assignments per domain, validated by technical mentors.', color: 'text-pink-600   bg-pink-50/50   dark:bg-pink-955/20 border-pink-100' },
+                        { no: '03', title: 'Complete Projects', desc: 'Work through 5–12 real-world coding assignments per domain, validated by technical mentors.', color: 'text-rose-600 bg-rose-50/50 dark:bg-rose-955/20 border-rose-100' },
                         { no: '04', title: 'Earn Certificate', desc: 'Get your secure QR-verified certificate. Export it to LinkedIn, your CV, and trigger tech referrals.', color: 'text-emerald-600 bg-emerald-50/50 dark:bg-emerald-955/20 border-emerald-100' },
                     ].map((s, idx) => (
                         <div key={idx} className="relative p-6 bg-white dark:bg-slate-900 border
@@ -909,7 +894,7 @@ export const Home: React.FC = () => {
                 <div className="max-w-7xl mx-auto px-6 lg:px-12 text-center">
                     <button
                         onClick={() => navigate('/reviews')}
-                        className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 hover:shadow-md transition-all duration-300"
+                        className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-xs sm:text-sm font-bold text-slate-700 dark:text-slate-200 bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 shadow-xs hover:border-red-500 hover:text-red-600 dark:hover:text-red-400 hover:shadow-md transition-all duration-300"
                     >
                         <span>View All Student Reviews</span>
                         <ArrowRight size={14} />
@@ -967,26 +952,26 @@ export const Home: React.FC = () => {
 
             {/* ═══════ CTA BANNER SECTION ═══════ */}
             <section className="pb-20 max-w-7xl mx-auto px-6 lg:px-12 relative z-10">
-                <div className="relative overflow-hidden bg-gradient-to-r from-blue-900 via-blue-800
-                                to-indigo-900 text-white rounded-3xl shadow-2xl border
-                                border-blue-800/50 p-10 md:p-14 flex flex-col md:flex-row
+                <div className="relative overflow-hidden bg-gradient-to-r from-zinc-950 via-neutral-900
+                                to-zinc-950 text-white rounded-3xl shadow-2xl border
+                                border-red-900/40 p-10 md:p-14 flex flex-col md:flex-row
                                 items-center justify-between gap-8 animate-float-delayed">
                     <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full
-                                    bg-blue-400/10 blur-[60px] pointer-events-none" />
+                                    bg-red-600/10 blur-[60px] pointer-events-none" />
                     <div className="space-y-2 z-10 text-center md:text-left">
                         <h2 className="text-3xl md:text-4xl font-black tracking-tight">
                             Start Your Internship Today
                         </h2>
-                        <p className="text-blue-200 text-sm font-semibold">
+                        <p className="text-red-200 text-sm font-semibold">
                             No application fee · Instant offer letter · 100% remote self-paced tracks
                         </p>
                     </div>
                     <div className="flex flex-col sm:flex-row gap-3.5 z-10">
                         <button
                             onClick={() => navigate('/internships')}
-                            className="flex items-center gap-2 px-8 py-4 bg-white text-indigo-900
-                                       font-bold rounded-xl hover:bg-slate-100 transition
-                                       active:scale-[0.97] shadow"
+                            className="flex items-center gap-2 px-8 py-4 bg-red-600 text-white
+                                       font-bold rounded-xl hover:bg-red-700 transition
+                                       active:scale-[0.97] shadow-lg shadow-red-600/30"
                         >
                             <span>Apply Now</span>
                             <ArrowRight size={16} />

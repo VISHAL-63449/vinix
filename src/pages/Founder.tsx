@@ -29,7 +29,7 @@ export const Founder: React.FC = () => {
             {/* SEO Content for Search Engines */}
             <h1 className="sr-only">Vishal R - Founder & CEO of Vinix</h1>
 
-            <section className="relative pt-12 pb-20 md:pt-16 md:pb-28 bg-gradient-to-b from-blue-50/40 via-white to-transparent dark:from-slate-900/20 dark:via-slate-950 dark:to-transparent">
+            <section className="relative pt-12 pb-20 md:pt-16 md:pb-28 bg-gradient-to-b from-red-50/40 via-white to-transparent dark:from-slate-900/20 dark:via-slate-950 dark:to-transparent">
                 <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
                     <FounderProfile showPillBadge={true} />
                 </div>

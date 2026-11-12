@@ -58,13 +58,19 @@ export interface InternshipModel {
 export interface ProfileModel {
     id: string;
     full_name: string;
+    name?: string;
     email: string;
     phone?: string;
     avatar_url?: string;
+    college?: string;
+    branch?: string;
+    year?: string;
     bio?: string;
-    skills: string[];
+    skills?: string[];
     github?: string;
+    github_url?: string;
     linkedin?: string;
+    linkedin_url?: string;
     portfolio?: string;
     resume_url?: string;
     role: 'student' | 'admin' | 'mentor';

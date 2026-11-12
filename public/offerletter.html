@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VINIX - Official Internship Offer Letter</title>
+    <link rel="icon" type="image/png" href="favicon.png?v=3">
+    <link rel="shortcut icon" href="favicon.ico?v=3">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;500;600;700;800;900&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <!-- Lucide Icons & html2canvas -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #07080c;
+            --panel-dark: #0e1017;
+            --accent-red: #b71c1c;
+            --accent-red-hover: #991b1b;
+            --cert-red: #b71c1c;
+            --cert-red-dark: #800000;
+            --cert-red-light: #d32f2f;
+            --cert-gold: #d4af37;
+            --cert-gold-light: #f5e086;
+            --cert-gold-dark: #aa771c;
+            --cert-black: #111111;
+            --text-light: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-dark: #1f2438;
+            --red-gradient: linear-gradient(135deg, #800000 0%, #b71c1c 50%, #991b1b 100%);
+            --gold-gradient: linear-gradient(135deg, #d4af37 0%, #f5e086 50%, #aa771c 100%);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* ═══ INTERACTIVE SIDEBAR CONTROLS ═══ */
+        .sidebar {
+            width: 380px;
+            min-width: 380px;
+            background: var(--panel-dark);
+            border-right: 1px solid var(--border-dark);
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            z-index: 10;
+            box-shadow: 10px 0 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .sidebar-header {
+            padding: 24px;
+            border-bottom: 1px solid var(--border-dark);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-header h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--text-light);
+            letter-spacing: 1px;
+        }
+
+        .studio-nav {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px;
+            margin: 12px 24px 0 24px;
+            border-radius: 8px;
+            border: 1px solid var(--border-dark);
+            gap: 4px;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 8px 4px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-decoration: none;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .nav-item.active {
+            color: white;
+            background: var(--accent-red);
+            box-shadow: 0 2px 8px rgba(183, 28, 28, 0.4);
+        }
+
+        .sidebar-content {
+            padding: 24px;
+            overflow-y: auto;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .sidebar-section-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--cert-gold);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-top: 8px;
+            border-bottom: 1px solid var(--border-dark);
+            padding-bottom: 6px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            background: rgba(17, 24, 39, 0.8);
+            border: 1px solid var(--border-dark);
+            border-radius: 6px;
+            padding: 9px 12px;
+            color: var(--text-light);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.88rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--cert-gold);
+            box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.25);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .sidebar-footer {
+            padding: 20px 24px;
+            border-top: 1px solid var(--border-dark);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 0.88rem;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            font-family: 'Montserrat', sans-serif;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary {
+            background: var(--red-gradient);
+            color: white;
+            border: 1px solid var(--cert-gold);
+            box-shadow: 0 4px 14px rgba(183, 28, 28, 0.4);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #991b1b 0%, #c62828 50%, #b71c1c 100%);
+            box-shadow: 0 6px 18px rgba(183, 28, 28, 0.6);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            border: 1px solid var(--border-dark);
+            color: var(--text-light);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: var(--cert-gold);
+        }
+
+        /* ═══ PREVIEW VIEWPORT ═══ */
+        .viewport {
+            flex-grow: 1;
+            height: 100%;
+            overflow: auto;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            background: radial-gradient(circle at center, #151928 0%, #080a10 100%);
+        }
+
+        .document-viewport-wrapper {
+            width: 794px;
+            height: 1123px;
+            box-shadow: 0 35px 80px rgba(0, 0, 0, 0.65), 0 0 30px rgba(212, 175, 55, 0.2);
+            position: relative;
+        }
+
+        /* ═══ PORTRAIT A4 DOCUMENT CANVAS (794px x 1123px) ═══ */
+        .document-container {
+            width: 794px;
+            height: 1123px;
+            background: #ffffff;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-sizing: border-box;
+            padding: 36px 46px 42px 46px;
+            color: #0f172a;
+        }
+
+        /* 4-Tier Luxury Red & Gold Frame */
+        .doc-frame-outer {
+            position: absolute;
+            top: 14px; left: 14px; right: 14px; bottom: 14px;
+            border: 3.5px solid var(--cert-red-dark);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .doc-frame-gold-mid {
+            position: absolute;
+            top: 19px; left: 19px; right: 19px; bottom: 19px;
+            border: 1px solid var(--cert-gold);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .doc-frame-inner {
+            position: absolute;
+            top: 23px; left: 23px; right: 23px; bottom: 23px;
+            border: 2px solid var(--cert-red);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .doc-frame-gold-hairline {
+            position: absolute;
+            top: 27px; left: 27px; right: 27px; bottom: 27px;
+            border: 0.5px solid var(--cert-gold-dark);
+            pointer-events: none;
+            z-index: 10;
+        }
+
+        .doc-corner-filigree {
+            position: absolute;
+            width: 32px;
+            height: 32px;
+            pointer-events: none;
+            z-index: 12;
+        }
+        .doc-corner-tl { top: 12px; left: 12px; }
+        .doc-corner-tr { top: 12px; right: 12px; transform: scaleX(-1); }
+        .doc-corner-bl { bottom: 12px; left: 12px; transform: scaleY(-1); }
+        .doc-corner-br { bottom: 12px; right: 12px; transform: scale(-1); }
+
+        .doc-top-bar {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #800000 0%, #b71c1c 25%, #d4af37 50%, #b71c1c 75%, #800000 100%);
+            z-index: 10;
+        }
+
+        /* ═══ HEADER WITH GENEROUS LIVE SPACE ═══ */
+        .doc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            width: 100%;
+            margin-bottom: 2px;
+            z-index: 2;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .header-logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .header-logo img {
+            max-height: 50px;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.06));
+        }
+
+        .company-name {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 1.25rem;
+            color: var(--cert-black);
+            line-height: 1.1;
+            letter-spacing: 1px;
+        }
+
+        .company-tagline {
+            font-size: 0.62rem;
+            font-weight: 800;
+            color: var(--cert-red);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-top: 2px;
+        }
+
+        .company-contact-row {
+            font-size: 0.62rem;
+            color: #64748b;
+            font-weight: 600;
+            margin-top: 4px;
+            letter-spacing: 0.3px;
+        }
+
+        .header-right {
+            text-align: right;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .meta-label {
+            font-size: 0.55rem;
+            color: var(--cert-red);
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 1px;
+            text-transform: uppercase;
+        }
+
+        .meta-value {
+            font-size: 0.75rem;
+            font-weight: 750;
+            color: var(--cert-black);
+        }
+
+        .header-line {
+            width: 100%;
+            height: 2.5px;
+            background: linear-gradient(90deg, #800000 0%, #b71c1c 30%, #d4af37 50%, #b71c1c 70%, #800000 100%);
+            margin-top: 8px;
+            margin-bottom: 12px;
+            z-index: 2;
+            border-radius: 2px;
+        }
+
+        /* ═══ DOCUMENT BODY ═══ */
+        .doc-body {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            z-index: 2;
+        }
+
+        .offer-ribbon-tag {
+            display: inline-block;
+            text-align: center;
+            background: linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%);
+            color: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 0.62rem;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            height: 24px;
+            line-height: 22px;
+            padding: 0 20px;
+            border-radius: 9999px;
+            border: 1.5px solid var(--cert-gold);
+            margin-bottom: 8px;
+            box-shadow: 0 2px 8px rgba(183, 28, 28, 0.3);
+            width: fit-content;
+            vertical-align: middle;
+            white-space: nowrap;
+            box-sizing: border-box;
+        }
+
+        .offer-ribbon-tag span {
+            color: #ffffff;
+            display: inline;
+            line-height: inherit;
+            font-weight: 800;
+        }
+
+        .document-title {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 900;
+            font-size: 1.25rem;
+            color: var(--cert-black);
+            margin-bottom: 3px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .document-date {
+            font-size: 0.72rem;
+            color: #475569;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .greeting-block {
+            font-size: 0.73rem;
+            color: #1e293b;
+            margin-bottom: 6px;
+        }
+
+        .intro-paragraph {
+            margin-bottom: 6px;
+            font-size: 0.72rem;
+            line-height: 1.45;
+            color: #334155;
+            text-align: justify;
+        }
+
+        /* ═══ PARTICULARS TABLE ═══ */
+        .particulars-table {
+            width: 100%;
+            border-collapse: collapse;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 1.5px solid rgba(212, 175, 55, 0.45);
+            margin-bottom: 10px;
+            font-size: 0.7rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.02);
+        }
+
+        .particulars-table th {
+            background: linear-gradient(135deg, #111111 0%, #800000 55%, #b71c1c 100%);
+            color: #ffffff;
+            font-weight: 800;
+            padding: 7px 12px;
+            text-align: left;
+            font-size: 0.68rem;
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--cert-gold);
+        }
+
+        .particulars-table td {
+            padding: 5px 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .particulars-table tr:nth-child(even) td {
+            background-color: #faf9f6;
+        }
+
+        .particulars-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .particulars-table td.label-cell {
+            font-weight: 600;
+            color: #475569;
+            width: 35%;
+        }
+
+        .particulars-table td.value-cell {
+            font-weight: 700;
+            color: var(--cert-black);
+        }
+
+        .terms-card {
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-left: 3.5px solid var(--cert-red-dark);
+            border-radius: 6px;
+            padding: 8px 12px;
+            background-color: #fdfbf7;
+            margin-bottom: 8px;
+        }
+
+        .cert-completion-card {
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            border-left: 3.5px solid var(--cert-gold);
+            border-radius: 6px;
+            padding: 8px 12px;
+            background-color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .outro-paragraph {
+            font-size: 0.7rem;
+            line-height: 1.4;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        /* ═══ SIGNATURES SECTION ═══ */
+        .signatures-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: auto;
+            width: 100%;
+            padding-bottom: 6px;
+            z-index: 2;
+        }
+
+        .sig-col {
+            display: flex;
+            flex-direction: column;
+            width: 33%;
+        }
+
+        .sig-image-wrap {
+            height: 72px;
+            display: flex;
+            align-items: flex-end;
+            position: relative;
+        }
+
+        .stamp-overlay {
+            height: 72px;
+            width: 72px;
+            object-fit: contain;
+            opacity: 0.92;
+        }
+
+        .sig-image {
+            max-height: 40px;
+            object-fit: contain;
+        }
+
+        .sig-name {
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--cert-black);
+        }
+
+        .sig-title {
+            font-size: 0.58rem;
+            color: var(--cert-red-dark);
+            text-transform: uppercase;
+            font-weight: 750;
+            letter-spacing: 0.8px;
+        }
+
+        /* ═══ FOOTER WITH MSME & PARTNERS ═══ */
+        .doc-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            font-size: 0.6rem;
+            color: #64748b;
+            font-weight: 600;
+            z-index: 2;
+            border-top: 1.5px solid var(--cert-gold);
+            padding-top: 6px;
+            margin-top: auto;
+        }
+
+        .footer-left-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .footer-left-wrap img.msme-logo {
+            height: 38px;
+            object-fit: contain;
+        }
+
+        .footer-divider {
+            width: 1px;
+            height: 30px;
+            background-color: #cbd5e1;
+        }
+
+        .footer-left-wrap img.skyrovix-logo {
+            height: 30px;
+            object-fit: contain;
+        }
+
+        .footer-text {
+            text-align: center;
+            line-height: 1.4;
+            color: #64748b;
+            font-size: 0.6rem;
+        }
+
+        .footer-right-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: flex-end;
+        }
+
+        .footer-right-wrap img.yrnovatech-logo {
+            height: 30px;
+            object-fit: contain;
+        }
+
+        .record-badge {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .record-label {
+            font-size: 0.54rem;
+            letter-spacing: 1px;
+            color: var(--cert-red-dark);
+            font-weight: 800;
+            line-height: 13px;
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        .record-value {
+            color: var(--cert-black);
+            font-size: 0.68rem;
+            font-weight: 800;
+            font-family: monospace;
+            letter-spacing: 0.5px;
+            line-height: 14px;
+            white-space: nowrap;
+            text-align: right;
+        }
+
+        /* ═══ PRINT STYLES ═══ */
+        @media print {
+            body { background: white !important; color: black !important; }
+            .sidebar { display: none !important; }
+            .viewport { padding: 0 !important; overflow: visible !important; width: auto !important; height: auto !important; }
+            .document-viewport-wrapper { transform: none !important; width: 794px !important; height: 1123px !important; box-shadow: none !important; }
+            @page { size: portrait; margin: 0; }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar Controls -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div style="background: linear-gradient(135deg, #800000 0%, #b71c1c 100%); padding: 8px; border-radius: 6px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--cert-gold); box-shadow: 0 2px 8px rgba(183, 28, 28, 0.4);">
+                    <i data-lucide="file-text" style="color: #f5e086; width: 22px; height: 22px;"></i>
+                </div>
+                <div>
+                    <h2>VINIX STUDIO</h2>
+                    <p style="color: var(--cert-gold); font-size: 0.72rem; text-transform: uppercase;">Offer Letter Engine &bull; Red &amp; Gold</p>
+                </div>
+            </div>
+
+            <!-- Navigation Tabs -->
+            <div class="studio-nav">
+                <a href="./certificate.html" class="nav-item">
+                    <i data-lucide="award"></i> Certificate
+                </a>
+                <a href="./offerletter.html" class="nav-item active">
+                    <i data-lucide="file-text"></i> Offer Letter
+                </a>
+            </div>
+
+            <div class="sidebar-content">
+                <div class="sidebar-section-title">Candidate Details</div>
+                <div class="form-group">
+                    <label for="input-name">Candidate Name</label>
+                    <input type="text" id="input-name" value="Vishal RS">
+                </div>
+
+                <div class="form-group">
+                    <label for="input-domain">Internship Domain</label>
+                    <select id="input-domain">
+                        <option value="Full Stack Development" selected>Full Stack Development</option>
+                        <option value="Web Development">Web Development</option>
+                        <option value="Data Science">Data Science</option>
+                        <option value="Python Developer">Python Developer</option>
+                        <option value="Machine Learning">Machine Learning</option>
+                        <option value="UI/UX Design">UI/UX Design</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="input-start-date">Start Date</label>
+                        <input type="text" id="input-start-date" value="01-Sep-2026">
+                    </div>
+                    <div class="form-group">
+                        <label for="input-end-date">End Date</label>
+                        <input type="text" id="input-end-date" value="28-Sep-2026">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="input-ref-id">Reference ID</label>
+                        <input type="text" id="input-ref-id" value="VNX/OL/2026-1757">
+                    </div>
+                    <div class="form-group">
+                        <label for="input-issued-date">Issue Date</label>
+                        <input type="text" id="input-issued-date" value="26 August 2026">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="input-duration">Duration</label>
+                    <input type="text" id="input-duration" value="4 Weeks">
+                </div>
+
+                <div class="form-group">
+                    <label for="input-ceo-name">CEO Signatory</label>
+                    <input type="text" id="input-ceo-name" value="Vishal R">
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <button class="btn btn-primary" id="btn-print">
+                    <i data-lucide="printer" style="width: 18px; height: 18px;"></i>
+                    Print Offer Letter (PDF)
+                </button>
+                <button class="btn btn-secondary" id="btn-download">
+                    <i data-lucide="download" style="width: 18px; height: 18px;"></i>
+                    Download High-Res PNG
+                </button>
+            </div>
+        </aside>
+
+        <!-- Document Preview Canvas -->
+        <main class="viewport">
+            <div class="document-viewport-wrapper" id="doc-wrap">
+                <div class="document-container" id="printable-doc">
+
+                    <!-- Watermark -->
+                    <div class="doc-watermark" id="display-watermark" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-25deg); font-size: 4.8rem; font-weight: 900; color: rgba(183, 28, 28, 0.025); font-family: 'Montserrat', sans-serif; text-transform: uppercase; letter-spacing: 8px; pointer-events: none; width: 100%; text-align: center;">VINIX TECHNOLOGIES</div>
+
+                    <!-- Top Stripe Ribbon -->
+                    <div class="doc-top-bar"></div>
+
+                    <!-- 4-tier Red & Gold Luxury Frame -->
+                    <div class="doc-frame-outer" id="display-frame-outer"></div>
+                    <div class="doc-frame-gold-mid"></div>
+                    <div class="doc-frame-inner" id="display-frame-inner"></div>
+                    <div class="doc-frame-gold-hairline"></div>
+
+                    <!-- 4 Corner Accents -->
+                    <svg class="doc-corner-filigree doc-corner-tl" viewBox="0 0 40 40"><path d="M 4 36 L 4 4 L 36 4" fill="none" stroke="#d4af37" stroke-width="2.5"/><path d="M 9 32 L 9 9 L 32 9" fill="none" stroke="#b71c1c" stroke-width="1.5"/><circle cx="9" cy="9" r="2.5" fill="#800000"/><circle cx="4" cy="4" r="2" fill="#d4af37"/></svg>
+                    <svg class="doc-corner-filigree doc-corner-tr" viewBox="0 0 40 40"><path d="M 4 36 L 4 4 L 36 4" fill="none" stroke="#d4af37" stroke-width="2.5"/><path d="M 9 32 L 9 9 L 32 9" fill="none" stroke="#b71c1c" stroke-width="1.5"/><circle cx="9" cy="9" r="2.5" fill="#800000"/><circle cx="4" cy="4" r="2" fill="#d4af37"/></svg>
+                    <svg class="doc-corner-filigree doc-corner-bl" viewBox="0 0 40 40"><path d="M 4 36 L 4 4 L 36 4" fill="none" stroke="#d4af37" stroke-width="2.5"/><path d="M 9 32 L 9 9 L 32 9" fill="none" stroke="#b71c1c" stroke-width="1.5"/><circle cx="9" cy="9" r="2.5" fill="#800000"/><circle cx="4" cy="4" r="2" fill="#d4af37"/></svg>
+                    <svg class="doc-corner-filigree doc-corner-br" viewBox="0 0 40 40"><path d="M 4 36 L 4 4 L 36 4" fill="none" stroke="#d4af37" stroke-width="2.5"/><path d="M 9 32 L 9 9 L 32 9" fill="none" stroke="#b71c1c" stroke-width="1.5"/><circle cx="9" cy="9" r="2.5" fill="#800000"/><circle cx="4" cy="4" r="2" fill="#d4af37"/></svg>
+
+                    <!-- Header -->
+                    <div class="doc-header">
+                        <div class="header-left">
+                            <div class="header-logo-container">
+                                <span class="header-logo" id="display-header-logo-box">
+                                    <img src="./vinix-title.png" alt="VINIX Logo" style="height: 48px;">
+                                </span>
+                                <div class="header-branding-text">
+                                    <span class="company-name" id="display-company-name-header">VINIX</span>
+                                    <span class="company-tagline" id="display-company-tagline-header">EMPOWERING FUTURE INNOVATORS</span>
+                                </div>
+                            </div>
+                            <div class="company-contact-row" id="display-company-contacts">
+                                academic@vinix.online &bull; www.vinix.online
+                            </div>
+                        </div>
+                        <div class="header-right">
+                            <div class="meta-item">
+                                <span class="meta-label">INTERNSHIP ID</span>
+                                <span class="meta-value" id="display-header-intern-id">VNX/OL/2026-1757</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">ISSUE DATE</span>
+                                <span class="meta-value" id="display-header-issued-date">26 August 2026</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="header-line"></div>
+
+                    <!-- Body Content -->
+                    <div class="doc-body" style="padding-top: 4px;">
+                        <div class="offer-ribbon-tag">
+                            <span>★ OFFICIAL VERIFIED CREDENTIAL ★</span>
+                        </div>
+                        <h1 class="document-title">INTERNSHIP OFFER LETTER</h1>
+                        <div class="document-date">Date: <span id="display-body-date">26 August 2026</span></div>
+
+                        <div class="greeting-block">
+                            Dear <span id="display-candidate-salutation" style="font-weight: 700;">Vishal RS</span>,
+                        </div>
+
+                        <div class="intro-paragraph">
+                            We are delighted to offer you the position of <strong id="display-domain-bold">Virtual Intern – Full Stack Development</strong> at <strong id="display-company-bold">Vinix Technologies</strong>. After reviewing your application, we are confident that your skills and enthusiasm make you a valuable addition to our program.
+                        </div>
+
+                        <div class="intro-paragraph" style="margin-bottom: 8px;">
+                            Your virtual internship details and key particulars are finalized as follows:
+                        </div>
+
+                        <!-- Particulars Table -->
+                        <table class="particulars-table">
+                            <thead>
+                                <tr>
+                                    <th colspan="2">INTERNSHIP PROGRAM PARTICULARS</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="label-cell">Internship Track</td>
+                                    <td class="value-cell" id="display-table-domain">Full Stack Development</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Intern ID</td>
+                                    <td class="value-cell" id="display-table-intern-id">VNX/OL/2026-1757</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Duration</td>
+                                    <td class="value-cell" id="display-table-duration">4 Weeks</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Commencement Date</td>
+                                    <td class="value-cell" id="display-table-start">01-Sep-2026</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Estimated Completion</td>
+                                    <td class="value-cell" id="display-table-end">28-Sep-2026</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Stipend Details</td>
+                                    <td class="value-cell" id="display-table-stipend">Unpaid (Performance-Based Internship)</td>
+                                </tr>
+                                <tr>
+                                    <td class="label-cell">Location &amp; Model</td>
+                                    <td class="value-cell">Remote / Virtual</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- General Terms & Conditions -->
+                        <div class="terms-card">
+                            <strong style="color: var(--cert-red-dark); font-size: 0.72rem; display: block; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 800;">GENERAL TERMS &amp; CONDITIONS OF INTERNSHIP:</strong>
+                            <div style="display: flex; flex-direction: column; gap: 3px; font-size: 0.7rem; line-height: 1.38; color: #334155;">
+                                <div><strong>1. Task Execution:</strong> You will be evaluated based on the functional completeness of the assigned tasks. You must submit weekly progress updates.</div>
+                                <div><strong>2. Code of Conduct:</strong> Plagiarism or any forms of professional misconduct will lead to immediate cancellation of your internship program.</div>
+                                <div><strong>3. Confidentiality:</strong> Any documentation, source code, or mock datasets shared during this program are strictly confidential.</div>
+                                <div><strong>4. Certification:</strong> An official Certificate of Internship Completion will be issued only upon successful submission and mentoring approval of all milestone tasks.</div>
+                            </div>
+                        </div>
+
+                        <!-- Certificate Section -->
+                        <div class="cert-completion-card">
+                            <strong style="color: var(--cert-black); font-size: 0.72rem; display: block; margin-bottom: 3px; text-transform: uppercase; letter-spacing: 0.6px; font-weight: 800;">CERTIFICATE OF COMPLETION</strong>
+                            <div style="font-size: 0.7rem; line-height: 1.4; color: #334155;">
+                                Upon successful completion of the internship and fulfillment of all assigned tasks, you will receive a Certificate of Internship with QR-code verification for authenticity.
+                            </div>
+                        </div>
+
+                        <div class="outro-paragraph">
+                            Please return the signed copy of this letter as a token of your formal acceptance of this offer. We look forward to a mutually rewarding learning experience.
+                        </div>
+                    </div>
+
+                    <!-- Signatures Section -->
+                    <div class="signatures-section">
+                        <!-- Company Seal (Left) -->
+                        <div class="sig-col" style="align-items: flex-start;">
+                            <div class="sig-image-wrap" style="margin-bottom: 2px;">
+                                <img src="./certificate-stamp.jpeg" alt="Official Seal" class="stamp-overlay">
+                            </div>
+                            <span class="sig-title">COMPANY SEAL</span>
+                        </div>
+
+                        <!-- Director Signatory (Right) -->
+                        <div class="sig-col" style="align-items: flex-end; text-align: right; margin-left: auto;">
+                            <div class="sig-image-wrap" style="margin-bottom: 2px; justify-content: flex-end;">
+                                <img src="./founder-sign.png" alt="Director Signature" class="sig-image" id="display-director-sig-img">
+                            </div>
+                            <span class="sig-name" id="display-ceo-name">Vishal R</span>
+                            <span class="sig-title" id="display-ceo-title">FOUNDER &amp; CEO</span>
+                        </div>
+                    </div>
+
+                    <!-- Footer with MSME & Partners -->
+                    <div class="doc-footer">
+                        <!-- Left Group: MSME logo + Skyrovix -->
+                        <div class="footer-left-wrap">
+                            <img src="./msme.png" alt="MSME Logo" class="msme-logo">
+                            <div class="footer-divider"></div>
+                            <img src="./skyrovix.jpeg" alt="Skyrovix Logo" class="skyrovix-logo">
+                        </div>
+
+                        <!-- Center text -->
+                        <div class="footer-text" id="display-footer-text">
+                            <strong style="color: var(--cert-black); font-weight: 800;">VINIX Technologies Private Limited</strong><br>
+                            <span style="color: var(--cert-red); font-weight: 700;">UDYAM Registry:</span> UDYAM-TN-21-0066185<br>
+                            academic@vinix.online &bull; www.vinix.online
+                        </div>
+
+                        <!-- Right Group: Yrnovatech logo + Official Record ID badge -->
+                        <div class="footer-right-wrap">
+                            <img src="./yrnovatech.png" alt="Yrnovatech Logo" class="yrnovatech-logo">
+                            <div class="record-badge">
+                                <div class="record-label">OFFICIAL RECORD</div>
+                                <div class="record-value" id="display-footer-record-badge">VNX-OL-2026-1757</div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        lucide.createIcons();
+
+        const inputName = document.getElementById('input-name');
+        const inputDomain = document.getElementById('input-domain');
+        const inputStartDate = document.getElementById('input-start-date');
+        const inputEndDate = document.getElementById('input-end-date');
+        const inputRefId = document.getElementById('input-ref-id');
+        const inputIssuedDate = document.getElementById('input-issued-date');
+        const inputDuration = document.getElementById('input-duration');
+        const inputCeoName = document.getElementById('input-ceo-name');
+
+        const displayCandidateSalutation = document.getElementById('display-candidate-salutation');
+        const displayDomainBold = document.getElementById('display-domain-bold');
+        const displayTableDomain = document.getElementById('display-table-domain');
+        const displayTableStart = document.getElementById('display-table-start');
+        const displayTableEnd = document.getElementById('display-table-end');
+        const displayTableDuration = document.getElementById('display-table-duration');
+        const displayHeaderInternId = document.getElementById('display-header-intern-id');
+        const displayTableInternId = document.getElementById('display-table-intern-id');
+        const displayFooterRecordBadge = document.getElementById('display-footer-record-badge');
+        const displayHeaderIssuedDate = document.getElementById('display-header-issued-date');
+        const displayBodyDate = document.getElementById('display-body-date');
+        const displayCeoName = document.getElementById('display-ceo-name');
+
+        function updateDocument() {
+            const name = inputName.value || 'Vishal RS';
+            displayCandidateSalutation.textContent = name;
+
+            const domain = inputDomain.value || 'Full Stack Development';
+            displayDomainBold.textContent = `Virtual Intern – ${domain}`;
+            displayTableDomain.textContent = domain;
+
+            displayTableStart.textContent = inputStartDate.value || '01-Sep-2026';
+            displayTableEnd.textContent = inputEndDate.value || '28-Sep-2026';
+            displayTableDuration.textContent = inputDuration.value || '4 Weeks';
+
+            const refId = inputRefId.value || 'VNX/OL/2026-1757';
+            displayHeaderInternId.textContent = refId;
+            displayTableInternId.textContent = refId;
+            displayFooterRecordBadge.textContent = refId;
+
+            const issued = inputIssuedDate.value || '26 August 2026';
+            displayHeaderIssuedDate.textContent = issued;
+            displayBodyDate.textContent = issued;
+
+            displayCeoName.textContent = inputCeoName.value || 'Vishal R';
+        }
+
+        [inputName, inputDomain, inputStartDate, inputEndDate, inputRefId, inputIssuedDate, inputDuration, inputCeoName].forEach(el => {
+            if (el) {
+                el.addEventListener('input', updateDocument);
+                el.addEventListener('change', updateDocument);
+            }
+        });
+
+        document.getElementById('btn-print').addEventListener('click', () => window.print());
+
+        document.getElementById('btn-download').addEventListener('click', () => {
+            html2canvas(document.getElementById('printable-doc'), { scale: 3, useCORS: true }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `VINIX_OfferLetter_${(inputName.value || 'Vishal_R').replace(/\s+/g, '_')}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        });
+    </script>
+</body>
+
+</html>
+

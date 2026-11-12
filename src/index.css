@@ -62,7 +62,7 @@ body {
 
 /* Neon glow hints */
 .glow-primary {
-    box-shadow: 0 0 20px rgba(37, 99, 235, 0.15);
+    box-shadow: 0 0 20px rgba(220, 38, 38, 0.25);
 }
 
 .glow-secondary {
@@ -101,38 +101,95 @@ body {
     margin: 0 !important;
 }
 
+/* ═════════════════════════════════════════════════════════════════
+   UPGRADED ROYAL OFFER LETTER THEME (794px x 1123px Portrait A4)
+   ═════════════════════════════════════════════════════════════════ */
 .offer-letter {
-    width: 210mm;
-    height: 297mm;
-    min-width: 210mm;
-    max-width: 210mm;
-    min-height: 297mm;
-    max-height: 297mm;
+    width: 794px;
+    height: 1123px;
+    min-width: 794px;
+    max-width: 794px;
+    min-height: 1123px;
+    max-height: 1123px;
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
     background: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 36px 46px 42px 46px;
+    color: #0f172a;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
+/* 4-Tier Luxury Royal Red & Gold Borders */
 .offer-letter .doc-frame-outer {
     position: absolute;
-    top: 15px;
-    left: 15px;
-    right: 15px;
-    bottom: 15px;
-    border: 2px solid #0f2942;
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+    border: 3.5px solid #800000;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.offer-letter .doc-frame-gold-mid {
+    position: absolute;
+    top: 19px;
+    left: 19px;
+    right: 19px;
+    bottom: 19px;
+    border: 1px solid #d4af37;
     pointer-events: none;
     z-index: 10;
 }
 
 .offer-letter .doc-frame-inner {
     position: absolute;
-    top: 19px;
-    left: 19px;
-    right: 19px;
-    bottom: 19px;
-    border: 0.5px solid #cca353;
+    top: 23px;
+    left: 23px;
+    right: 23px;
+    bottom: 23px;
+    border: 2px solid #b71c1c;
     pointer-events: none;
+    z-index: 10;
+}
+
+.offer-letter .doc-frame-gold-hairline {
+    position: absolute;
+    top: 27px;
+    left: 27px;
+    right: 27px;
+    bottom: 27px;
+    border: 0.5px solid #aa771c;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Corner filigrees */
+.offer-letter .doc-corner-filigree {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    pointer-events: none;
+    z-index: 12;
+}
+.offer-letter .doc-corner-filigree.corner-tl { top: 12px; left: 12px; }
+.offer-letter .doc-corner-filigree.corner-tr { top: 12px; right: 12px; transform: scaleX(-1); }
+.offer-letter .doc-corner-filigree.corner-bl { bottom: 12px; left: 12px; transform: scaleY(-1); }
+.offer-letter .doc-corner-filigree.corner-br { bottom: 12px; right: 12px; transform: scale(-1); }
+
+/* Top ribbon bar */
+.offer-letter .doc-top-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #800000 0%, #b71c1c 25%, #d4af37 50%, #b71c1c 75%, #800000 100%);
     z-index: 10;
 }
 
@@ -143,7 +200,7 @@ body {
     transform: translate(-50%, -50%) rotate(-25deg);
     font-size: 4.8rem;
     font-weight: 900;
-    color: rgba(15, 41, 66, 0.02);
+    color: rgba(183, 28, 28, 0.025);
     font-family: 'Montserrat', sans-serif;
     text-transform: uppercase;
     letter-spacing: 8px;
@@ -401,141 +458,29 @@ input:-webkit-autofill:active {
     transition: background-color 5000s ease-in-out 0s;
 }
 
-/* PDF Download Mode (simulates print style for html2pdf.js capture) */
+/* PDF Download Mode (retains exact dimensions and typography for pixel-perfect html2canvas export) */
 .pdf-download-mode {
-    border: none !important;
     box-shadow: none !important;
     border-radius: 0 !important;
     background: white !important;
-    color: black !important;
-    padding: 12mm !important;
-    /* Match A4 padding */
-    width: 210mm !important;
-    height: 297mm !important;
-    max-width: 210mm !important;
-    max-height: 297mm !important;
     box-sizing: border-box !important;
-    display: flex !important;
-    flex-direction: column !important;
-    justify-content: space-between !important;
+    width: 794px !important;
+    height: 1123px !important;
+    max-width: 794px !important;
+    max-height: 1123px !important;
     overflow: hidden !important;
-}
-
-.pdf-download-mode * {
-    break-inside: avoid !important;
-}
-
-.pdf-download-mode .mt-6 {
-    margin-top: 0.4rem !important;
-}
-
-.pdf-download-mode .space-y-6> :not([hidden])~ :not([hidden]) {
-    margin-top: 0.4rem !important;
-}
-
-.pdf-download-mode .space-y-3\.5> :not([hidden])~ :not([hidden]) {
-    margin-top: 0.3rem !important;
-}
-
-.pdf-download-mode .space-y-3> :not([hidden])~ :not([hidden]) {
-    margin-top: 0.25rem !important;
-}
-
-.pdf-download-mode .space-y-2\.5> :not([hidden])~ :not([hidden]) {
-    margin-top: 0.2rem !important;
-}
-
-.pdf-download-mode .space-y-2> :not([hidden])~ :not([hidden]) {
-    margin-top: 0.15rem !important;
-}
-
-.pdf-download-mode .space-y-1\.5> :not([hidden])~ :not([hidden]) {
-    margin-top: 0.125rem !important;
-}
-
-.pdf-download-mode .space-y-1> :not([hidden])~ :not([hidden]) {
-    margin-top: 0.1rem !important;
-}
-
-.pdf-download-mode .space-y-0\.5> :not([hidden])~ :not([hidden]) {
-    margin-top: 0.05rem !important;
-}
-
-.pdf-download-mode .p-2\.5 {
-    padding: 0.35rem !important;
-}
-
-.pdf-download-mode .py-1\.5 {
-    padding-top: 0.2rem !important;
-    padding-bottom: 0.2rem !important;
-}
-
-.pdf-download-mode .py-2 {
-    padding-top: 0.3rem !important;
-    padding-bottom: 0.3rem !important;
-}
-
-.pdf-download-mode .pt-3\.5 {
-    padding-top: 0.4rem !important;
-}
-
-/* Typography scaling for PDF Mode */
-.pdf-download-mode .text-\[20px\] {
-    font-size: 15px !important;
-}
-
-.pdf-download-mode .text-\[11px\] {
-    font-size: 9.5px !important;
-}
-
-.pdf-download-mode .text-\[10px\] {
-    font-size: 8.5px !important;
-}
-
-.pdf-download-mode .text-\[9\.5px\] {
-    font-size: 8.5px !important;
-}
-
-.pdf-download-mode .text-\[9px\] {
-    font-size: 8px !important;
-}
-
-.pdf-download-mode .text-\[7\.5px\] {
-    font-size: 7px !important;
-}
-
-.pdf-download-mode .text-\[7px\] {
-    font-size: 6.5px !important;
-}
-
-.pdf-download-mode .text-2xl {
-    font-size: 16px !important;
-}
-
-.pdf-download-mode .text-\[130px\] {
-    font-size: 120px !important;
-}
-
-.pdf-download-mode p,
-.pdf-download-mode li,
-.pdf-download-mode span,
-.pdf-download-mode td,
-.pdf-download-mode div {
-    line-height: 1.25 !important;
-}
-
-.pdf-download-mode .leading-relaxed {
-    line-height: 1.3 !important;
 }
 
 .cert-pdf-download-mode {
     box-shadow: none !important;
     border-radius: 0 !important;
+    background: white !important;
     box-sizing: border-box !important;
     width: 1123px !important;
     height: 794px !important;
     max-width: 1123px !important;
     max-height: 794px !important;
+    overflow: hidden !important;
 }
 
 /* Floating Badges Custom Animations */
@@ -579,305 +524,620 @@ input:-webkit-autofill:active {
     transform-origin: top left;
 }
 
-/* CENTERED DOUBLE-BORDER PROFESSIONAL THEME (1123px x 794px) */
+/* ═════════════════════════════════════════════════════════════════
+   UPGRADED ROYAL CERTIFICATE THEME (1123px x 794px Landscape A4)
+   ═════════════════════════════════════════════════════════════════ */
 .certificate-container {
     width: 1123px;
     height: 794px;
-    background: #ffffff;
+    background: radial-gradient(circle at 50% 50%, #ffffff 0%, #fcfbf9 60%, #faf8f5 100%);
     position: relative;
     overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     box-sizing: border-box;
-    padding: 48px 65px;
+    padding: 42px 64px 34px 64px;
     color: #0f172a;
+    font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
 }
 
-/* Thick outer navy border */
-.cert-frame-outer {
+/* Micro-Pinstripe Security Texture */
+.cert-security-pattern {
     position: absolute;
-    top: 22px;
-    left: 22px;
-    right: 22px;
-    bottom: 22px;
-    border: 6.5px solid #0f2942;
+    inset: 0;
+    background-image: 
+        radial-gradient(circle at 50% 50%, rgba(197, 155, 39, 0.035) 1px, transparent 1px),
+        radial-gradient(circle at 0% 0%, rgba(183, 28, 28, 0.02) 1px, transparent 1px);
+    background-size: 16px 16px, 24px 24px;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Intricate Banknote Guilloche Security Rosette Watermark */
+.cert-watermark-guilloche {
+    position: absolute;
+    top: 52%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 620px;
+    height: 620px;
+    opacity: 0.055;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* 4-Tier Luxury Royal Red & Gold Borders */
+.cert-border-outer {
+    position: absolute;
+    top: 14px; left: 14px; right: 14px; bottom: 14px;
+    border: 4px solid #7f0000;
     pointer-events: none;
     z-index: 10;
 }
 
-/* Thin inner navy border */
-.cert-frame-inner {
+.cert-border-gold-mid {
     position: absolute;
-    top: 34px;
-    left: 34px;
-    right: 34px;
-    bottom: 34px;
-    border: 2.2px solid #0f2942;
+    top: 21px; left: 21px; right: 21px; bottom: 21px;
+    border: 1.5px solid #c59b27;
     pointer-events: none;
     z-index: 10;
 }
 
-/* Top Branding Row */
+.cert-border-inner {
+    position: absolute;
+    top: 26px; left: 26px; right: 26px; bottom: 26px;
+    border: 2px solid #b71c1c;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.cert-border-gold-hairline {
+    position: absolute;
+    top: 31px; left: 31px; right: 31px; bottom: 31px;
+    border: 0.75px solid #e5b93b;
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* 4 Ornate Royal Corner Filigree Ornaments */
+.cert-corner-filigree {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    pointer-events: none;
+    z-index: 12;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.15));
+}
+.cert-corner-filigree.corner-tl { top: 12px; left: 12px; }
+.cert-corner-filigree.corner-tr { top: 12px; right: 12px; transform: scaleX(-1); }
+.cert-corner-filigree.corner-bl { bottom: 12px; left: 12px; transform: scaleY(-1); }
+.cert-corner-filigree.corner-br { bottom: 12px; right: 12px; transform: scale(-1); }
+
+/* ══════ TOP ROW: LOGOS & CREDENTIAL HEADER ══════ */
 .cert-top-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    position: relative;
     width: 100%;
+    min-height: 90px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     z-index: 5;
+    padding: 4px 6px 0 6px;
 }
 
 .cert-logo-left {
-    width: 130px;
-    height: 65px;
+    width: 240px;
+    min-height: 85px;
     display: flex;
     align-items: center;
     justify-content: flex-start;
+    z-index: 2;
 }
 
 .cert-logo-left img {
     max-width: 100%;
-    max-height: 100%;
+    height: 68px;
     object-fit: contain;
+    object-position: left center;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.08));
 }
 
 .cert-brand-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
     text-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+    width: max-content;
+    pointer-events: none;
+    z-index: 1;
 }
 
-/* MEDIUM SIZE COMPANY BRAND */
-.cert-brand-name {
-    font-family: 'Montserrat', sans-serif;
+.brand-crest-stars {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 5px;
+}
+
+.brand-crest-stars svg {
+    width: 13px;
+    height: 13px;
+    fill: #c59b27;
+    stroke: #936e18;
+    stroke-width: 0.5;
+    filter: drop-shadow(0 1px 2px rgba(197, 155, 39, 0.4));
+}
+
+.brand-crest-stars svg.center-star {
+    width: 17px;
+    height: 17px;
+    transform: translateY(-2px);
+    fill: #b71c1c;
+    stroke: #c59b27;
+    stroke-width: 1;
+}
+
+.cert-credential-heading {
+    font-family: 'Cinzel', serif;
     font-weight: 800;
-    font-size: 1.7rem;
-    color: #0f2942;
-    letter-spacing: 7px;
+    font-size: 0.92rem;
+    color: #0c0f17;
+    letter-spacing: 4.5px;
     text-transform: uppercase;
-    line-height: 1.1;
+    line-height: 1.2;
+    text-align: center;
 }
 
-/* MEDIUM SIZE TAGLINE */
 .cert-brand-tagline {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.77rem;
-    font-weight: 600;
-    color: #64748b;
-    letter-spacing: 2px;
-    margin-top: 5px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #b71c1c;
+    letter-spacing: 3px;
+    margin-top: 3px;
     text-transform: uppercase;
+    text-align: center;
 }
 
 .cert-logo-right {
-    width: 130px;
-    height: 65px;
+    width: 230px;
+    min-height: 85px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 2;
+}
+
+.cert-msme-container {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+    gap: 8px;
+    position: relative;
 }
 
 .cert-logo-right img {
-    max-width: 100%;
-    max-height: 100%;
+    max-width: 175px;
+    height: 78px;
     object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.09));
+    transition: transform 0.2s ease;
 }
 
-/* Title Block */
+/* ══════ TITLE BLOCK ══════ */
 .cert-title-section {
     text-align: center;
-    margin-top: 25px;
+    margin-top: 6px;
     z-index: 5;
+    position: relative;
+}
+
+.cert-ribbon-tag {
+    display: inline-block !important;
+    text-align: center !important;
+    background: #800000 !important;
+    background: linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%) !important;
+    color: #ffffff !important;
+    font-family: 'Montserrat', 'Inter', sans-serif !important;
+    font-size: 0.64rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 2.5px !important;
+    text-transform: uppercase !important;
+    height: 24px !important;
+    line-height: 22px !important;
+    padding: 0 24px !important;
+    border-radius: 9999px !important;
+    border: 1.5px solid #e5b93b !important;
+    box-shadow: 0 3px 10px rgba(183, 28, 28, 0.35) !important;
+    margin-bottom: 8px !important;
+    box-sizing: border-box !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+}
+
+.cert-ribbon-tag span {
+    color: #ffffff !important;
+    display: inline !important;
+    line-height: inherit !important;
+    font-weight: 800 !important;
+}
+
+.offer-ribbon-tag {
+    display: inline-block !important;
+    text-align: center !important;
+    background: #800000 !important;
+    background: linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%) !important;
+    color: #ffffff !important;
+    font-family: 'Montserrat', 'Inter', sans-serif !important;
+    font-size: 0.62rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 2px !important;
+    text-transform: uppercase !important;
+    height: 24px !important;
+    line-height: 22px !important;
+    padding: 0 20px !important;
+    border-radius: 9999px !important;
+    border: 1.5px solid #d4af37 !important;
+    box-shadow: 0 2px 8px rgba(183, 28, 28, 0.3) !important;
+    margin-bottom: 8px !important;
+    box-sizing: border-box !important;
+    vertical-align: middle !important;
+    white-space: nowrap !important;
+    width: fit-content !important;
+}
+
+.offer-ribbon-tag span {
+    color: #ffffff !important;
+    display: inline !important;
+    line-height: inherit !important;
+    font-weight: 800 !important;
 }
 
 .cert-title-main {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 3rem;
+    font-family: 'Cinzel', serif;
+    font-size: 3.05rem;
     font-weight: 900;
-    letter-spacing: 5px;
-    color: #0f2942;
+    color: #0c0f17;
+    letter-spacing: 8px;
+    margin: 0;
+    line-height: 1.05;
     text-transform: uppercase;
-    line-height: 1.1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.cert-title-sub-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-top: 5px;
+}
+
+.cert-hairline {
+    width: 70px;
+    height: 1.5px;
+    background: linear-gradient(90deg, transparent, #e5b93b, transparent);
+}
+
+.cert-hairline-diamond {
+    width: 6px;
+    height: 6px;
+    background: #7f0000;
+    border: 1px solid #e5b93b;
+    transform: rotate(45deg);
 }
 
 .cert-title-sub {
     font-family: 'Montserrat', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    color: #64748b;
-    letter-spacing: 7px;
+    font-size: 0.92rem;
+    font-weight: 800;
+    color: #b71c1c;
+    letter-spacing: 5px;
     text-transform: uppercase;
-    margin-top: 6px;
+    margin: 0;
 }
 
-/* Body Text Styling */
+/* ══════ RECIPIENT & CITATION BODY ══════ */
 .cert-body-section {
     text-align: center;
-    margin-top: 30px;
+    margin-top: 8px;
     z-index: 5;
-    padding: 0 20px;
+    position: relative;
 }
 
 .cert-presentation-text {
     font-family: 'Playfair Display', serif;
     font-style: italic;
-    font-size: 0.98rem;
-    color: #64748b;
-}
-
-/* BIG RECIPIENT NAME */
-.recipient-name {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 3.2rem;
-    font-weight: 800;
-    color: #0f2942;
-    letter-spacing: 1px;
-    margin: 18px 0;
-    line-height: 1.2;
-}
-
-.cert-description {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.95rem;
+    font-size: 1.18rem;
+    font-weight: 500;
     color: #475569;
+    margin-bottom: 2px;
+    letter-spacing: 0.5px;
+}
+
+.cert-recipient-name {
+    font-family: 'Cinzel', serif;
+    font-size: 2.65rem;
+    font-weight: 900;
+    color: #7f0000;
+    letter-spacing: 3.5px;
+    text-transform: uppercase;
+    line-height: 1.15;
+    margin: 6px 0 16px 0 !important;
+    text-shadow: 0 2px 8px rgba(183, 28, 28, 0.18);
+}
+
+.cert-name-accent-line {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 0 !important;
+    margin-bottom: 18px !important;
+}
+
+.cert-name-accent-line .line-side {
+    width: 170px;
+    height: 1.5px;
+    background: linear-gradient(90deg, transparent, #e5b93b, transparent);
+}
+
+.cert-name-accent-line .gem-wrap {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.cert-name-accent-line .gem-mini {
+    width: 5px;
+    height: 5px;
+    background: #c59b27;
+    transform: rotate(45deg);
+}
+
+.cert-name-accent-line .gem-center {
+    width: 9px;
+    height: 9px;
+    background: #7f0000;
+    transform: rotate(45deg);
+    border: 1.5px solid #e5b93b;
+    box-shadow: 0 0 6px rgba(197, 155, 39, 0.6);
+}
+
+.cert-description-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.91rem;
     line-height: 1.7;
-    max-width: 820px;
+    color: #334155;
+    max-width: 840px;
     margin: 0 auto;
 }
 
-.bold-text {
-    font-weight: 700;
-    color: #0f2942;
+.cert-description-text strong {
+    color: #0c0f17;
+    font-weight: 750;
 }
 
-/* Footer Grid Layout */
-.cert-footer-section {
-    display: grid;
-    grid-template-columns: 1.15fr 1fr 1.15fr;
+.cert-description-text strong.domain-highlight {
+    color: #7f0000;
+    font-weight: 850;
+    padding: 0 4px;
+    background: transparent;
+    border: none;
+}
+
+/* ══════ FOOTER ROW: DATE, SEAL, SIGNATURE ══════ */
+.cert-footer-row {
+    display: flex;
     align-items: flex-end;
+    justify-content: space-between;
     width: 100%;
-    margin-top: 40px;
     z-index: 5;
-    padding: 0 10px;
+    position: relative;
+    padding-bottom: 2px;
+    margin-top: 6px;
 }
 
-.footer-col-left {
+.cert-footer-col {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 3px;
+    width: 240px;
 }
 
-.footer-col-right {
+.cert-footer-col.left-col { 
+    align-items: flex-start; 
+    text-align: left; 
+}
+
+.cert-footer-col.right-col { 
+    align-items: flex-end; 
+    text-align: right; 
+}
+
+.cert-footer-col.center-col { 
+    align-items: center; 
+    justify-content: flex-end; 
+    width: auto; 
+}
+
+.cert-date-wrap {
+    height: 46px;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding-bottom: 3px;
+    width: 100%;
 }
 
-.footer-col-center {
+.cert-date-value {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #0c0f17;
+    letter-spacing: 0.5px;
+}
+
+.cert-label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.70rem;
+    font-weight: 800;
+    color: #7f0000;
+    text-transform: uppercase;
+    letter-spacing: 1.8px;
+    margin-top: 4px;
+}
+
+/* Center Official Security Stamp Seal */
+.cert-stamp-wrap {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
 }
 
-.signature-area {
-    height: 48px;
+.cert-stamp-badge {
+    width: 114px;
+    height: 114px;
+    border-radius: 50%;
+    position: relative;
     display: flex;
-    align-items: flex-end;
-    margin-bottom: 4px;
+    align-items: center;
+    justify-content: center;
+    filter: drop-shadow(0 6px 14px rgba(183, 28, 28, 0.22));
 }
 
-.signature-text {
-    font-family: 'Great Vibes', cursive;
-    font-size: 2.2rem;
-    color: #1e3a8a;
-    transform: rotate(-3deg);
-    user-select: none;
-    display: inline-block;
-    line-height: 1;
-}
-
-.signature-img {
-    height: 52px;
-    width: auto;
+.cert-stamp-img {
+    width: 110px;
+    height: 110px;
     object-fit: contain;
-    user-select: none;
-    margin-bottom: -6px;
-    transform: rotate(-2deg);
+    border-radius: 50%;
 }
 
-.signer-line {
-    width: 200px;
-    height: 1.8px;
-    background: #0f2942;
-    margin-bottom: 6px;
-}
-
-.signer-name {
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 0.88rem;
-    color: #0f2942;
-}
-
-.signer-title {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.68rem;
-    font-weight: 600;
-    color: #64748b;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.stamp-container {
+.cert-meta-verify {
     display: flex;
     flex-direction: column;
     align-items: center;
+    gap: 2px;
+    margin-top: 5px;
+}
+
+.cert-meta-intern-id {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: 1.2px;
+}
+
+.cert-meta-verify-link {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.65rem;
+    color: #64748b;
+    letter-spacing: 0.2px;
+}
+
+.cert-meta-verify-link strong {
+    color: #b71c1c;
+    font-weight: 750;
+}
+
+/* Signatory Right */
+.cert-signature-wrap {
+    height: 46px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    padding-bottom: 2px;
+    width: 100%;
+}
+
+.cert-signature-img {
+    max-height: 44px;
+    max-width: 170px;
+    object-fit: contain;
+    filter: contrast(1.2) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.cert-sig-line {
+    width: 190px;
+    height: 1.5px;
+    background: #0f172a;
     margin-bottom: 5px;
 }
 
-.stamp-img {
-    height: 100px;
-    width: 100px;
-    object-fit: contain;
+.cert-signer-name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: #0c0f17;
+    letter-spacing: 0.8px;
 }
 
-/* Sub-footer details */
-.detail-left {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.7rem;
-    color: #64748b;
-    margin-top: 14px;
-    font-weight: 550;
+.cert-signer-title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #7f0000;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 2px;
 }
 
-.detail-right {
-    font-family: 'Inter', sans-serif;
-    font-size: 0.7rem;
-    color: #64748b;
-    margin-top: 14px;
-    font-weight: 550;
-}
-
-.detail-center-block {
-    text-align: center;
-    font-family: 'Inter', sans-serif;
-    font-size: 0.70rem;
-    color: #64748b;
-    margin-top: 8px;
-    font-weight: 550;
+/* ══════ BOTTOM RECORD IDENTIFICATION ══════ */
+.cert-bottom-bar {
     display: flex;
-    flex-direction: column;
-    gap: 2px;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 6px;
+    font-size: 0.62rem;
+    color: #94a3b8;
+    font-weight: 600;
+    z-index: 5;
+    letter-spacing: 0.5px;
 }
 
-.verify-web-link {
-    color: #2563eb;
-    text-decoration: none;
-    font-weight: 600;
+.cert-bottom-bar .cert-compliance-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cert-bottom-bar .cert-compliance-tag svg {
+    width: 11px;
+    height: 11px;
+    color: #c59b27;
+}
+
+.cert-id-wrap {
+    color: #0c0f17 !important;
+    font-weight: 800 !important;
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 0.66rem !important;
+    letter-spacing: 0.5px !important;
+}
+
+.cert-id-badge {
+    background: transparent !important;
+    color: #b48324 !important;
+    font-family: 'Montserrat', monospace !important;
+    font-weight: 800 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-size: 0.68rem !important;
+    letter-spacing: 1px !important;
+    margin-left: 4px !important;
 }
 
 /* News Scrolling Bar / Ticker */
@@ -941,10 +1201,50 @@ input:-webkit-autofill:active {
     animation-play-state: paused !important;
 }
 
+/* College Partners / Campus Network Ticker */
+@keyframes collegeMarqueeLeft {
+    0% {
+        transform: translate3d(0, 0, 0);
+    }
+    100% {
+        transform: translate3d(-50%, 0, 0);
+    }
+}
+
+@keyframes collegeMarqueeRight {
+    0% {
+        transform: translate3d(-50%, 0, 0);
+    }
+    100% {
+        transform: translate3d(0, 0, 0);
+    }
+}
+
+.animate-college-marquee-left {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+    animation: collegeMarqueeLeft 38s linear infinite;
+}
+
+.animate-college-marquee-right {
+    display: flex;
+    width: max-content;
+    will-change: transform;
+    animation: collegeMarqueeRight 42s linear infinite;
+}
+
+.animate-college-marquee-left:hover,
+.animate-college-marquee-right:hover {
+    animation-play-state: paused !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
     .animate-ticker-marquee,
     .animate-reviews-marquee-left,
-    .animate-reviews-marquee-right {
+    .animate-reviews-marquee-right,
+    .animate-college-marquee-left,
+    .animate-college-marquee-right {
         animation: none;
         overflow-x: auto;
     }

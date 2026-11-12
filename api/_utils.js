@@ -203,7 +203,7 @@ export async function createOfferLetterPdfDoc({
     const sIssueDate = issueDate ? new Date(issueDate) : new Date();
 
     const logoBase64 = (await getImageBase64('vinix-title.png', req)) || (await getImageBase64('vinix-logo.png', req));
-    const msmeBase64 = await getImageBase64('msme.jpeg', req);
+    const msmeBase64 = (await getImageBase64('msme.png', req)) || (await getImageBase64('msme.jpeg', req));
     const skyrovixBase64 = await getImageBase64('skyrovix.jpeg', req);
     const yrnovatechBase64 = await getImageBase64('yrnovatech.png', req);
     const stampBase64 = await getImageBase64('certificate-stamp.jpeg', req);
