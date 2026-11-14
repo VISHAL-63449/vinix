@@ -117,73 +117,126 @@ const VerifyCertificate: React.FC = () => {
         }
     };
 
+    const captureCertificateCanvas = async () => {
+        const element = document.getElementById('certificate-print-area');
+        if (!element) throw new Error('Certificate element not found.');
+
+        // Ensure all custom fonts are completely loaded before rasterization
+        if (document.fonts) {
+            await document.fonts.ready;
+            await Promise.all([
+                document.fonts.load('900 48px Cinzel'),
+                document.fonts.load('800 12px Montserrat'),
+                document.fonts.load('800 16px Inter')
+            ]).catch(() => {});
+        }
+
+        // Wait for all images to be fully loaded
+        const certImages = element.querySelectorAll('img');
+        await Promise.all(
+            Array.from(certImages).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                    setTimeout(resolve, 800);
+                });
+            })
+        );
+
+        // Save current scroll position
+        const scrollY = window.scrollY;
+        const scrollX = window.scrollX;
+
+        // Scroll to top-left to avoid html2canvas viewport offset/cropping bugs
+        window.scrollTo(0, 0);
+
+        // Give a microtask delay for DOM and style updates
+        await new Promise(resolve => setTimeout(resolve, 150));
+
+        const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            width: 1123,
+            height: 794,
+            windowWidth: 1123,
+            windowHeight: 794,
+            scrollX: 0,
+            scrollY: 0,
+            onclone: (clonedDoc) => {
+                const scaleWrapper = clonedDoc.getElementById('cert-scale-wrapper');
+                if (scaleWrapper) {
+                    scaleWrapper.style.width = '1123px';
+                    scaleWrapper.style.height = '794px';
+                    scaleWrapper.style.transform = 'none';
+                }
+                const printArea = clonedDoc.getElementById('certificate-print-area');
+                if (printArea && printArea.parentElement) {
+                    printArea.parentElement.style.transform = 'none';
+                    printArea.parentElement.style.position = 'static';
+                    printArea.parentElement.style.left = '0';
+                    printArea.parentElement.style.top = '0';
+                }
+            }
+        });
+
+        // Restore scroll positions immediately
+        window.scrollTo(scrollX, scrollY);
+        return canvas;
+    };
+
     const handleSaveDirectPDF = async () => {
         if (!result) return;
         setLoading(true);
         try {
-            const element = document.getElementById('certificate-print-area');
-            if (element) {
-                // Ensure all custom fonts are completely loaded before rasterization
-                if (document.fonts) {
-                    await document.fonts.ready;
-                }
+            const canvas = await captureCertificateCanvas();
+            const pdf = new jsPDF({
+                orientation: 'landscape',
+                unit: 'mm',
+                format: 'a4',
+                compress: true
+            });
 
-                // Save current scroll position
-                const scrollY = window.scrollY;
-                const scrollX = window.scrollX;
+            const pageWidth = 297;
+            const pageHeight = 210;
 
-                // Scroll to top-left to avoid html2canvas viewport offset/cropping bugs
-                window.scrollTo(0, 0);
+            const imgWidth = pageWidth;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-                // Give a microtask delay for DOM and style updates
-                await new Promise(resolve => setTimeout(resolve, 200));
+            // Fit the complete canvas inside one A4 landscape page.
+            const finalHeight = Math.min(imgHeight, pageHeight);
 
-                const canvas = await html2canvas(element, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    width: 1123,
-                    height: 794,
-                    windowWidth: 1123,
-                    windowHeight: 794,
-                    scrollX: 0,
-                    scrollY: 0
-                });
+            pdf.addImage(
+                canvas.toDataURL('image/jpeg', 0.95),
+                'JPEG',
+                0,
+                0,
+                imgWidth,
+                finalHeight
+            );
 
-                // Restore scroll positions immediately
-                window.scrollTo(scrollX, scrollY);
-
-                const pdf = new jsPDF({
-                    orientation: 'landscape',
-                    unit: 'mm',
-                    format: 'a4',
-                    compress: true
-                });
-
-                const pageWidth = 297;
-                const pageHeight = 210;
-
-                const imgWidth = pageWidth;
-                const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-                // Fit the complete canvas inside one A4 landscape page.
-                const finalHeight = Math.min(imgHeight, pageHeight);
-
-                pdf.addImage(
-                    canvas.toDataURL('image/jpeg', 0.95),
-                    'JPEG',
-                    0,
-                    0,
-                    imgWidth,
-                    finalHeight
-                );
-
-                pdf.save(`${result.certificateNumber || 'Certificate'}.pdf`);
-            }
+            pdf.save(`${result.certificateNumber || 'Certificate'}.pdf`);
         } catch (err: any) {
             alert(`Direct download failed: ${err.message}. Using fallback print option.`);
             handleDownload();
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleSaveDirectPNG = async () => {
+        if (!result) return;
+        setLoading(true);
+        try {
+            const canvas = await captureCertificateCanvas();
+            const link = document.createElement('a');
+            link.download = `${result.certificateNumber || 'Certificate'}.png`;
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+        } catch (err: any) {
+            alert(`Direct PNG download failed: ${err.message}`);
         } finally {
             setLoading(false);
         }
@@ -400,12 +453,12 @@ const VerifyCertificate: React.FC = () => {
                                                 </div>
 
                                                 {/* Certificate Headings */}
-                                                <div className="cert-title-section">
-                                                    <div className="cert-ribbon-tag" style={{ display: 'inline-block', textAlign: 'center', background: 'linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%)', backgroundColor: '#800000', color: '#ffffff', fontFamily: 'Montserrat, Inter, sans-serif', fontSize: '0.64rem', fontWeight: 800, letterSpacing: '2.5px', textTransform: 'uppercase', height: '24px', lineHeight: '22px', padding: '0 24px', borderRadius: '9999px', border: '1.5px solid #e5b93b', boxShadow: '0 3px 10px rgba(183, 28, 28, 0.35)', marginBottom: '8px', boxSizing: 'border-box', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                                                        <span style={{ color: '#ffffff', display: 'inline', lineHeight: 'inherit', fontWeight: 800 }}>★ OFFICIAL VERIFIED CREDENTIAL ★</span>
+                                                <div className="cert-title-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                                                    <div className="cert-ribbon-tag" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', textAlign: 'center', background: 'linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%)', backgroundColor: '#800000', color: '#ffffff', fontFamily: 'Montserrat, Inter, sans-serif', fontSize: '0.64rem', fontWeight: 800, letterSpacing: '2.5px', textTransform: 'uppercase', height: '22px', lineHeight: '1', padding: '0 22px', borderRadius: '9999px', border: '1.5px solid #e5b93b', boxShadow: '0 3px 10px rgba(183, 28, 28, 0.35)', margin: '0 auto 10px auto', boxSizing: 'border-box', whiteSpace: 'nowrap' }}>
+                                                        <span style={{ color: '#ffffff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: '1', fontWeight: 800, position: 'relative', top: '-2px', transform: 'translateY(-0.5px)' }}>★ OFFICIAL VERIFIED CREDENTIAL ★</span>
                                                     </div>
-                                                    <h1 className="cert-title-main">CERTIFICATE</h1>
-                                                    <div className="cert-title-sub-wrap">
+                                                    <h1 className="cert-title-main" style={{ display: 'block', margin: '0 0 4px 0', lineHeight: 1.15, textAlign: 'center' }}>CERTIFICATE</h1>
+                                                    <div className="cert-title-sub-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '4px' }}>
                                                         <div className="cert-hairline"></div>
                                                         <svg width="8" height="8" viewBox="0 0 10 10" style={{ display: 'block', flexShrink: 0 }}><polygon points="5,0 10,5 5,10 0,5" fill="#7f0000" stroke="#e5b93b" strokeWidth="1.5"/></svg>
                                                         <h3 className="cert-title-sub">OF INTERNSHIP COMPLETION</h3>
@@ -435,18 +488,38 @@ const VerifyCertificate: React.FC = () => {
 
                                                 {/* Footer signatory block */}
                                                 <div className="cert-footer-row">
-                                                    {/* Date of Issuance Column (Left side) */}
+                                                    {/* Date of Issuance Column (Left side) with Scan to Verify QR Code */}
                                                     <div className="cert-footer-col left-col">
-                                                        <div className="cert-date-wrap">
-                                                            <div className="cert-date-value">
-                                                                {isOfficial ? (
-                                                                    new Date(result.issueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
-                                                                ) : '28 September 2026'}
+                                                        <div className="cert-qr-block">
+                                                            <div className="cert-qr-frame">
+                                                                <span className="qr-corner qr-corner-tl"></span>
+                                                                <span className="qr-corner qr-corner-tr"></span>
+                                                                <span className="qr-corner qr-corner-bl"></span>
+                                                                <span className="qr-corner qr-corner-br"></span>
+                                                                <img 
+                                                                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://vinix.online/verify/${result.certificateNumber || 'VNXCERT202691990'}`)}`}
+                                                                    alt="Scan to Verify Certificate"
+                                                                    className="cert-qr-img"
+                                                                    crossOrigin="anonymous"
+                                                                />
+                                                            </div>
+                                                            <div className="cert-qr-text-group">
+                                                                <div className="cert-qr-line-1">Scan to Verify</div>
+                                                                <div className="cert-qr-line-2">Certificate</div>
                                                             </div>
                                                         </div>
-                                                        <div className="cert-sig-line"></div>
-                                                        <div className="cert-signer-name">Date of Issuance</div>
-                                                        <span className="cert-signer-title">OFFICIAL RECORD</span>
+                                                        <div className="cert-date-col">
+                                                            <div className="cert-date-wrap">
+                                                                <div className="cert-date-value">
+                                                                    {isOfficial ? (
+                                                                        new Date(result.issueDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+                                                                    ) : '23 August 2026'}
+                                                                </div>
+                                                            </div>
+                                                            <div className="cert-sig-line"></div>
+                                                            <div className="cert-signer-name">Date of Issuance</div>
+                                                            <span className="cert-signer-title cert-record-red">OFFICIAL RECORD</span>
+                                                        </div>
                                                     </div>
 
                                                     {/* Official Stamp Column (Center) */}
@@ -501,6 +574,13 @@ const VerifyCertificate: React.FC = () => {
                             >
                                 <FileDown className="w-4 h-4" />
                                 <span>Save PDF Copy</span>
+                            </button>
+                            <button
+                                onClick={handleSaveDirectPNG}
+                                className="flex-1 py-3 bg-zinc-900 hover:bg-black text-white text-xs font-bold rounded-xl flex items-center justify-center space-x-2"
+                            >
+                                <FileDown className="w-4 h-4" />
+                                <span>Save PNG Image</span>
                             </button>
                             <button
                                 onClick={handleDownload}

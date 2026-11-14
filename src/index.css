@@ -735,14 +735,21 @@ input:-webkit-autofill:active {
 
 /* ══════ TITLE BLOCK ══════ */
 .cert-title-section {
-    text-align: center;
-    margin-top: 6px;
-    z-index: 5;
-    position: relative;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    text-align: center !important;
+    margin-top: 6px !important;
+    z-index: 5 !important;
+    position: relative !important;
 }
 
 .cert-ribbon-tag {
-    display: inline-block !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: center !important;
     text-align: center !important;
     background: #800000 !important;
     background: linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%) !important;
@@ -752,23 +759,28 @@ input:-webkit-autofill:active {
     font-weight: 800 !important;
     letter-spacing: 2.5px !important;
     text-transform: uppercase !important;
-    height: 24px !important;
-    line-height: 22px !important;
-    padding: 0 24px !important;
+    height: 22px !important;
+    line-height: 1 !important;
+    padding: 0 22px !important;
     border-radius: 9999px !important;
     border: 1.5px solid #e5b93b !important;
     box-shadow: 0 3px 10px rgba(183, 28, 28, 0.35) !important;
-    margin-bottom: 8px !important;
+    margin: 0 auto 10px auto !important;
     box-sizing: border-box !important;
-    vertical-align: middle !important;
+    vertical-align: top !important;
     white-space: nowrap !important;
 }
 
 .cert-ribbon-tag span {
     color: #ffffff !important;
-    display: inline !important;
-    line-height: inherit !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    line-height: 1 !important;
     font-weight: 800 !important;
+    position: relative !important;
+    top: -2px !important;
+    transform: translateY(-0.5px) !important;
 }
 
 .offer-ribbon-tag {
@@ -809,23 +821,26 @@ input:-webkit-autofill:active {
 }
 
 .cert-title-main {
-    font-family: 'Cinzel', serif;
-    font-size: 3.05rem;
-    font-weight: 900;
-    color: #0c0f17;
-    letter-spacing: 8px;
-    margin: 0;
-    line-height: 1.05;
-    text-transform: uppercase;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    display: block !important;
+    font-family: 'Cinzel', serif !important;
+    font-size: 3.05rem !important;
+    font-weight: 900 !important;
+    color: #0c0f17 !important;
+    letter-spacing: 8px !important;
+    margin: 0 0 4px 0 !important;
+    line-height: 1.15 !important;
+    text-transform: uppercase !important;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.06) !important;
+    text-align: center !important;
 }
 
 .cert-title-sub-wrap {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    margin-top: 5px;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 16px !important;
+    margin-top: 4px !important;
+    align-self: center !important;
 }
 
 .cert-hairline {
@@ -960,8 +975,157 @@ input:-webkit-autofill:active {
 }
 
 .cert-footer-col.left-col { 
-    align-items: flex-start; 
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    gap: 18px;
+    width: auto;
     text-align: left; 
+}
+
+/* ══════ CERTIFICATE SCAN-TO-VERIFY QR CODE ══════ */
+.cert-qr-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    flex-shrink: 0;
+}
+
+.cert-qr-frame {
+    position: relative;
+    width: 58px;
+    height: 58px;
+    padding: 4px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+}
+
+.cert-qr-frame .qr-corner {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: #b71c1c;
+    border-style: solid;
+    pointer-events: none;
+    box-sizing: border-box;
+}
+
+.cert-qr-frame .qr-corner-tl {
+    top: 0;
+    left: 0;
+    border-width: 2.5px 0 0 2.5px;
+    border-top-left-radius: 3px;
+}
+
+.cert-qr-frame .qr-corner-tr {
+    top: 0;
+    right: 0;
+    border-width: 2.5px 2.5px 0 0;
+    border-top-right-radius: 3px;
+}
+
+.cert-qr-frame .qr-corner-bl {
+    bottom: 0;
+    left: 0;
+    border-width: 0 0 2.5px 2.5px;
+    border-bottom-left-radius: 3px;
+}
+
+.cert-qr-frame .qr-corner-br {
+    bottom: 0;
+    right: 0;
+    border-width: 0 2.5px 2.5px 0;
+    border-bottom-right-radius: 3px;
+}
+
+.cert-qr-frame .cert-qr-img {
+    width: 50px;
+    height: 50px;
+    display: block;
+    object-fit: contain;
+    image-rendering: -webkit-optimize-contrast;
+}
+
+.cert-qr-text-group {
+    margin-top: 6px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.cert-qr-text-group .cert-qr-line-1,
+.cert-qr-text-group .cert-qr-line-2 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.58rem;
+    font-weight: 800;
+    color: #0c0f17;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+    line-height: 1.25;
+}
+
+.cert-date-col {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    width: 185px;
+    flex-shrink: 0;
+}
+
+.cert-date-col .cert-date-wrap {
+    height: 44px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding-bottom: 8px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.cert-date-col .cert-date-value {
+    font-family: 'Montserrat', 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #0c0f17;
+    letter-spacing: 0.5px;
+    line-height: 1.1;
+    margin-bottom: 0;
+}
+
+.cert-date-col .cert-sig-line {
+    width: 100%;
+    height: 1.5px;
+    background: #0f172a;
+    margin-top: 0;
+    margin-bottom: 5px;
+}
+
+.cert-date-col .cert-signer-name {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: #0c0f17;
+    letter-spacing: 0.5px;
+    line-height: 1.15;
+    margin: 0;
+}
+
+.cert-date-col .cert-signer-title.cert-record-red {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #b71c1c;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    line-height: 1.15;
+    margin-top: 5px;
 }
 
 .cert-footer-col.right-col { 
@@ -976,12 +1140,13 @@ input:-webkit-autofill:active {
 }
 
 .cert-date-wrap {
-    height: 46px;
+    height: 44px;
     display: flex;
     align-items: flex-end;
     justify-content: flex-start;
-    padding-bottom: 3px;
+    padding-bottom: 7px;
     width: 100%;
+    box-sizing: border-box;
 }
 
 .cert-date-value {

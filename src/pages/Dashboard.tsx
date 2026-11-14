@@ -569,6 +569,19 @@ const Dashboard: React.FC = () => {
                 ]);
             }
 
+            // Ensure images (like QR code and stamp) are loaded before snapshot
+            const certImages = element.querySelectorAll('img');
+            await Promise.all(
+                Array.from(certImages).map(img => {
+                    if (img.complete) return Promise.resolve();
+                    return new Promise(resolve => {
+                        img.onload = resolve;
+                        img.onerror = resolve;
+                        setTimeout(resolve, 600);
+                    });
+                })
+            );
+
             const canvas = await html2canvas(element, {
                 scale: 1.5,
                 useCORS: true,
@@ -617,6 +630,72 @@ const Dashboard: React.FC = () => {
         }
     };
 
+    const captureCertificateDownloadCanvas = async (targetCert: CertificateData) => {
+        setActiveCertForDownload(targetCert);
+        let element = document.getElementById('certificate-download-area');
+        if (!element) {
+            for (let i = 0; i < 20; i++) {
+                await new Promise(resolve => setTimeout(resolve, 50));
+                element = document.getElementById('certificate-download-area');
+                if (element) break;
+            }
+        }
+
+        if (!element) {
+            throw new Error('Certificate template not ready.');
+        }
+
+        // Wait for all custom fonts including Cinzel, Montserrat, and Inter
+        if (document.fonts) {
+            await document.fonts.ready;
+            await Promise.all([
+                document.fonts.load('900 48px Cinzel'),
+                document.fonts.load('800 12px Montserrat'),
+                document.fonts.load('800 16px Inter')
+            ]).catch(() => {});
+        }
+
+        // Ensure images (like QR code and stamp) are loaded before snapshot
+        const certImages = element.querySelectorAll('img');
+        await Promise.all(
+            Array.from(certImages).map(img => {
+                if (img.complete) return Promise.resolve();
+                return new Promise(resolve => {
+                    img.onload = resolve;
+                    img.onerror = resolve;
+                    setTimeout(resolve, 800);
+                });
+            })
+        );
+
+        await new Promise(resolve => setTimeout(resolve, 150));
+
+        const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            logging: false,
+            width: 1123,
+            height: 794,
+            windowWidth: 1123,
+            windowHeight: 794,
+            scrollX: 0,
+            scrollY: 0,
+            onclone: (clonedDoc) => {
+                const downloadArea = clonedDoc.getElementById('certificate-download-area');
+                if (downloadArea && downloadArea.parentElement) {
+                    downloadArea.parentElement.style.opacity = '1';
+                    downloadArea.parentElement.style.position = 'static';
+                    downloadArea.parentElement.style.left = '0';
+                    downloadArea.parentElement.style.top = '0';
+                    downloadArea.parentElement.style.transform = 'none';
+                }
+            }
+        });
+
+        return canvas;
+    };
+
     const handleDownloadCertificateDirect = async (cert: CertificateData) => {
         const targetCert = cert || (certificates && certificates[0]);
         if (!targetCert) {
@@ -624,44 +703,9 @@ const Dashboard: React.FC = () => {
             return;
         }
         setDownloadingCert(true);
-        setActiveCertForDownload(targetCert);
         showToast('Preparing your Certificate PDF...', 'info');
         try {
-            // Poll for download element so it never misses on the first click
-            let element = document.getElementById('certificate-download-area');
-            if (!element) {
-                for (let i = 0; i < 20; i++) {
-                    await new Promise(resolve => setTimeout(resolve, 50));
-                    element = document.getElementById('certificate-download-area');
-                    if (element) break;
-                }
-            }
-
-            if (!element) {
-                throw new Error('Certificate template not ready.');
-            }
-
-            // Quick font wait with strict 500ms cap
-            if (document.fonts) {
-                await Promise.race([
-                    document.fonts.ready,
-                    new Promise(resolve => setTimeout(resolve, 500))
-                ]);
-            }
-
-            const canvas = await html2canvas(element, {
-                scale: 1.5,
-                useCORS: true,
-                backgroundColor: '#ffffff',
-                logging: false,
-                width: 1123,
-                height: 794,
-                windowWidth: 1123,
-                windowHeight: 794,
-                scrollX: 0,
-                scrollY: 0
-            });
-
+            const canvas = await captureCertificateDownloadCanvas(targetCert);
             const pdf = new jsPDF({
                 orientation: 'landscape',
                 unit: 'mm',
@@ -677,7 +721,7 @@ const Dashboard: React.FC = () => {
             const finalHeight = Math.min(imgHeight, pageHeight);
 
             pdf.addImage(
-                canvas.toDataURL('image/jpeg', 0.92),
+                canvas.toDataURL('image/jpeg', 0.95),
                 'JPEG',
                 0,
                 0,
@@ -686,12 +730,37 @@ const Dashboard: React.FC = () => {
             );
 
             pdf.save(`${targetCert.certificate_number || 'Certificate'}.pdf`);
-            showToast('Certificate downloaded successfully!', 'success');
+            showToast('Certificate PDF downloaded successfully!', 'success');
         } catch (err: any) {
+            console.error('Download certificate error:', err);
             showToast('Direct download note: Opening certificate view...', 'info');
             if (targetCert.certificate_number) {
                 navigate('/verify/' + targetCert.certificate_number);
             }
+        } finally {
+            setActiveCertForDownload(null);
+            setDownloadingCert(false);
+        }
+    };
+
+    const handleDownloadCertificatePNGDirect = async (cert: CertificateData) => {
+        const targetCert = cert || (certificates && certificates[0]);
+        if (!targetCert) {
+            showToast('No certificate available yet. Complete all tasks first.', 'info');
+            return;
+        }
+        setDownloadingCert(true);
+        showToast('Preparing your Certificate Image (PNG)...', 'info');
+        try {
+            const canvas = await captureCertificateDownloadCanvas(targetCert);
+            const link = document.createElement('a');
+            link.download = `${targetCert.certificate_number || 'Certificate'}.png`;
+            link.href = canvas.toDataURL('image/png', 1.0);
+            link.click();
+            showToast('Certificate PNG downloaded successfully!', 'success');
+        } catch (err: any) {
+            console.error('Download certificate PNG error:', err);
+            showToast('Download failed. Please try again.', 'error');
         } finally {
             setActiveCertForDownload(null);
             setDownloadingCert(false);
@@ -2919,6 +2988,15 @@ const Dashboard: React.FC = () => {
                                                         <span>{downloadingCert ? 'Generating...' : 'Download PDF'}</span>
                                                     </button>
                                                     <button
+                                                        onClick={() => handleDownloadCertificatePNGDirect(cert)}
+                                                        disabled={downloadingCert}
+                                                        className="px-3.5 py-2.5 bg-zinc-900 hover:bg-black dark:bg-zinc-800 dark:hover:bg-zinc-700 text-white font-bold rounded-xl text-xs shadow-sm flex items-center justify-center gap-1.5 transition active:scale-95 cursor-pointer"
+                                                        title="Download PNG Image"
+                                                    >
+                                                        <FileDown className="w-3.5 h-3.5 stroke-[2.5]" />
+                                                        <span>PNG</span>
+                                                    </button>
+                                                    <button
                                                         onClick={() => navigate(`/verify/${cert.certificate_number}`)}
                                                         className="px-4 py-2.5 bg-slate-100 dark:bg-zinc-800 hover:bg-slate-200 dark:hover:bg-zinc-700 text-slate-700 dark:text-slate-200 font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 transition cursor-pointer"
                                                     >
@@ -3420,7 +3498,7 @@ const Dashboard: React.FC = () => {
                 (activeCertForDownload || (certificates && certificates[0])) && (() => {
                     const certToRender = activeCertForDownload || certificates[0];
                     return (
-                        <div style={{ position: 'fixed', left: '-99999px', top: 0, width: '1123px', height: '794px', overflow: 'hidden', zIndex: -100, opacity: 1, pointerEvents: 'none' }}>
+                        <div style={{ position: 'fixed', left: 0, top: 0, width: '1123px', height: '794px', overflow: 'hidden', zIndex: -9999, opacity: 0, pointerEvents: 'none' }}>
                             <div
                                 id="certificate-download-area"
                                 className="certificate-container"
@@ -3510,12 +3588,12 @@ const Dashboard: React.FC = () => {
                             </div>
 
                             {/* Certificate Headings */}
-                            <div className="cert-title-section">
-                                <div className="cert-ribbon-tag" style={{ display: 'inline-block', textAlign: 'center', background: 'linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%)', backgroundColor: '#800000', color: '#ffffff', fontFamily: 'Montserrat, Inter, sans-serif', fontSize: '0.64rem', fontWeight: 800, letterSpacing: '2.5px', textTransform: 'uppercase', height: '24px', lineHeight: '22px', padding: '0 24px', borderRadius: '9999px', border: '1.5px solid #e5b93b', boxShadow: '0 3px 10px rgba(183, 28, 28, 0.35)', marginBottom: '8px', boxSizing: 'border-box', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                                    <span style={{ color: '#ffffff', display: 'inline', lineHeight: 'inherit', fontWeight: 800 }}>★ OFFICIAL VERIFIED CREDENTIAL ★</span>
+                            <div className="cert-title-section" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center' }}>
+                                <div className="cert-ribbon-tag" style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', alignSelf: 'center', textAlign: 'center', background: 'linear-gradient(135deg, #7f0000 0%, #b71c1c 50%, #991b1b 100%)', backgroundColor: '#800000', color: '#ffffff', fontFamily: 'Montserrat, Inter, sans-serif', fontSize: '0.64rem', fontWeight: 800, letterSpacing: '2.5px', textTransform: 'uppercase', height: '22px', lineHeight: '1', padding: '0 22px', borderRadius: '9999px', border: '1.5px solid #e5b93b', boxShadow: '0 3px 10px rgba(183, 28, 28, 0.35)', margin: '0 auto 10px auto', boxSizing: 'border-box', whiteSpace: 'nowrap' }}>
+                                    <span style={{ color: '#ffffff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', lineHeight: '1', fontWeight: 800, position: 'relative', top: '-2px', transform: 'translateY(-0.5px)' }}>★ OFFICIAL VERIFIED CREDENTIAL ★</span>
                                 </div>
-                                <h1 className="cert-title-main">CERTIFICATE</h1>
-                                <div className="cert-title-sub-wrap">
+                                <h1 className="cert-title-main" style={{ display: 'block', margin: '0 0 4px 0', lineHeight: 1.15, textAlign: 'center' }}>CERTIFICATE</h1>
+                                <div className="cert-title-sub-wrap" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '4px' }}>
                                     <div className="cert-hairline"></div>
                                     <svg width="8" height="8" viewBox="0 0 10 10" style={{ display: 'block', flexShrink: 0 }}><polygon points="5,0 10,5 5,10 0,5" fill="#7f0000" stroke="#e5b93b" strokeWidth="1.5"/></svg>
                                     <h3 className="cert-title-sub">OF INTERNSHIP COMPLETION</h3>
@@ -3545,16 +3623,36 @@ const Dashboard: React.FC = () => {
 
                             {/* Footer signatory block */}
                             <div className="cert-footer-row">
-                                {/* Date of Issuance Column (Left side) */}
+                                {/* Date of Issuance Column (Left side) with Scan to Verify QR Code */}
                                 <div className="cert-footer-col left-col">
-                                    <div className="cert-date-wrap">
-                                        <div className="cert-date-value">
-                                            {new Date(certToRender.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                                    <div className="cert-qr-block">
+                                        <div className="cert-qr-frame">
+                                            <span className="qr-corner qr-corner-tl"></span>
+                                            <span className="qr-corner qr-corner-tr"></span>
+                                            <span className="qr-corner qr-corner-bl"></span>
+                                            <span className="qr-corner qr-corner-br"></span>
+                                            <img 
+                                                src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(`https://vinix.online/verify/${certToRender.certificate_number || 'VNXCERT202691990'}`)}`}
+                                                alt="Scan to Verify Certificate"
+                                                className="cert-qr-img"
+                                                crossOrigin="anonymous"
+                                            />
+                                        </div>
+                                        <div className="cert-qr-text-group">
+                                            <div className="cert-qr-line-1">Scan to Verify</div>
+                                            <div className="cert-qr-line-2">Certificate</div>
                                         </div>
                                     </div>
-                                    <div className="cert-sig-line"></div>
-                                    <div className="cert-signer-name">Date of Issuance</div>
-                                    <span className="cert-signer-title">OFFICIAL RECORD</span>
+                                    <div className="cert-date-col">
+                                        <div className="cert-date-wrap">
+                                            <div className="cert-date-value">
+                                                {certToRender.issue_date ? new Date(certToRender.issue_date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '23 August 2026'}
+                                            </div>
+                                        </div>
+                                        <div className="cert-sig-line"></div>
+                                        <div className="cert-signer-name">Date of Issuance</div>
+                                        <span className="cert-signer-title cert-record-red">OFFICIAL RECORD</span>
+                                    </div>
                                 </div>
 
                                 {/* Official Stamp Column (Center) */}
